@@ -1,0 +1,126 @@
+---
+title: GitHub flavored markdown (GFM)
+---
+
+本指南探讨了如何支持 GFM 功能，如自动链接文字、脚注、删除线、表格和任务列表。 {/* more */}
+MDX 支持标准 markdown syntax ([CommonMark][]).
+这意味着默认情况下不支持[GitHub flavored markdown（GFM）][GFM]扩展。
+它们可以通过使用 remark 插件来启用: [`remark-gfm`][remark-gfm].
+与所有 remark 插件一样，该插件可以[在`ProcessorOptions`的`remarkPlugins`中传递][processor-options].
+有关插件的更多信息，请参阅[§ 扩展 MDX][extend]
+
+假设我们有这样的 MDX 文件:
+
+```mdx path="example.mdx"
+# GFM
+
+## 自动链接文字
+
+www.example.com, https://example.com, 和 contact@example.com.
+
+## Footnote
+
+A note[^1]
+
+[^1]: Big note.
+
+## Strikethrough
+
+~one~ or ~~two~~ tildes.
+
+## Table
+
+| a   | b   |   c |  d  |
+| --- | :-- | --: | :-: |
+
+## Tasklist
+
+- [ ] to do
+- [x] done
+```
+
+上述带有 GFM 的 MDX 可以通过以下模块进行转换:
+
+```tsx path="example.js"
+import fs from "node:fs/promises";
+import { compile } from "@mdx-js/mdx";
+import remarkGfm from "remark-gfm";
+
+console.log(String(await compile(await fs.readFile("example.mdx"), { remarkPlugins: [remarkGfm] })));
+```
+
+<details>
+  <summary>扩展等效JSX</summary>
+
+```tsx path="output.jsx"
+<>
+  <h1>GFM</h1>
+  <h2>Autolink literals</h2>
+  <p>
+    <a href="http://www.example.com">www.example.com</a>, <a href="https://example.com">https://example.com</a>, and{" "}
+    <a href="mailto:contact@example.com">contact@example.com</a>.
+  </p>
+  <h2>Footnote</h2>
+  <p>
+    A note
+    <sup>
+      <a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="true" aria-describedby="footnote-label">
+        1
+      </a>
+    </sup>
+  </p>
+  <h2>Strikethrough</h2>
+  <p>
+    <del>one</del> or <del>two</del> tildes.
+  </p>
+  <h2>Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>a</th>
+        <th style={{ textAlign: "left" }}>b</th>
+        <th style={{ textAlign: "right" }}>c</th>
+        <th style={{ textAlign: "center" }}>d</th>
+      </tr>
+    </thead>
+  </table>
+  <h2>Tasklist</h2>
+  <ul className="contains-task-list">
+    <li className="task-list-item">
+      <input type="checkbox" disabled /> to do
+    </li>
+    <li className="task-list-item">
+      <input type="checkbox" disabled checked />
+      done
+    </li>
+  </ul>
+  <section data-footnotes="true" className="footnotes">
+    <h2 className="sr-only" id="footnote-label">
+      Footnotes
+    </h2>
+    <ol>
+      <li id="user-content-fn-1">
+        <p>
+          Big note.{" "}
+          <a
+            href="#user-content-fnref-1"
+            data-footnote-backref=""
+            aria-label="Back to reference 1"
+            className="data-footnote-backref"
+          >
+            ↩
+          </a>
+        </p>
+      </li>
+    </ol>
+  </section>
+</>
+```
+
+</details>
+
+[commonmark]: https://spec.commonmark.org/current/
+[gfm]: https://github.github.com/gfm/
+[remark-gfm]: https://github.com/remarkjs/remark-gfm
+[processor-options]: /packages/mdx/#processoroptions
+[extend]: /docs/extending-mdx/

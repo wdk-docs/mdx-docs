@@ -1,0 +1,125 @@
+---
+title: 嵌入
+---
+
+本指南探讨了如何在 markdown 中嵌入推文、注册表或代码笔等内容。 {/* more */}
+MDX 支持标准的 markdown 语法 ([CommonMark][]).
+默认情况下，它不支持嵌入。
+
+有两种方法可以实现嵌入：在编译时或运行时。
+在编译时完成这项工作意味着要提前花费精力，这样读者就可以快速体验，因为不必向客户端提出请求。
+在运行时执行此操作可以将工作转移到客户端，从而提供更大的灵活性。
+不过，这可能会导致读者体验缓慢。
+这也取决于您使用的框架 (如特定于 React、Preact、Vue 等。)
+
+## 编译时嵌入
+
+您可以通过执行以下操作来使用[`@remark-embedder/core`][remark-embedder]：
+
+```tsx path="example.js"
+import { compile } from "@mdx-js/mdx";
+// Note: `@remark-embedder` is currently using faux-esm.
+import fauxRemarkEmbedder from "@remark-embedder/core";
+import fauxOembedTransformer from "@remark-embedder/transformer-oembed";
+
+const remarkEmbedder = fauxRemarkEmbedder.default;
+const oembedTransformer = fauxOembedTransformer.default;
+
+const code = `
+Check out this video:
+
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+`;
+
+console.log(
+  String(
+    await compile(code, {
+      remarkPlugins: [
+        [
+          // @ts-expect-error: `remarkEmbedder` types are wrong.
+          remarkEmbedder,
+          { transformers: [oembedTransformer] },
+        ],
+      ],
+    })
+  )
+);
+```
+
+<details>
+  <summary>扩展等效JSX</summary>
+
+```tsx path="output.jsx"
+<>
+  <p>Check out this video:</p>
+  <iframe
+    width="200"
+    height="113"
+    src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowFullScreen
+    title="Rick Astley - Never Gonna Give You Up (Official Music Video)"
+  ></iframe>
+</>
+```
+
+</details>
+
+## 运行时嵌入
+
+您可以使用 React 特定的[MDX Embed][mdx-embed]在 MDX 中嵌入内容。
+以下是一个示例 MDX 文件，该文件使用了不带`@MDX-js/react`的特定嵌入：
+
+```mdx path="example.mdx"
+import { CodePen } from "mdx-embed";
+
+这是一个代码笔，和一些其他的博客文章文本。
+
+<CodePen codePenId="PNaGbb" />
+```
+
+<details>
+  <summary>扩展等效JSX</summary>
+
+```tsx path="output.jsx"
+<>
+  <p>Here’s a codepen, and some other blog post text.</p>
+  <CodePen codePenId="PNaGbb" />
+</>
+```
+
+</details>
+
+如果不希望在 MDX 文件中使用显式导入：
+
+```mdx path="example.mdx"
+Here’s a codepen, and some other blog post text.
+
+<CodePen codePenId="PNaGbb" />
+```
+
+然后，您可以传递所有组件：
+
+```tsx path="example.jsx"
+import * as embeds from "mdx-embed";
+import Example from "./example.mdx"; // Assumes an integration is used to compile MDX -> JS.
+
+<Example components={...embeds} />;
+```
+
+或者，如果您已经安装并配置了[`@mdx-js/react`][mdx-react], 你也可以使用 `MDXEmbedProvider`:
+
+```tsx path="example.jsx"
+import { MDXEmbedProvider } from "mdx-embed";
+import Example from "./example.mdx"; // Assumes an integration is used to compile MDX -> JS.
+
+<MDXEmbedProvider>
+  <Example />
+</MDXEmbedProvider>;
+```
+
+[commonmark]: https://spec.commonmark.org/current/
+[remark-embedder]: https://github.com/remark-embedder/core
+[mdx-embed]: https://mdx-embed.netlify.app/
+[mdx-react]: /packages/react/

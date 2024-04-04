@@ -1,0 +1,87 @@
+---
+title: Math
+---
+
+本指南探讨如何在 MDX 中支持数学（LaTeX）。 {/* more */}
+MDX 支持标准的降价语法 ([CommonMark][]).
+这意味着默认情况下不支持数学。
+数学可以通过使用备注插件来启用: [`remark-math`][remark-math],与重新键入的插件相结合: 不是[`rehype-katex`][rehype-katex] (KaTeX) 就是 [`rehype-mathjax`][rehype-mathjax](MathJax).
+与其他注释和重新键入插件一样，它们可以[分别在`ProcessorOptions`中的`remarkPlugins`和`rehypePlugins`中传递][processor-options].
+有关插件的更多信息，请参阅[§扩展 MDX][extend]
+
+假设我们有这样的 MDX 文件:
+
+```mdx path="example.mdx"
+# $$\sqrt{a^2 + b^2}$$
+```
+
+上述带数学的 MDX 可以通过以下模块进行转换:
+
+```tsx path="example.js"
+import fs from "node:fs/promises";
+import { compile } from "@mdx-js/mdx";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
+
+console.log(
+  String(
+    await compile(await fs.readFile("example.mdx"), {
+      rehypePlugins: [rehypeKatex],
+      remarkPlugins: [remarkMath],
+    })
+  )
+);
+```
+
+<details>
+  <summary>扩展等效JSX</summary>
+
+```tsx path="output.jsx"
+<>
+  <h1>
+    <span className="katex">
+      <span className="katex-mathml">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">…</math>
+      </span>
+      <span className="katex-html" aria-hidden="true">
+        …
+      </span>
+    </span>
+  </h1>
+</>
+```
+
+</details>
+
+<Note type="important">
+**重要的**: 如果您选择了`rehype-katex`， 
+  您还应该在页面的某个位置使用`katex.css`来正确设置数学样式。
+  在撰写本文时，最后一个版本是:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+  integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"
+  crossorigin="anonymous"
+/>
+```
+
+要获得样式表的最新链接，请转到[`katex 文档`][katex docs].
+
+{/* 要做的事：每隔一段时间，获取最新消息。 */}
+
+</Note>
+
+<Note type="info">
+  **笔记:** 另请参阅 [`remark-mdx-math-enhanced`](https://github.com/goodproblems/remark-mdx-math-enhanced),
+  可以用来支持数学中的JavaScript表达式（例如访问属性或进行计算）
+</Note>
+
+[commonmark]: https://spec.commonmark.org/current/
+[remark-math]: https://github.com/remarkjs/remark-math/tree/main/packages/remark-math
+[rehype-katex]: https://github.com/remarkjs/remark-math/tree/main/packages/rehype-katex
+[rehype-mathjax]: https://github.com/remarkjs/remark-math/tree/main/packages/rehype-mathjax
+[processor-options]: /packages/mdx/#processoroptions
+[extend]: /docs/extending-mdx/
+[katex docs]: https://katex.org/docs/browser#loading-as-global

@@ -1,0 +1,184 @@
+---
+title: "@mdx-js/node-loader"
+---
+
+Node.js挂钩（也称为加载器）用于MDX。
+
+
+## 这是什么？
+
+此包包含Node.js挂钩，用于添加对导入MDX文件的支持。
+Node *定制挂钩* 目前是一个候选版本。
+
+## 我什么时候该用这个？
+
+如果您正在使用Node并希望从文件系统导入MDX文件，则此集成非常有用。
+
+如果您使用捆绑器（webpack、Rollup、esbuild），或者捆绑器附带的站点构建器（Next.js）或构建系统（Vite），则可以使用另一个集成: 参见[§集成][integrations].
+
+## 安装
+
+此程序包是[只用ESM][ESM]。
+在Node.js（16+版本）中，使用[npm][]安装:
+
+```sh
+npm install @mdx-js/node-loader
+```
+
+## 使用
+
+假设我们有MDX文档, `example.mdx`:
+
+```mdx
+export function Thing() {
+  return <>World!</>
+}
+
+# Hello, <Thing />
+```
+
+…我们的模块`example.js`如下所示:
+
+```tsx
+import {renderToStaticMarkup} from 'react-dom/server'
+import React from 'react'
+import Content from './example.mdx'
+
+console.log(renderToStaticMarkup(React.createElement(Content)))
+```
+
+…然后与下面一起运行:
+
+```sh
+node --loader=@mdx-js/node-loader example.js
+```
+
+…输出:
+
+```html
+<h1>Hello, World!</h1>
+```
+
+> **Note**: 如果使用节点18及更低版本，则可以忽略以下内容
+> warning:
+>
+> ```txt
+> (node:20718) ExperimentalWarning: Custom ESM Loaders is an experimental feature and might change at any > time
+> (Use `node --trace-warnings ...` to show where the warning was created)
+> ```
+
+> **Note**: 如果使用Node 20及更高版本，则会收到以下警告:
+>
+> ```txt
+> (node:20908) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use > `register()`:
+> --import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from > "node:url"; register("%40mdx-js/node-loader", pathToFileURL("./"));'
+> ```
+>
+> 你可以通过添加一个`register.js`文件来解决这个问题:
+>
+> ```tsx
+> import {register} from 'node:module'
+>
+> register('@mdx-js/node-loader', import.meta.url)
+> ```
+>
+> …并运行 `node --import ./register.js example.js` 替代.
+
+## API
+
+此包导出标识符 [`createLoader`][api-create-loader] 和 [`load`][api-load]。
+没有默认导出。
+
+### `createLoader(options?)`
+
+创建Node.js挂钩来处理markdown和MDX。
+
+###### 参数
+
+* `options` ([`Options`][api-options], optional)
+  — 配置
+
+###### 返回
+
+Node.js 挂钩 ([`{load}`][api-load]).
+
+### `load`
+
+加载 `file:` 指向MD(X)文件的URL。
+
+有关详细信息，请参见Node.js文档中的[`load`][node-load]。
+
+### `Options`
+
+配置（TypeScript类型）。
+
+选项与[`@mdx-js/mdx`中的`CompileOptions`][compile-options]相同，不同之处在于`development`选项是根据您配置webpack的方式支持的。
+您不能手动传递它。
+
+## 类型
+
+此包是使用[TypeScript][]完全键入的.
+它导出附加类型[`Options`][api-options]。
+有关信息，请参阅我们网站上的[§类型][types]。
+
+## 兼容性
+
+统一集体维护的项目与Node.js的维护版本兼容。
+
+当我们剪切一个新的主要版本时，我们会放弃对Node的未维护版本的支持。
+这意味着我们尽量保持当前的发布线, `@mdx-js/node-loader@^3`, 与Node.js 16兼容。
+
+
+[build-badge]: https://github.com/mdx-js/mdx/workflows/main/badge.svg
+
+[build]: https://github.com/mdx-js/mdx/actions
+
+[coverage-badge]: https://img.shields.io/codecov/c/github/mdx-js/mdx/main.svg
+
+[coverage]: https://codecov.io/github/mdx-js/mdx
+
+[downloads-badge]: https://img.shields.io/npm/dm/@mdx-js/node-loader.svg
+
+[downloads]: https://www.npmjs.com/package/@mdx-js/node-loader
+
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+
+[collective]: https://opencollective.com/unified
+
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
+
+[chat]: https://github.com/mdx-js/mdx/discussions
+
+[npm]: https://docs.npmjs.com/cli/install
+
+[contribute]: https://mdxjs.com/community/contribute/
+
+[support]: https://mdxjs.com/community/support/
+
+[coc]: https://github.com/mdx-js/.github/blob/main/code-of-conduct.md
+
+[mit]: https://github.com/mdx-js/mdx/blob/main/packages/node-loader/license
+
+[author]: https://wooorm.com
+
+[integrations]: https://mdxjs.com/getting-started/#integrations
+
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[types]: https://mdxjs.com/getting-started/#types
+
+[security]: https://mdxjs.com/getting-started/#security
+
+[typescript]: https://www.typescriptlang.org
+
+[compile-options]: https://mdxjs.com/packages/mdx/#compileoptions
+
+[node-load]: https://nodejs.org/api/module.html#loadurl-context-nextload
+
+[api-create-loader]: #createloaderoptions
+
+[api-load]: #load
+
+[api-options]: #options

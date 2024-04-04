@@ -1,0 +1,102 @@
+---
+title: MDX 3
+---
+
+<Note type="info">有关如何迁移的信息，请参阅我们的[版本3迁移指南][migrating].</Note>
+
+版本 3 已经存在！
+这个主要版本包含一些小的更改。
+对于大多数人来说，只需要更新 Node.js 和插件！
+
+## 正在中断更改
+
+主要的突破性变化是 Node.js 16 现在是支持的最低版本。
+
+在整个生态系统中，出现了一些小的内部破坏性变化。
+一切都已经发布了。
+您现在可以更新所有插件。
+如果你以前遇到过问题，现在应该可以了。
+
+我们还删除了一些不常用的不推荐使用的 API。
+您可能很好，但如果您遇到错误，请忽略[v3 迁移指南][migration]。
+
+需要注意的是，当您使用鲜为人知但功能强大的`evaluate`、`run`或`outputFormat: 'function-body'`API 时，请传递`baseUrl`选项。
+这样可以确保`import.meta.url`、`import`和`export`有效。
+如果不使用这些功能，则会出现运行时错误。
+
+## MDX 格式的改进
+
+MDX 格式也有一些小的改进，其中一些在技术上是突破性的。
+
+### 相邻块 JSX 和 MDX 中的表达式
+
+我们现在接受块 JSX 标记旁边的块表达式:
+
+{/* Note: `language` because our theme doesn’t support it yet. */}
+
+```jsx chrome=no language="mdx"
+<style>{`
+
+  h1 {
+    color: blue;
+  }
+
+`}</style>
+```
+
+以前，有一个语法错误，您必须在尖括号和大括号之间添加一条换行符。
+
+### await MDX
+
+我们现在接受`await`语法：
+
+```mdx
+{await Promise.resolve(42)}
+```
+
+大多数框架都不支持 promise。
+这是否有效取决于此。
+
+以前，有一个运行时错误，在不允许使用`await`的上下文中使用了它。
+
+### ES2024 in MDX
+
+现在，您可以在 MDX 中使用现代 JavaScript 语法。
+橡子，内部使用，现在被指示使用 ES2024。
+
+## 混杂的
+
+我重构了所有的文档。
+在需要的地方更新每个使用示例。
+我还写了一本关于如何从任何地方注入组件的指南: [§注入组件][injecting-components].
+
+这个网站要快得多。
+There’s a nice improved playground too: [try it out! »][playground].
+We also have proper syntax highlighting here, thanks to
+[`wooorm/markdown-tm-language`][markdown-tm-language]
+and [`wooorm/starry-night`][starry-night].
+
+The generated JS code is a little cleaner (the JSX pragma comment is removed
+and objects are sorted where needed), it also uses spreads instead of
+`Object.assign`, there’s a `'use strict'` added when needed, and the
+`MDXContent` is exported immediately.
+
+## 谢谢
+
+我们要感谢我们所有的贡献者和快乐的用户。
+特别感谢 北雁云依 ([**@BeiyanYunyi**](https://github.com/BeiyanYunyi)),
+Christian Murphy ([**@ChristianMurphy**](https://github.com/ChristianMurphy)),
+JokcyLou ([**@Jokcy**](https://github.com/Jokcy)),
+Maël Nison ([**@arcanis**](https://github.com/arcanis)),
+Andreas Deininger ([**@deining**](https://github.com/deining)),
+Remco Haszing ([**@remcohaszing**](https://github.com/remcohaszing)),
+Sébastien Lorber ([**@slorber**](https://github.com/slorber)),
+Víctor Fernández ([**@victor23k**](https://github.com/victor23k)),
+Titus Wormer ([**@wooorm**](https://github.com/wooorm)),
+以及我们可能已经忘记的任何人。
+
+[migrating]: /migrating/v3/
+[playground]: /playground/
+[injecting-components]: /guides/injecting-components/
+[markdown-tm-language]: https://github.com/wooorm/markdown-tm-language
+[starry-night]: https://github.com/wooorm/starry-night

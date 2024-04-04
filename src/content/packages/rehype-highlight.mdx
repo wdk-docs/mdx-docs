@@ -1,0 +1,379 @@
+---
+title: "rehype-highlight"
+---
+
+**[rehype][]** 插件，用于将语法高亮显示应用于带有[`lowlight`][lowlight]的代码。
+
+## 这是什么？
+
+这个包是一个[unified][] ([rehype][])插件，用于执行语法高亮显示。
+它使用`highlight.js`到`lowlight`，这非常快，相对较小，而且非常好。
+默认情况下，此软件包捆绑了 37 种[通用语言][lowlight-common]你可以注册更多(190 with [`all`][lowlight-all]).
+
+它查找`<code>`元素（当直接在`<pre>`元素中时）并更改它们。
+您可以用`language-*`或`lang-*`类指定代码语言（如 Python），其中`*`可以是例如`js`（所以`language-js`）、`md`、`css`等。
+默认情况下，不突出显示没有此类语言类的代码。
+通过`detect: true`来检测他们的编程语言并突出显示代码。
+您可以防止在`<code>`上使用`no-highlight` 或 `nohighlight`类高亮显示特定块。
+
+**unified**是一个使用抽象语法树（AST）转换内容的项目。
+**rehype**为 unified 添加了对 HTML 的支持。
+**hast**是重新键入使用的 HTML AST。
+这是一个将语法高亮显示应用于 AST 的重新类型插件。
+
+## 我什么时候该用这个？
+
+当您希望在重新键入中执行语法高亮显示时，此项目非常有用。
+这样做的一个原因是，这通常意味着高亮显示在构建时发生一次，而不是每次在运行时发生。
+
+还有其他几个应用语法高亮显示的社区插件。
+其中一些是很好的选择，但也有一些是失败的。
+由于任何人都可以制作重新键入的插件，请确保仔细评估重新键入插件的质量。
+
+这个插件是基于[`lowlight`][lowlight]构建的，它是 highlight.js 的虚拟版本。
+当你想以不同的方式做事时，你可以在这个插件的基础上制作一个 lowlight 插件。
+
+## 安装
+
+此程序包是[ESM only][ESM]。
+在 Node.js（16+版本）中，使用[npm][]安装：
+
+```sh
+npm install rehype-highlight
+```
+
+在带有[`esm.sh`][esmsh]的 Deno 中：
+
+```js
+import rehypeHighlight from "https://esm.sh/rehype-highlight@6";
+```
+
+在带有[`esm.sh`][esmsh]的浏览器中：
+
+```html
+<script type="module">
+  import rehypeHighlight from "https://esm.sh/rehype-highlight@6?bundle";
+</script>
+```
+
+## 使用
+
+假设我们有以下文件`example.html`：
+
+```html
+<h1>Hello World!</h1>
+
+<pre>
+    <code class="language-js">
+        var name = "World";
+        console.warn("Hello, " + name + "!")
+    </code>
+</pre>
+```
+
+…我们的模块`example.js`包含:
+
+```js
+import { rehype } from "rehype";
+import rehypeHighlight from "rehype-highlight";
+import { read } from "to-vfile";
+
+const file = await rehype()
+  .data("settings", { fragment: true })
+  .use(rehypeHighlight)
+  .process(await read("example.html"));
+
+console.log(String(file));
+```
+
+…那么运行 node-example.js 会产生:
+
+```html
+<h1>Hello World!</h1>
+
+<pre><code class="hljs language-js"><span class="hljs-keyword">var</span> name = <span class="hljs-string">"World"</span>;
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">warn</span>(<span class="hljs-string">"Hello, "</span> + name + <span class="hljs-string">"!"</span>)</code></pre>
+```
+
+## API
+
+此包不导出标识符。
+默认导出为 [`rehypeHighlight`][api-rehype-highlight].
+
+### `unified().use(rehypeHighlight[, options])`
+
+应用语法高亮显示。
+
+###### 参数
+
+- `options` ([`Options`][api-options], optional)
+  — configuration
+
+###### 返回
+
+Transform ([`Transformer`][unified-transformer]).
+
+### `Options`
+
+配置 (TypeScript type).
+
+###### 字段
+
+- `aliases` (`Record<string, Array<string> | string>`, optional)
+  — 注册更多别名;
+  传递给 [`lowlight.registerAlias`][lowlight-register-alias]
+- `detect` (`boolean`, default: `false`)
+  — 通过猜测其编程语言来突出显示没有语言类的代码
+- `languages` (`Record<string, LanguageFn>`, 默认:[`common`][lowlight-common])
+  — 语域语言；传递到[`lowlight.register`][lowlight-register]
+- `plainText` (`Array<string>`, optional)
+  — 不突出显示的语言名称列表；注意，您还可以添加`no-highlight`类
+- `prefix` (`string`, 默认: `'hljs-'`)
+  — 类前缀
+- `subset` (`Array<string>`, 默认: 默认: [all][lowlight-all] 注册语言)
+  — 检测时要检查的语言名称
+
+## 实例
+
+### 实例: 忽略
+
+有三种方法可以不将语法高亮显示应用于代码块。
+它们可以通过显式类`no-highlight`忽略 (或 `nohighlight`),
+在`options.plainText`中列出的显式语言名称,
+或通过将`options.detect`设置为`false`（默认值）,
+这防止了没有类的`<code>`被自动检测到。
+
+例如，使用`example.html`：
+
+```html
+<pre><code>this won’t be highlighted due to `detect: false` (default)</code></pre>
+
+<pre><code class="no-highlight">this won’t be highlighted due to its class</code></pre>
+
+<pre><code class="language-txt">this won’t be highlighted due to `plainText: ['txt']`</code></pre>
+```
+
+…和 `example.js`:
+
+```js
+import { rehype } from "rehype";
+import rehypeHighlight from "rehype-highlight";
+import { read } from "to-vfile";
+
+const file = await rehype()
+  .data("settings", { fragment: true })
+  .use(rehypeHighlight, { plainText: ["txt", "text"] })
+  .process(await read("example.html"));
+
+console.log(String(file));
+```
+
+…然后运行它会产生与`example.html`相同的结果: 没有一个突出显示。
+
+### 实例: 添加新语言
+
+`rehype-highlight`默认支持 37 种常用语言。
+这使得它在浏览器和 Node.js 中加载很小，同时支持足够多的默认情况。
+您可以添加更多语言。
+
+例如，使用`example.html`：
+
+```html
+<pre><code class="language-bnf">a ::= 'a' | 'A'</code></pre>
+```
+
+…和 `example.js`:
+
+```js
+import bnf from "highlight.js/lib/languages/bnf";
+import { common } from "lowlight";
+import { rehype } from "rehype";
+import rehypeHighlight from "rehype-highlight";
+import { read } from "to-vfile";
+
+const file = await rehype()
+  .data("settings", { fragment: true })
+  .use(rehypeHighlight, { languages: { ...common, bnf } })
+  .process(await read("example.html"));
+
+console.log(String(file));
+```
+
+…然后运行会产生:
+
+```html
+<pre><code class="hljs language-bnf">a ::= <span class="hljs-string">'a'</span> | <span class="hljs-string">'A'</span></code></pre>
+```
+
+### 实例: 别名
+
+您可以将自己的语言标志映射到`highlight.js`语言。
+
+例如，使用`example.html`：
+
+```html
+<pre><code class="language-custom-script">console.log(1)</code></pre>
+```
+
+…和 `example.js`:
+
+```js
+import { rehype } from "rehype";
+import rehypeHighlight from "rehype-highlight";
+import { read } from "to-vfile";
+
+const file = await rehype()
+  .data("settings", { fragment: true })
+  // 👉 **Note**: the keys are language names, values are the aliases that you
+  // want to also allow as `x` in `language-x` classes.
+  .use(rehypeHighlight, { aliases: { javascript: "custom-script" } })
+  .process(await read("example.html"));
+
+console.log(String(file));
+```
+
+…然后运行会产生:
+
+```html
+<pre><code class="hljs language-custom-script"><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-number">1</span>)</code></pre>
+```
+
+### 实例: sanitation
+
+在 rehype 中应用语法高亮显示操作具有某些类的`<code>`元素，并将许多`<span>`元素注入具有类的元素。
+允许任意类是安全漏洞的一个漏洞。
+
+要确保 HTML 在重新键入时的安全性，请使用[`rehype-sanitize`][rehype-sanitize]。
+它特别允许在`<code>`元素上`/^language-./` 类名 .
+我们也使用它。
+因此，您可以在`rehype-sanitize`之后使用`rehype-highlight`：
+
+```js
+import { unified } from "unified";
+import rehypeHighlight from "./index.js";
+import rehypeParse from "rehype-parse";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeStringify from "rehype-stringify";
+
+const file = await unified()
+  .use(rehypeParse, { fragment: true })
+  .use(rehypeSanitize)
+  .use(rehypeHighlight)
+  .use(rehypeStringify)
+  .process('<pre><code className="language-js">console.log(1)</code></pre>');
+
+console.log(String(file));
+```
+
+…输出:
+
+```html
+<pre><code class="hljs language-js"><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-number">1</span>)</code></pre>
+```
+
+像我们刚才所做的那样，在`rehype-sanitize`之后使用插件是安全的，前提是您信任这些插件。
+如果您不信任`rehype-highlight`，则可以在之前使用它。
+但是，您需要配置`rehype-sanitize`以保留您允许的类：
+
+```js
+import { unified } from "unified";
+import rehypeHighlight from "./index.js";
+import rehypeParse from "rehype-parse";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeStringify from "rehype-stringify";
+
+const file = await unified()
+  .use(rehypeParse, { fragment: true })
+  .use(rehypeHighlight)
+  .use(rehypeSanitize, {
+    ...defaultSchema,
+    attributes: {
+      ...defaultSchema.attributes,
+      span: [
+        ...(defaultSchema.attributes?.span || []),
+        // Allow all class names starting with `hljs-`.
+        ["className", /^hljs-./],
+        // Alternatively, to allow only certain class names:
+        // ['className', 'hljs-number', 'hljs-title', 'hljs-variable']
+      ],
+    },
+    tagNames: [...(defaultSchema.tagNames || []), "span"],
+  })
+  .use(rehypeStringify)
+  .process('<pre><code className="language-js">console.log(1)</code></pre>');
+
+console.log(String(file));
+```
+
+## 类型
+
+此包是使用[TypeScript][]完全键入的。
+它导出附加类型[`Options`][api-options]。
+
+## 兼容性
+
+统一集体维护的项目与 Node.js 的维护版本兼容。
+
+当我们剪切一个新的主要版本时，我们会放弃对 Node 的未维护版本的支持。
+这意味着我们试图保持当前发布行`rehype-highlight@^7`与 Node.js 16 兼容。
+
+此插件适用于`rehype-parse` version 1+, `rehype-stringify` version 1+, `rehype` version 1+, and `unified` version 4+.
+
+## 安全
+
+Use of `rehype-highlight` _should_ be safe to use as `highlight.js` and `lowlight` _should_ be safe to use.
+如有疑问，请使用[`rehype-sanitize`][rehype-sanitize].
+
+## 相关的
+
+- [`rehype-meta`](https://github.com/rehypejs/rehype-meta)
+  — 将元数据添加到文档的标题
+- [`rehype-document`](https://github.com/rehypejs/rehype-document)
+  — 将片段包装在文档中
+
+## 贡献
+
+有关入门方法，请参阅[`rehypejs/.github`][health]中的[`contributing.md`][contributing]。
+有关获得帮助的方法，请参阅[`support.md`][support]。
+
+这个项目有[行为准则][coc].
+通过与此存储库、组织或社区交互，您同意遵守其条款。
+
+## 许可证
+
+[MIT][license] © [Titus Wormer][author]
+
+[build-badge]: https://github.com/rehypejs/rehype-highlight/workflows/main/badge.svg
+[build]: https://github.com/rehypejs/rehype-highlight/actions
+[coverage-badge]: https://img.shields.io/codecov/c/github/rehypejs/rehype-highlight.svg
+[coverage]: https://codecov.io/github/rehypejs/rehype-highlight
+[downloads-badge]: https://img.shields.io/npm/dm/rehype-highlight.svg
+[downloads]: https://www.npmjs.com/package/rehype-highlight
+[size-badge]: https://img.shields.io/bundlejs/size/rehype-highlight
+[size]: https://bundlejs.com/?q=rehype-highlight
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+[collective]: https://opencollective.com/unified
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
+[chat]: https://github.com/rehypejs/rehype/discussions
+[npm]: https://docs.npmjs.com/cli/install
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+[esmsh]: https://esm.sh
+[health]: https://github.com/rehypejs/.github
+[contributing]: https://github.com/rehypejs/.github/blob/HEAD/contributing.md
+[support]: https://github.com/rehypejs/.github/blob/HEAD/support.md
+[coc]: https://github.com/rehypejs/.github/blob/HEAD/code-of-conduct.md
+[license]: license
+[author]: https://wooorm.com
+[lowlight]: https://github.com/wooorm/lowlight
+[lowlight-all]: https://github.com/wooorm/lowlight#all
+[lowlight-common]: https://github.com/wooorm/lowlight#common
+[lowlight-register]: https://github.com/wooorm/lowlight#lowlightregistergrammars
+[lowlight-register-alias]: https://github.com/wooorm/lowlight#lowlightregisteraliasaliases
+[rehype]: https://github.com/rehypejs/rehype
+[rehype-sanitize]: https://github.com/rehypejs/rehype-sanitize
+[typescript]: https://www.typescriptlang.org
+[unified]: https://github.com/unifiedjs/unified
+[unified-transformer]: https://github.com/unifiedjs/unified#transformer
+[api-options]: #options
+[api-rehype-highlight]: #unifieduserehypehighlight-options

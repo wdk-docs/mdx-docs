@@ -1,0 +1,97 @@
+---
+title: 注入组件
+---
+
+本指南展示了如何在 MDX 运行时将任意组件注入 MDX。 {/* more */}
+它展示了我们的提供商如何使用底层功能 (`@mdx-js/react`,`@mdx-js/preact`)和 [`mdx-components.tsx`][next-mdx-components] 文件
+Next.js 工作支持，以及您如何自己利用该功能。
+
+在许多情况下，您不需要这样做，因为您可以将组件传递给 MDX：
+
+```mdx path="example.mdx"
+# Hello _<Planet />_
+```
+
+您可以传递`Planet`并说出使用的组件而不是`h1`：
+
+```tsx path="example.jsx"
+import Example from "./example.mdx"; // Assumes an integration is used to compile MDX -> JS.
+
+<Example
+  components={{
+    Planet() {
+      return "Pluto";
+    },
+    h1(properties) {
+      return <h2 {...properties} />;
+    },
+  }}
+/>;
+```
+
+当你发现自己经常传递`components`道具时，你可能想看看另一种选择。
+您可以联系我们基于上下文的提供商 (`@mdx-js/react`,`@mdx-js/preact`),但是上下文有性能方面的缺点，并且上下文并不总是有效（例如在 RSC 中）。
+
+但首先，组件传递是如何工作的？
+这可以通过查看 MDX 为上面的`example.mdx`生成的代码来说明。
+以下是一个差异，显示了示例正常编译的内容以及传递`providerImportSource: 'xxx'`时的更改：
+
+```diff
+@@ -1,7 +1,13 @@
+ import {jsx as _jsx, jsxs as _jsxs} from 'react/jsx-runtime'
++import {useMDXComponents as _provideComponents} from 'xxx'
+
+ function _createMdxContent(props) {
+-  const _components = {em: 'em', h1: 'h1', ...props.components}
++  const _components = {
++    em: 'em',
++    h1: 'h1',
++    ..._provideComponents(),
++    ...props.components
++  }
+   const {Planet} = _components
+   if (!Planet) _missingMdxReference('Planet', true)
+   return _jsxs(_components.h1, {
+@@ -10,7 +16,7 @@ function _createMdxContent(props) {
+ }
+
+ export default function MDXContent(props = {}) {
+-  const {wrapper: MDXLayout} = props.components || {}
++  const {wrapper: MDXLayout} = {..._provideComponents(), ...props.components}
+   return MDXLayout
+     ? _jsx(MDXLayout, {...props, children: _jsx(_createMdxContent, {...props})})
+     : _createMdxContent(props)
+```
+
+请注意，组件具有默认值（例如`h1`将使用`h1`），并且组件取自`props.components`。
+所做的更改是添加了对`_provideComponents`的调用，该调用指的是从我们指定的模块（`xxx`）导出的`useMDXComponents`。
+
+我们可以使用这个接口从文件中注入组件。
+在该文件中，我们需要一个返回组件的`useMDXComponents`函数。
+
+```tsx path="mdx-components.js"
+/** @returns {import('mdx/types.js').MDXComponents} */
+export function useMDXComponents() {
+  return {
+    Planet() {
+      return "Pluto";
+    },
+    h1(properties) {
+      return <h2 {...properties} />;
+    },
+  };
+}
+```
+
+现在将文件路径或 URL 作为`providerImportSource`传递到该文件，例如`import.meta.resolve('./mdx-components.js')`:
+
+```diff
+@@ -1,5 +1,5 @@
+ import {jsx as _jsx, jsxs as _jsxs} from 'react/jsx-runtime'
+-import {useMDXComponents as _provideComponents} from 'xxx'
++import {useMDXComponents as _provideComponents} from 'file:///Users/tilde/…/mdx-components.js'
+```
+
+现在，我们本地定义的组件将用于所有 MDX 文件！
+
+[next-mdx-components]: https://nextjs.org/docs/pages/building-your-application/configuring/mdx
