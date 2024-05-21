@@ -1,0 +1,244 @@
+---
+title: 使用Next.js和Retype Pretty Code在MDX中复制到剪贴板按钮
+---
+
+> https://claritydev.net/blog/copy-to-clipboard-button-nextjs-mdx-rehype
+
+代码共享是现代 web 开发的一个重要方面，使开发人员能够相互协作和学习。许多网站通过在代码片段中添加`复制到剪贴板`按钮，使代码共享更容易访问。这一功能在移动设备上特别有用，为用户提供了一种快速而直接的共享代码片段的方法，而无需手动选择文本。一些代码高亮显示库包含此功能，无论是内置的还是通过插件实现的。
+
+但是，如果您在 Next.js 应用程序中使用 MDX，则没有一个实现`复制到剪贴板`按钮的一刀切的解决方案。
+
+本教程将指导您如何为 Reype Pretty code 处理的代码片段创建`复制到剪贴板`按钮，Reype Prenty code 是一个流行的 Reype 插件，用于在基于 MDX 的 Next.js 网站中突出显示语法。我们将在启用`应用程序`目录的情况下使用 Next.js 13+。到本文结束时，您将能够简化代码共享，并增强 Next.js 网站上的用户体验。事实上，这个博客使用了我们将要创建的确切功能，所以您可以看到实际操作的结果。让我们一起潜水吧！
+
+## 设置
+
+像往常一样，我们需要安装所需的依赖项。
+
+```sh title="bash"
+npm install rehype-pretty-code shiki unist-util-visit
+```
+
+在这个项目中，我们使用 ReypePrettyCode 插件，它为 MD 或 MDX 文件提供语法高亮显示。这种高亮显示是在构建时执行的，从而对页面速度产生积极影响。此外，您可能需要一个库来处理 MDX 内容。这个博客使用 Contentlayer，它对 MDX 处理有强大的支持。但是，请记住，它目前处于测试阶段，可能不适合所有人。
+
+<Alert>
+  如果你想提高Next.js网站的可发现性，我写了一篇关于向其添加网站地图的文章：使用页面或应用程序目录向Next.js网站添加动态网站地图
+</Alert>
+
+## 提取代码内容
+
+在我们的例子中，呈现按钮是一个挑战，因为语法高亮显示是在服务器端执行的。当我们打算在客户端呈现按钮时，代码内容已经被包装在语法高亮显示所需的各种标签中。一个潜在的解决方案是在复制代码内容时解析代码内容，删除所有 HTML 标记。然而，这种方法效率低下，因为它需要撤销 Reype Pretty Code 为我们所做的一切。
+
+值得庆幸的是，有更好的方法来实现我们的目标。我们可以在语法高亮显示阶段之前提取未格式化的代码内容，并将其作为属性附加到代码节点。然后，这些内容可以作为呈现复制按钮的自定义 MDX 组件中的属性进行访问。我最初是在 Twitter 上发现这个想法的，并对代码进行了一些调整，以适应我们的用例。
+
+首先，我们需要创建一个访问者函数，该函数遍历内容的节点树，并从嵌套在 pre 标记内的所有代码元素中提取未修改的（原始文本）内容。我们将把这个文本内容存储在 pre-node 本身上。要遍历节点树，我们将使用 unist util visit 包中的 visit 函数。这个访问者函数应该添加到现有 Reype 插件的列表中，对于 Contentlayer，它是 Contentlayer.config.js 文件。
+
+```js
+{
+  rehypePlugins: [
+    () => (tree) => {
+      visit(tree, (node) => {
+        if (node?.type === "element" && node?.tagName === "pre") {
+          const [codeEl] = node.children;
+
+          if (codeEl.tagName !== "code") return;
+
+          node.raw = codeEl.children?.[0].value;
+        }
+      });
+    },
+  ];
+}
+```
+
+这将为我们提供一种方法来保留未修改的代码内容，我们可以稍后从节点的原始属性访问这些内容。
+
+现在我们添加 Reype Pretty Code 插件的配置。
+
+```js
+{
+  rehypePlugins: [
+    () => (tree) => {
+      visit(tree, (node) => {
+        if (node?.type === "element" && node?.tagName === "pre") {
+          const [codeEl] = node.children;
+
+          if (codeEl.tagName !== "code") return;
+
+          node.raw = codeEl.children?.[0].value;
+        }
+      });
+    },
+    [
+      rehypePrettyCode,
+      {
+        theme: {
+          dark: "one-dark-pro",
+          light: "github-light",
+        },
+        // The rest of the rehypePrettyCode config
+      },
+    ],
+  ];
+}
+```
+
+值得注意的是，我们在下面的代码中同时使用了光明和黑暗主题。该插件为每个主题生成两个独立的代码块，其中一个通过 CSS 隐藏，具体取决于所选主题。为了在主题之间切换，此博客使用类属性，确保一次只能看到一个主题，代码如下：
+
+```css
+html.light[data-theme="dark"] {
+  display: none;
+}
+
+html.dark[data-theme="light"] {
+  display: none;
+}
+```
+
+需要注意的是，使用两个主题还有另一个含义：我们必须将原始属性转发到两个独立的前置元素，而不仅仅是一个。为了实现这一点，我们需要实现另一个访问者函数，该函数在语法高亮显示完成后运行。
+
+```js
+{
+  rehypePlugins: [
+    () => (tree) => {
+      visit(tree, (node) => {
+        if (node?.type === "element" && node?.tagName === "pre") {
+          const [codeEl] = node.children;
+
+          if (codeEl.tagName !== "code") return;
+
+          node.raw = codeEl.children?.[0].value;
+        }
+      });
+    },
+    [
+      rehypePrettyCode,
+      {
+        theme: {
+          dark: "one-dark-pro",
+          light: "github-light",
+        },
+        // The rest of the rehypePrettyCode config
+      },
+    ],
+    () => (tree) => {
+      visit(tree, (node) => {
+        if (node?.type === "element" && node?.tagName === "div") {
+          if (!("data-rehype-pretty-code-fragment" in node.properties)) {
+            return;
+          }
+
+          for (const child of node.children) {
+            if (child.tagName === "pre") {
+              child.properties["raw"] = node.raw;
+            }
+          }
+        }
+      });
+    },
+  ];
+}
+```
+
+在下面的代码中，我们选择所有包含数据重新类型漂亮代码片段数据属性的 div 元素。然后，我们迭代每个 div 中的前子级（每个主题一个），并将原始代码内容作为属性添加到它们中。有了这个实现，用于渲染前置元素的自定义 MDX 组件将有 raw 作为可用属性之一。接下来，我们将把这个 Pre 组件添加到代码中：
+
+```js
+export const Pre = ({ children, raw, ...props }) => {
+  const lang = props["data-language"];
+  return (
+    <pre {...props} className={"p-0"}>
+      <div className={"code-header"}>{lang}</div>
+      {children}
+    </pre>
+  );
+};
+```
+
+我们还提取数据语言以显示给定片段的代码语言。现在，我们将使用它作为 MDX 渲染器中的一个组件。
+
+```js
+import { useMDXComponent } from "next-contentlayer/hooks";
+import { Pre } from "./components/Pre";
+
+const components = {
+  pre: Pre,
+};
+
+export const Mdx = ({ code }) => {
+  const MDXContent = useMDXComponent(code);
+
+  return <MDXContent components={components} />;
+};
+```
+
+Contentlayer 库处理 MDX 渲染，我们使用它的下一个 Contentlayer 包进行 next.js 集成。这个包提供了 useMDXComponent 钩子，我们使用它来渲染 MDX 并通过 components 对象传递我们的自定义组件。这使得 MDX 文件中的每个预元素都可以用我们的自定义预组件替换。预标记的内容将通过预组件内的子属性进行访问。
+
+## 添加 CopyButton 组件
+
+现在我们准备添加 CopyButton 组件，它将处理`复制到剪贴板`功能。
+
+为了实现`复制到剪贴板`功能，我们可以使用 JavaScript 访问剪贴板，并使用 React 渲染 UI。在 JavaScript 中，以前我们会使用 document.execCommand（`copy`）方法将内容复制到剪贴板。但是，不再推荐使用此方法，某些浏览器也不支持此方法。更可靠的方法是使用剪贴板 API，它提供了一组异步方法来读取和写入剪贴板。
+
+```js
+"use client";
+
+import { useState } from "react";
+
+export const CopyButton = ({ text }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(text);
+    setIsCopied(true);
+
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 10000);
+  };
+
+  return (
+    <button disabled={isCopied} onClick={copy}>
+      {isCopied ? "Copied!" : "Copy"}
+    </button>
+  );
+};
+```
+
+请注意，由于我们使用的是应用程序目录，其中所有组件默认为服务器组件，因此我们需要通过`使用客户端`指令将该组件明确标记为客户端组件。
+
+组件本身非常小。单击复制文本后，我们使用 Navigator.clipboard API 存储代码内容（可通过文本属性获得）。此外，我们将按钮文本更改为 Copied！并设置 10 秒的超时以将其重置。
+
+最后，我们可以在 Pre 组件中使用这个`复制到剪贴板`按钮。
+
+```js
+import { CopyButton } from "./CopyButton";
+
+export const Pre = ({ children, raw, ...props }) => {
+  const lang = props["data-language"] || "shell";
+  return (
+    <pre {...props} className={"p-0"}>
+      <div className={"code-header"}>
+        {lang}
+        <CopyButton text={raw} />
+      </div>
+      {children}
+    </pre>
+  );
+};
+```
+
+最后的结果应该类似于这篇文章中代码片段的`复制`按钮（减去样式）。
+
+## 总结
+
+`复制到剪贴板`按钮是提高代码片段可访问性的绝佳方法，尤其是在移动设备上。然而，当涉及到为在基于 MDX 的 Next.js 应用程序中使用 Reype Pretty code 处理的代码片段创建`复制到剪贴板`按钮时，需要一种特定的方法。主要概念是将未处理的代码内容作为 pre 元素的属性传递，这允许在应用语法高亮显示后稍后访问内容。这种方法是高效的，它简化了代码共享，从而增强了使用 MDX 和 Reype Pretty code 的 Next.js 网站上的用户体验。不过，CopyButton 组件背后的概念并不是 Next.js 特有的。它被实现为一个 React 组件，利用浏览器中 JavaScript 提供的剪贴板 API。
+
+## 参考文献和资源
+
+- Contentlayer
+- MDN: Clipboard API
+- MDN: Navigator.clipboard
+- Rehype Pretty Code
+- Rehype
+- Twitter - Reype Pretty Code 访问者功能
+- next-contentlayer
+- unist-util-visit

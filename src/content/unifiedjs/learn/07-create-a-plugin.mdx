@@ -1,0 +1,290 @@
+---
+group: guide
+title: 创建插件
+description: 演示如何创建（retext）插件的指南
+author: Titus Wormer
+authorTwitter: wooorm
+authorGithub: wooorm
+tags:
+  - plugin
+  - retext
+published: 2017-05-03
+modified: 2020-05-18
+---
+
+## 使用`unified`创建插件
+
+本指南展示了如何为 retext 创建一个插件，用于检查句子之间的空格量。
+这里的概念也适用于 `unified` 的其他语法。
+
+> 卡住了？
+> 有其他导游的想法吗？
+> 请参阅[`support.md`][support]。
+
+### 插件基础知识
+
+`unified`插件在多个方面改变了应用程序在处理器上的工作方式。
+在本指南中，我们将回顾如何检查语法树。
+
+插件可以包含两个部分：**attacher**，这是一个在有人调用`.use`时调用的函数；**transformer**，这也是一个可选函数，每次使用语法树和虚拟文件处理文件时都会调用。
+
+在这种情况下，我们希望检查每个处理过的文件的语法树，因此我们确实指定了一个转换器。
+
+现在您了解了 unified 中插件的基本知识。
+继续我们的案例！
+
+### 案例
+
+在开始之前，让我们先概述一下我们想要做什么。
+假设我们有以下文本文件：
+
+```markdown
+One sentence. Two sentences.
+
+One sentence. Two sentences.
+```
+
+我们想得到第二段的警告，说应该使用一个空格而不是两个空格。
+
+在下一步中，我们将编写代码来使用我们的插件。
+
+### 设置
+
+让我们建立一个项目。
+创建一个文件夹`example`，输入该文件夹，然后初始化一个新项目：
+
+```sh
+mkdir example
+cd example
+npm init -y
+```
+
+然后，通过更改`package.json`，确保项目是一个模块，以便`import`和`export`工作：
+
+```diff
+--- a/package.json
++++ b/package.json
+@@ -2,6 +2,7 @@
+   "name": "example",
+   "version": "1.0.0",
+   "description": "",
++  "type": "module",
+   "main": "index.js",
+   "scripts": {
+     "test": "echo \"Error: no test specified\" && exit 1"
+```
+
+确保`example.md`与以下内容一起存在：
+
+```markdown
+One sentence. Two sentences.
+
+One sentence. Two sentences.
+```
+
+现在，让我们创建一个`example.js`文件，它将处理我们的文本文件并报告任何发现的问题。
+
+```javascript
+import fs from "fs";
+import { retext } from "retext";
+import { reporter } from "vfile-reporter";
+import retextSentenceSpacing from "./index.js";
+
+const buffer = fs.readFileSync("example.md");
+
+retext()
+  .use(retextSentenceSpacing)
+  .process(buffer)
+  .then((file) => {
+    console.error(reporter(file));
+  });
+```
+
+> 不要忘记`npm install`依赖项（`retext`，`vfile-reporter`）！
+
+如果你阅读了关于[使用 unified 的][use]的指南，你会看到一些熟悉的语句。
+首先，我们加载依赖项，然后在中读取文件。
+我们用稍后创建的插件处理该文件，最后报告一个致命错误或任何发现的 linting 消息。
+
+请注意，我们直接依赖于复述。
+这是一个公开 unified 处理器的包，附带解析器和编译器。
+
+当运行我们的示例时（尽管它还不起作用），我们希望看到第二段的消息，说应该使用一个空格而不是两个空格。
+
+现在，除了插件本身，我们已经设置好了所有内容。
+我们将在下一节中进行此操作。
+
+### 插件
+
+正如我们在插件基础知识中所读到的，我们需要一个插件，对于我们的案例，还需要一个转换器。
+让我们在插件文件`index.js`中创建它们：
+
+```javascript
+export default function retextSentenceSpacing() {
+  return (tree, file) => {};
+}
+```
+
+首先，我们需要检查`tree`中的模式。
+我们可以使用一个实用程序来帮助我们递归地遍历树，即[`unist-util-visit`][visit]。
+让我们补充一下。
+
+```diff
+--- a/index.js
++++ b/index.js
+@@ -1,4 +1,9 @@
++import {visit} from 'unist-util-visit'
++
+ export default function retextSentenceSpacing() {
+   return (tree, file) => {
++    visit(tree, 'ParagraphNode', (node) => {
++      console.log(node)
++    })
+   }
+ }
+```
+
+> 别忘了`npm install`实用程序！
+
+如果我们现在用 Node.js 运行我们的示例，如下所示，我们将看到在我们的示例中，访问者被两段调用：
+
+```sh
+node example.js
+```
+
+```txt
+{
+  type: 'ParagraphNode',
+  children: [
+    { type: 'SentenceNode', children: [Array], position: [Object] },
+    { type: 'WhiteSpaceNode', value: ' ', position: [Position] },
+    { type: 'SentenceNode', children: [Array], position: [Object] }
+  ],
+  position: {
+    start: { line: 1, column: 1, offset: 0 },
+    end: { line: 1, column: 29, offset: 28 }
+  }
+}
+{
+  type: 'ParagraphNode',
+  children: [
+    { type: 'SentenceNode', children: [Array], position: [Object] },
+    { type: 'WhiteSpaceNode', value: '  ', position: [Position] },
+    { type: 'SentenceNode', children: [Array], position: [Object] }
+  ],
+  position: {
+    start: { line: 3, column: 1, offset: 30 },
+    end: { line: 3, column: 30, offset: 59 }
+  }
+}
+no issues found
+```
+
+此输出已经显示段落包含两种类型的节点：`SentenceNode` and `WhiteSpaceNode`.
+后者是我们想要检查的，但前者很重要，因为我们只警告这个插件中句子之间的空白（但可能是另一个插件）。
+
+现在让我们循环浏览每一段的子段。
+只检查句子之间的空格。
+我们使用一个小型实用程序来检查节点类型: [`unist-util-is`][is].
+
+```diff
+--- a/index.js
++++ b/index.js
+@@ -1,9 +1,20 @@
+ import {visit} from 'unist-util-visit'
++import {is} from 'unist-util-is'
+
+ export default function retextSentenceSpacing() {
+   return (tree, file) => {
+     visit(tree, 'ParagraphNode', (node) => {
+-      console.log(node)
++      const children = node.children
++
++      children.forEach((child, index) => {
++        if (
++          is(children[index - 1], 'SentenceNode') &&
++          is(child, 'WhiteSpaceNode') &&
++          is(children[index + 1], 'SentenceNode')
++        ) {
++          console.log(child)
++        }
++      })
+     })
+   }
+ }
+```
+
+> 别忘了`npm install`实用程序！
+
+如果我们现在用 Node 运行我们的示例，如下所示，我们将看到只记录句子之间的空白。
+
+```sh
+node example.js
+```
+
+```txt
+{
+  type: 'WhiteSpaceNode',
+  value: ' ',
+  position: Position {
+    start: { line: 1, column: 14, offset: 13 },
+    end: { line: 1, column: 15, offset: 14 }
+  }
+}
+{
+  type: 'WhiteSpaceNode',
+  value: '  ',
+  position: Position {
+    start: { line: 3, column: 14, offset: 43 },
+    end: { line: 3, column: 16, offset: 45 }
+  }
+}
+no issues found
+```
+
+最后，让我们为第二个空白添加一个警告，因为它的字符数超过了需要的字符数。
+我们可以使用[`file.message()`][message]将消息与文件关联起来。
+
+```diff
+--- a/index.js
++++ b/index.js
+@@ -12,7 +12,12 @@ export default function retextSentenceSpacing() {
+           is(child, 'WhiteSpaceNode') &&
+           is(children[index + 1], 'SentenceNode')
+         ) {
+-          console.log(child)
++          if (child.value.length !== 1) {
++            file.message(
++              'Expected 1 space between sentences, not ' + child.value.length,
++              child
++            )
++          }
+         }
+       })
+     })
+```
+
+如果我们现在最后一次运行我们的示例，我们将看到问题的消息！
+
+```sh
+$ node example.js
+3:14-3:16  warning  Expected 1 space between sentences, not 2
+
+⚠ 1 warning
+```
+
+### 进一步练习
+
+句子之间并不是每个人都有一个空格。
+这个插件可以接收首选的空间量，而不是硬编码的`1`。
+
+如果你想警告句子之间的制表符或换行符，也许也可以为此创建一个插件？
+
+如果你还没有，请查看[学习部分][learn]中的其他文章!
+
+[support]: https://github.com/unifiedjs/.github/blob/main/support.md
+[visit]: https://github.com/syntax-tree/unist-util-visit
+[is]: https://github.com/syntax-tree/unist-util-is
+[message]: https://github.com/vfile/vfile#vfilemessagereason-position-origin
+[learn]: /learn/
+[use]: /learn/guide/using-unified/

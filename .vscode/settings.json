@@ -1,3 +1,29 @@
 {
-  "cSpell.words": ["daisyui", "frontmatter", "jsxs", "Navs", "opencollective", "rehype", "stefanprobst", "tailwindcss"]
+  "cSpell.words": [
+    "daisyui",
+    "esast",
+    "frontmatter",
+    "highlightjs",
+    "jsxs",
+    "lowlight",
+    "mdast",
+    "micromark",
+    "Navs",
+    "nextjs",
+    "nlcst",
+    "opencollective",
+    "preact",
+    "rehype",
+    "retext",
+    "retextjs",
+    "Shiki",
+    "shortcodes",
+    "srcdark",
+    "srclight",
+    "stefanprobst",
+    "tailwindcss",
+    "unifiedjs",
+    "vfile",
+    "xast"
+  ]
 }

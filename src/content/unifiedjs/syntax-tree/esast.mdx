@@ -1,0 +1,192 @@
+---
+title: esast(ECMAScript抽象语法树)
+---
+
+**E**CMA**S**cript **A**bstract **S**yntax **T**ree format.
+
+> https://github.com/syntax-tree/esast
+
+---
+
+**esast**是用于将[JavaScript][]表示为抽象的[语法树][syntax-tree]的规范。
+它实现了 **[unist][]** 规范。
+
+此文档可能不会发布。
+有关已发布的文档，请参见[发布][releases]。
+最新发布的版本是[`1.0.0`][latest]。
+
+## 介绍
+
+本文档定义了将 ECMAScript 表示为[抽象语法树][syntax-tree]的格式.
+esast 的开发始于 2021 年 2 月。
+这个规范是用类似[Web IDL][webidl]的语法编写的。
+
+### 本规范适用的地方
+
+esast 扩展了语法树格式[unist][]，以受益于其[实用程序生态系统][utilities]。
+与 unist 的其他实现有一个重要区别：在`children`数组以外的字段添加 children，而不使用`children`字段。
+
+esast 与[ESTree][]有关，因为第一个是后者的超集。
+任何接受 ESTree 的工具也支持 esast。
+
+esast 与[JavaScript][]有关，而不是代表它，因为它有一个[实用程序生态系统][list-of-utilities]，用于处理 JavaScript 中的兼容语法树。
+然而，esast 并不局限于 JavaScript，也可以用于其他编程语言。
+
+esast 与[unified][]项目有关，因为 esast 语法树在其整个生态系统中使用。
+
+### ESTree
+
+ESTree 很棒，但它缺少了一些东西：
+
+- 树无法通过`JSON.parse(JSON.stringify(s))`进行往返转换，导致缓存问题
+- 列是 0 索引的，而大多数文本编辑器显示 1 索引的列，这会导致微小的差异或显示警告的数学运算
+- 没有建议使用基于范围的位置信息，导致实现将它们分散在不同的地方
+- 元数据没有安全的空间，导致实现将它们分散在不同的地方
+- 没有关于如何处理 JSX、注释或原始值的建议
+
+这些都是次要的 nits，这就是为什么 esast 是超集的原因。
+
+## Nodes
+
+### `Node`
+
+```idl
+extend interface Node <: UnistNode {}
+```
+
+所有 esast 节点都继承自 unist 的[Node][unist-node]，除`RegExpLiteral`和`BigIntLiteral`外，其他节点与它们的 ESTree 对应节点相同。
+
+### `RegExpLiteral`
+
+必须使用[`RegExpLiteral`](https://github.com/estree/estree/blob/master/es5.md#regexpliteral)上的`regex`字段，而此类文字的`value`字段应为`null`并且必须被忽略。
+
+### `BigIntLiteral`
+
+[`BigIntLiteral`](https://github.com/estree/estree/blob/master/es2020.md#bigintliteral)上的`bigint`字段必须使用，而此类文字的`value`字段应为`null`并且必须被忽略。
+
+## 建议
+
+对于 JSX，请遵循[JSX 扩展](https://github.com/facebook/jsx/blob/master/AST.md)维护在`facebook/jsx`中。
+
+对于类型注释，请遵循[类型注释扩展](https://github.com/estree/estree/blob/master/extensions/type-annotations.md)保持在`estree/etree`。
+
+不应该使用 `raw` fields（由大多数解析器添加）：它们创建了一个额外的真相来源，而这个来源通常不被维护。
+
+`start`, `end`, 和 `range` 字段不应使用。
+
+`comments`不应添加到`Program`以外的节点上。
+添加评论时, 使用 `'Block'` (对于 `/**/`) 或 `'Line'` (对于 `//`) 类型.
+不要在注释节点上使用`leading`或`trailing`字段。
+
+`tokens` 不应使用。
+
+## 术语汇编
+
+请参阅[unist 词汇表][glossary]，但请注意以下偏离术语。
+
+###### Child
+
+如果 X 被直接引用或在节点 Y 上的字段的数组中引用，则节点 X 是节点 Y 的 **Child**。
+
+###### Sibling
+
+如果 X 和 Y 具有相同的父级（如果有），并且 X 和 Y 都在节点 Y 上的字段处的数组中被引用，则节点 X 是节点 Y 的 **Sibling**。
+
+## 公用设施清单
+
+有关更多实用程序，请参阅[实用程序的 unist 列表][utilities]。
+
+- [`estree-util-attach-comments`](https://github.com/syntax-tree/estree-util-attach-comments)
+  — 将注释附加到 estree 节点
+- [`estree-util-build-jsx`](https://github.com/syntax-tree/estree-util-build-jsx)
+  — 将 JSX 转换为函数调用
+- [`estree-util-is-identifier-name`](https://github.com/syntax-tree/estree-util-is-identifier-name)
+  — 检查某个东西是否可以是标识符名称
+- [`estree-util-value-to-estree`](https://github.com/remcohaszing/estree-util-value-to-estree)
+  — 将 JavaScript 值转换为 estree 表达式
+- [`estree-util-to-js`](https://github.com/syntax-tree/estree-util-to-js)
+  — 序列化为 JavaScript
+- [`estree-util-visit`](https://github.com/syntax-tree/estree-util-visit)
+  — 访问节点
+- [`esast-util-from-estree`](https://github.com/syntax-tree/esast-util-from-estree)
+  — 从 estree 转换
+- [`esast-util-from-js`](https://github.com/syntax-tree/esast-util-from-js)
+  — 从 JavaScript 解析
+
+Please use either `estree-util-` (if it works with all ESTrees, preferred)
+or `esast-util-` (if it uses on esast specific features) as a prefix.
+
+See also the [`estree`](https://github.com/search?q=topic%3Aestree&s=stars&o=desc)
+topic on GitHub.
+
+## 工具书类
+
+- **unist**:
+  [通用语法树][unist].
+  T. Wormer; et al.
+- **JavaScript**:
+  [ECMAScript 语言规范][javascript].
+  Ecma International.
+- **JSON**
+  [JavaScript 对象表示法（JSON）数据交换格式][json],
+  T. Bray.
+  IETF.
+- **Web IDL**:
+  [Web IDL][webidl],
+  C. McCormack.
+  W3C.
+
+## Security
+
+由于 esast 代表 JS，而 JS 会给你带来一堆问题，所以 esast 也是不安全的。
+始终要小心用户输入。
+
+## 相关的
+
+- [hast](https://github.com/syntax-tree/hast) — HTML
+- [mdast](https://github.com/syntax-tree/mdast) — Markdown
+- [nlcst](https://github.com/syntax-tree/nlcst) — 自然语言
+- [xast](https://github.com/syntax-tree/xast) — XML
+
+## 贡献
+
+有关入门方法，请参阅[`syntax-tree/.github`][health]中的[`contributing.md`][contributing]。
+有关获得帮助的方法，请参阅[`support.md`][support]。
+有关新实用程序和工具的想法可以发布在[`syntax-tree/ideas`][ideas]中。
+
+令人敬畏的语法树、unist、mdast、esast、xast 和 nlcst 资源的精心策划的列表可以在[awesome syntax-tree][awesome]中找到。
+
+这个项目有[行为准则][coc].
+通过与此存储库、组织或社区交互，您同意遵守其条款。
+
+## 鸣谢
+
+该项目的初始版本由**[@wooorm](https://github.com/wooorm)**编写.
+
+## 许可证
+
+[CC-BY-4.0][license] © [Titus Wormer][author]
+
+[health]: https://github.com/syntax-tree/.github
+[contributing]: https://github.com/syntax-tree/.github/blob/HEAD/contributing.md
+[support]: https://github.com/syntax-tree/.github/blob/HEAD/support.md
+[coc]: https://github.com/syntax-tree/.github/blob/HEAD/code-of-conduct.md
+[awesome]: https://github.com/syntax-tree/awesome-syntax-tree
+[ideas]: https://github.com/syntax-tree/ideas
+[license]: https://creativecommons.org/licenses/by/4.0/
+[author]: https://wooorm.com
+[logo]: https://raw.githubusercontent.com/syntax-tree/esast/0164416/logo.svg?sanitize=true
+[site]: https://unifiedjs.com
+[releases]: https://github.com/syntax-tree/esast/releases
+[latest]: https://github.com/syntax-tree/esast/releases/tag/2.3.0
+[list-of-utilities]: #list-of-utilities
+[unist]: https://github.com/syntax-tree/unist
+[syntax-tree]: https://github.com/syntax-tree/unist#syntax-tree
+[javascript]: https://www.ecma-international.org/ecma-262/9.0/index.html
+[json]: https://tools.ietf.org/html/rfc7159
+[webidl]: https://heycam.github.io/webidl/
+[glossary]: https://github.com/syntax-tree/unist#glossary
+[utilities]: https://github.com/syntax-tree/unist#list-of-utilities
+[unified]: https://github.com/unifiedjs/unified
+[estree]: https://github.com/estree/estree
+[unist-node]: https://github.com/syntax-tree/unist#node

@@ -1,0 +1,489 @@
+---
+title: xast(可扩展抽象语法树格式)
+---
+
+E**x**tensible **A**bstract **S**yntax **T**ree format.
+
+> https://github.com/syntax-tree/xast
+
+---
+
+**xast** 是用于将[XML][]表示为抽象[语法树][syntax-tree]的规范。
+它实现了 **[unist][]** 规范。
+
+此文档可能不会发布。
+有关已发布的文档，请参见[releases][]。
+最新发布的版本是[`1.0.0`][latest]。
+
+## 介绍
+
+本文档定义了将 XML 表示为[抽象语法树][syntax-tree]的格式。
+这个规范是用类似[Web IDL][webidl]的语法编写的。
+开发于 2020 年 1 月开始。
+
+### 本规范适用的地方
+
+xast extends [unist][], a format for syntax trees, to benefit from its
+[ecosystem of utilities][utilities].
+
+xast relates to [JavaScript][] in that it has an [ecosystem of
+utilities][list-of-utilities] for working with compliant syntax trees in
+JavaScript.
+However, xast is not limited to JavaScript and can be used in other programming
+languages.
+
+xast relates to the [unified][] project in that xast syntax trees are used
+throughout its ecosystem.
+
+### 范围
+
+xast 表示 XML 语法，而不是语义：没有名称空间或本地名称；仅限限定名称。
+
+xast 通过省略表面上糟糕的 DTD 来支持 XML 的合理子集。
+XML 处理器不能保证处理 DTD，这使得它们不安全。
+
+xast 表示扩展的实体，因此不处理实体或字符引用。
+It is suggested that utilities around xast, that parse or serialize, do _not_
+support _[parameter-entity references][concept-parameter-entity]_ or
+_[entity references][concept-entity]_ other than the
+_[predefined entities][concept-predefined-entities]_
+(`&lt;` for `<` U+003C LESS THAN;
+`&gt;` for `>` U+003E GREATER THAN;
+`&amp;` for `&` U+0026 AMPERSAND;
+`&apos;` for `'` U+0027 APOSTROPHE;
+`&quot;` for `"` U+0022 QUOTATION MARK).
+This prevents _[billion laughs][billion-laughs]_ attacks.
+
+###### 声明
+
+_[Declarations][concept-declaration]_ ([\[XML\]][xml]) other than
+[doctype][dfn-doctype] have no representation in xast:
+
+```xml
+<!ELEMENT %name.para; %content.para;>
+<!ATTLIST poem xml:space (default|preserve) 'preserve'>
+<!ENTITY % ISOLat2 SYSTEM "http://www.xml.com/iso/isolat2-xml.entities">
+<!ENTITY Pub-Status "This is a pre-release of the specification.">
+<![%draft;[<!ELEMENT book (comments*, title, body, supplements?)>]]>
+<![%final;[<!ELEMENT book (title, body, supplements?)>]]>
+```
+
+###### 内部子集
+
+Internal document type declarations have no representation in xast:
+
+```xml
+<!DOCTYPE greeting [
+  <!ELEMENT greeting (#PCDATA)>
+]>
+<greeting>Hello, world!</greeting>
+```
+
+## Types
+
+If you are using TypeScript, you can use the xast types by installing them
+with npm:
+
+```sh
+npm install @types/xast
+```
+
+## Nodes (摘要)
+
+### `Literal`
+
+```idl
+interface Literal <: UnistLiteral {
+  value: string
+}
+```
+
+**Literal** (**[UnistLiteral][dfn-unist-literal]**) represents a node in xast
+containing a value.
+
+### `Parent`
+
+```idl
+interface Parent <: UnistParent {
+  children: [Cdata | Comment | Doctype | Element | Instruction | Text]
+}
+```
+
+**Parent** (**[UnistParent][dfn-unist-parent]**) represents a node in xast
+containing other nodes (said to be _[children][term-child]_).
+
+Its content is limited to only other xast content.
+
+## Nodes
+
+### `Cdata`
+
+```idl
+interface Cdata <: Literal {
+  type: 'cdata'
+}
+```
+
+**Cdata** (**[Literal][dfn-literal]**) represents a
+_[CDATA section][concept-cdata]_ ([\[XML\]][xml]).
+
+For example, the following XML:
+
+```xml
+<![CDATA[<greeting>Hello, world!</greeting>]]>
+```
+
+Yields:
+
+```js
+{
+  type: 'cdata',
+  value: '<greeting>Hello, world!</greeting>'
+}
+```
+
+### `Comment`
+
+```idl
+interface Comment <: Literal {
+  type: 'comment'
+}
+```
+
+**Comment** (**[Literal][dfn-literal]**) represents a
+_[comment][concept-comment]_ ([\[XML\]][xml]).
+
+For example, the following XML:
+
+```xml
+<!--Charlie-->
+```
+
+Yields:
+
+```js
+{type: 'comment', value: 'Charlie'}
+```
+
+### `Doctype`
+
+```idl
+interface Doctype <: Node {
+  type: 'doctype'
+  name: string
+  public: string?
+  system: string?
+}
+```
+
+**Doctype** (**[Node][dfn-unist-node]**) represents a
+_[doctype][concept-doctype]_ ([\[XML\]][xml]).
+
+A `name` field must be present.
+
+A `public` field should be present.
+If present, it must be set to a string, and represents the document’s public
+identifier.
+
+A `system` field should be present.
+If present, it must be set to a string, and represents the document’s system
+identifier.
+
+For example, the following XML:
+
+```xml
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+```
+
+Yields:
+
+```js
+{
+  type: 'doctype',
+  name: 'HTML',
+  public: '-//W3C//DTD HTML 4.0 Transitional//EN',
+  system: 'http://www.w3.org/TR/REC-html40/loose.dtd'
+}
+```
+
+### `Element`
+
+```idl
+interface Element <: Parent {
+  type: 'element'
+  name: string
+  attributes: Attributes?
+  children: [Cdata | Comment | Element | Instruction | Text]
+}
+```
+
+**Element** (**[Parent][dfn-parent]**) represents an
+_[element][concept-element]_ ([\[XML\]][xml]).
+
+The `name` field must be present.
+It represents the element’s _[name][concept-name]_ ([\[XML\]][xml]),
+specifically its _[qualified name][concept-qualified-name]_
+([\[XML-NAMES\]][xml-names]).
+
+The `children` field should be present.
+
+The `attributes` field should be present.
+It represents information associated with the element.
+The value of the `attributes` field implements the
+**[Attributes][dfn-attributes]** interface.
+
+For example, the following XML:
+
+```xml
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="id" />
+```
+
+Yields:
+
+```js
+{
+  type: 'element',
+  name: 'package',
+  attributes: {
+    xmlns: 'http://www.idpf.org/2007/opf',
+    'unique-identifier': 'id'
+  },
+  children: []
+}
+```
+
+### `Instruction`
+
+```idl
+interface Instruction <: Literal {
+  type: 'instruction'
+  name: string
+}
+```
+
+**Instruction** (**[Literal][dfn-literal]**) represents a
+_[processing instruction][concept-instruction]_ ([\[XML\]][xml]).
+
+A `name` field must be present.
+
+For example, the following XML:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+```
+
+Yields:
+
+```js
+{
+  type: 'instruction',
+  name: 'xml',
+  value: 'version="1.0" encoding="UTF-8"'
+}
+```
+
+### `Root`
+
+```idl
+interface Root <: Parent {
+  type: 'root'
+}
+```
+
+**Root** (**[Parent][dfn-parent]**) represents a document fragment or a whole
+document.
+
+**Root** should be used as the _[root][term-root]_ of a _[tree][term-tree]_ and
+must not be used as a _[child][term-child]_.
+
+XML specifies that documents should have exactly one **[element][dfn-element]**
+child, therefore a root should have exactly one element child when representing
+a whole document.
+
+### `Text`
+
+```idl
+interface Text <: Literal {
+  type: 'text'
+}
+```
+
+**Text** (**[Literal][dfn-literal]**) represents
+_[character data][concept-char]_ ([\[XML\]][xml]).
+
+For example, the following XML:
+
+```xml
+<dc:language>en</dc:language>
+```
+
+Yields:
+
+```js
+{
+  type: 'element',
+  name: 'dc:language',
+  attributes: {},
+  children: [{type: 'text', value: 'en'}]
+}
+```
+
+## 其他类型
+
+### `Attributes`
+
+```idl
+interface Attributes {}
+```
+
+**Attributes** represents information associated with an element.
+
+Every field must be a **[AttributeName][dfn-attribute-name]** and every value an
+**[AttributeValue][dfn-attribute-value]**.
+
+### `AttributeName`
+
+```idl
+typedef string AttributeName
+```
+
+Attribute names are keys on **[Attributes][dfn-attributes]** objects and must
+reflect XML attribute names exactly.
+
+### `AttributeValue`
+
+```idl
+typedef string AttributeValue
+```
+
+Attribute values are values on **[Attributes][dfn-attributes]** objects and must
+reflect XML attribute values exactly as a string.
+
+> In [JSON][], the value `null` must be treated as if the attribute was not
+> included.
+> In [JavaScript][], both `null` and `undefined` must be similarly ignored.
+
+## Glossary
+
+See the [unist glossary][glossary].
+
+## 公用设施清单
+
+有关更多实用程序，请参阅[实用程序的 unist 列表][utilities]。
+
+- [`xastscript`](https://github.com/syntax-tree/xastscript)
+  — 创建树
+- [`xast-util-feed`](https://github.com/syntax-tree/xast-util-feed)
+  — 生成提要(RSS, Atom)
+- [`xast-util-from-xml`](https://github.com/syntax-tree/xast-util-from-xml)
+  — 从 XML 解析
+- [`xast-util-sitemap`](https://github.com/syntax-tree/xast-util-sitemap)
+  — build `sitemap.xml`
+- [`xast-util-to-string`](https://github.com/syntax-tree/xast-util-to-string)
+  — 获取文本值
+- [`xast-util-to-xml`](https://github.com/syntax-tree/xast-util-to-xml)
+  — 序列化为 XML
+- [`hast-util-to-xast`](https://github.com/syntax-tree/hast-util-to-xast)
+  — 转换为 xast
+
+## References
+
+- **JSON**
+  [JavaScript 对象表示法（JSON）数据交换格式][json],
+  T. Bray.
+  IETF.
+- **JavaScript**:
+  [ECMAScript 语言规范][javascript].
+  Ecma International.
+- **unist**:
+  [通用语法树][unist].
+  T. Wormer; et al.
+- **XML**:
+  [可扩展标记语言（XML）1.0（第五版）][xml]
+  T. Bray; et al.
+  W3C.
+- **XML-NAMES**:
+  [XML 1.0 中的命名空间（第三版）][xml-names]
+  T. Bray; et al.
+  W3C.
+- **Web IDL**:
+  [Web IDL][webidl],
+  C. McCormack.
+  W3C.
+
+## 相关的
+
+- [hast](https://github.com/syntax-tree/hast)
+  — 超文本抽象语法树格式
+- [mdast](https://github.com/syntax-tree/mdast)
+  — Markdown 抽象语法树格式
+- [nlcst](https://github.com/syntax-tree/nlcst)
+  — 自然语言具体语法树格式
+
+## 贡献
+
+有关入门方法，请参阅[`syntax-tree/.github`][health]中的[`contributing.md`][contributing]。
+有关获得帮助的方法，请参阅[`support.md`][support]。
+有关新实用程序和工具的想法可以发布在[`syntax-tree/ideas`][ideas]中。
+
+令人敬畏的语法树、unist、hast、mdast、nlcst 和 xast 资源的精心策划的列表可以在[awesome syntax-tree][awesome]中找到。
+
+这个项目有[行为准则][coc].
+通过与此存储库、组织或社区交互，您同意遵守其条款。
+
+## 鸣谢
+
+这个项目的最初版本是由**[@wooorm][author]**编写的。
+
+## 许可证
+
+[CC-BY-4.0][license] © [Titus Wormer][author]
+
+[health]: https://github.com/syntax-tree/.github
+[contributing]: https://github.com/syntax-tree/.github/blob/HEAD/contributing.md
+[support]: https://github.com/syntax-tree/.github/blob/HEAD/support.md
+[coc]: https://github.com/syntax-tree/.github/blob/HEAD/code-of-conduct.md
+[awesome]: https://github.com/syntax-tree/awesome-syntax-tree
+[ideas]: https://github.com/syntax-tree/ideas
+[license]: https://creativecommons.org/licenses/by/4.0/
+[author]: https://wooorm.com
+[logo]: https://raw.githubusercontent.com/syntax-tree/xast/c91a0c9/logo.svg?sanitize=true
+[releases]: https://github.com/syntax-tree/xast/releases
+[latest]: https://github.com/syntax-tree/xast/releases/tag/1.0.0
+[dfn-unist-node]: https://github.com/syntax-tree/unist#node
+[dfn-unist-parent]: https://github.com/syntax-tree/unist#parent
+[dfn-unist-literal]: https://github.com/syntax-tree/unist#literal
+[unist]: https://github.com/syntax-tree/unist
+[syntax-tree]: https://github.com/syntax-tree/unist#syntax-tree
+[javascript]: https://www.ecma-international.org/ecma-262/9.0/index.html
+[xml]: https://www.w3.org/TR/xml/
+[xml-names]: https://www.w3.org/TR/xml-names/
+[json]: https://tools.ietf.org/html/rfc7159
+[webidl]: https://heycam.github.io/webidl/
+[billion-laughs]: https://en.wikipedia.org/wiki/Billion_laughs_attack
+[glossary]: https://github.com/syntax-tree/unist#glossary
+[utilities]: https://github.com/syntax-tree/unist#list-of-utilities
+[unified]: https://github.com/unifiedjs/unified
+[concept-parameter-entity]: https://www.w3.org/TR/xml/#dt-PERef
+[concept-entity]: https://www.w3.org/TR/xml/#dt-entref
+[concept-predefined-entities]: https://www.w3.org/TR/xml/#sec-predefined-ent
+[concept-element]: https://www.w3.org/TR/xml/#NT-element
+[concept-name]: https://www.w3.org/TR/xml/#NT-Name
+[concept-char]: https://www.w3.org/TR/xml/#NT-Char
+[concept-comment]: https://www.w3.org/TR/xml/#NT-Comment
+[concept-doctype]: https://www.w3.org/TR/xml/#NT-doctypedecl
+[concept-instruction]: https://www.w3.org/TR/xml/#NT-PI
+[concept-declaration]: https://www.w3.org/TR/xml/#dt-markupdecl
+[concept-cdata]: https://www.w3.org/TR/xml/#NT-CDSect
+[concept-qualified-name]: https://www.w3.org/TR/xml-names/#NT-QName
+[term-tree]: https://github.com/syntax-tree/unist#tree
+[term-child]: https://github.com/syntax-tree/unist#child
+[term-root]: https://github.com/syntax-tree/unist#root
+[list-of-utilities]: #list-of-utilities
+[dfn-parent]: #parent
+[dfn-literal]: #literal
+[dfn-element]: #element
+[dfn-attributes]: #attributes
+[dfn-attribute-name]: #attributename
+[dfn-attribute-value]: #attributevalue
+[dfn-doctype]: #doctype

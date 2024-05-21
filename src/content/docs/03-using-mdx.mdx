@@ -2,15 +2,15 @@
 title: 使用 MDX
 ---
 
-本文介绍了如何在项目中使用MDX文件。
-它显示了如何传递道具以及如何导入、定义或传递组件。 
-有关如何将MDX集成到您的项目中，请参阅[§入门][start]。
-要了解MDX格式是如何工作的，我们建议您从[§什么是MDX][what]开始.
+本文介绍了如何在项目中使用 MDX 文件。
+它显示了如何传递属性以及如何导入、定义或传递组件。
+有关如何将 MDX 集成到您的项目中，请参阅[§入门][start]。
+要了解 MDX 格式是如何工作的，我们建议您从[§什么是 MDX][what]开始.
 
-## MDX的工作原理
+## MDX 的工作原理
 
-集成将MDX语法编译为JavaScript。
-假设我们有MDX文档, `example.mdx`:
+集成将 MDX 语法编译为 JavaScript。
+假设我们有 MDX 文档, `example.mdx`:
 
 ```mdx path="input.mdx"
 export function Thing() {
@@ -20,7 +20,7 @@ export function Thing() {
 # Hello <Thing />
 ```
 
-这大致转化为以下JavaScript。
+这大致转化为以下 JavaScript。
 以下内容可能有助于形成心理模型:
 
 ```tsx path="output-outline.jsx"
@@ -42,9 +42,9 @@ export default function MDXContent() {
 
 一些观察结果:
 
-- 输出是序列化的JavaScript，仍需评估
-- 注入注释以配置如何处理JSX
-- 这是一个包含import/exports的完整文件
+- 输出是序列化的 JavaScript，仍需评估
+- 注入注释以配置如何处理 JSX
+- 这是一个包含 import/exports 的完整文件
 - 导出组件（`MDXContent`）
 
 *实际*输出为:
@@ -71,17 +71,17 @@ export default function MDXContent(props = {}) {
 
 更多观察:
 
-- JSX被编译为函数调用和React†的导入
+- JSX 被编译为函数调用和 React†的导入
 - 可以给内容组件给定`{components: {wrapper: MyLayout}}`来包装所有内容
 - 内容组件可以被赋予`{components: {h1: MyComponent}}`以使用其他内容作为标题
 
-† MDX未耦合到React。
+† MDX 未耦合到 React。
 您也可以将其与[Preact][],[Vue][], [Emotion][],[Theme UI][],等一起使用
-同时支持经典的和自动的JSX运行时。
+同时支持经典的和自动的 JSX 运行时。
 
 ## MDX 所包含内容
 
-我们刚刚看到MDX文件被编译为组件。
+我们刚刚看到 MDX 文件被编译为组件。
 您可以像选择的框架中的任何其他组件一样使用这些组件。
 获取此文件:
 
@@ -89,7 +89,7 @@ export default function MDXContent(props = {}) {
 # Hi!
 ```
 
-它可以导入并在React应用程序中使用，就像这样:
+它可以导入并在 React 应用程序中使用，就像这样:
 
 ```tsx path="example.js"
 import React from "react";
@@ -131,7 +131,7 @@ console.log(AnotherName); // [Function: Thing]
 
 ### Props
 
-在[§什么是MDX][what]中，我们展示了大括号内的JavaScript表达式可以在MDX中使用:
+在[§什么是 MDX][what]中，我们展示了大括号内的 JavaScript 表达式可以在 MDX 中使用:
 
 ```mdx path="example.mdx"
 import { year } from "./data.js";
@@ -142,7 +142,7 @@ export const name = "world";
 The current year is {year}
 ```
 
-数据也可以传递给`MDXContent`，而不是在MDX中导入或定义数据。
+数据也可以传递给`MDXContent`，而不是在 MDX 中导入或定义数据。
 传递的数据称为`props`。
 举个例子:
 
@@ -166,7 +166,7 @@ React.createElement(Example, {name: 'Venus', year: 2021})
 
 ### Components
 
-有一个特殊的道具：`components`。
+有一个特殊的属性：`components`。
 它采用一个将组件名称映射到组件的对象。
 举个例子:
 
@@ -174,7 +174,7 @@ React.createElement(Example, {name: 'Venus', year: 2021})
 # Hello _<Planet />_
 ```
 
-它可以从JavaScript导入，并像这样传递组件:
+它可以从 JavaScript 导入，并像这样传递组件:
 
 ```tsx path="example.jsx"
 import Example from "./example.mdx"; // Assumes an integration is used to compile MDX -> JS.
@@ -189,19 +189,19 @@ import Example from "./example.mdx"; // Assumes an integration is used to compil
 ```
 
 您不必传递组件。
-您也可以在MDX中定义或导入它们：
+您也可以在 MDX 中定义或导入它们：
 
 ```mdx path="example.mdx"
 import { Box, Heading } from "rebass";
 
-使用导入组件的MDX！
+使用导入组件的 MDX！
 
 <Box>
   <Heading>Here’s a heading</Heading>
 </Box>
 ```
 
-由于MDX文件是组件，因此它们也可以相互导入：
+由于 MDX 文件是组件，因此它们也可以相互导入：
 
 ```mdx path="example.mdx"
 import License from "./license.md"; // Assumes an integration is used to compile MDX -> JS.
@@ -247,7 +247,7 @@ import Contributing from "./docs/contributing.mdx";
 
 以下键可以在`components`中传递：
 
-- 用标记符写的东西的HTML等价物，如`h1`表示`# heading` (有关示例，请参见[§组件表][toc])
+- 用标记符写的东西的 HTML 等价物，如`h1`表示`# heading` (有关示例，请参见[§组件表][toc])
 - `wrapper`, 定义布局（但局部布局优先）
 - `*` anything else that is a valid JavaScript identifier (`foo`,
   `Quote`, `_`, `$x`, `a1`) for the things you write with JSX (like
@@ -269,7 +269,7 @@ follows:
 
 有一个特殊的组成部分：Layout。
 如果定义了它，它将用于包装所有内容。
-可以使用默认导出从MDX中定义布局:
+可以使用默认导出从 MDX 中定义布局:
 
 ```mdx
 export default function Layout({ children }) {
@@ -320,7 +320,7 @@ root.render(<Post components={components} />);
 
 这是有效的，使用了这些组件。
 
-但是，当您嵌套MDX文件（将它们相互导入）时，可能会变得很麻烦。
+但是，当您嵌套 MDX 文件（将它们相互导入）时，可能会变得很麻烦。
 就像这样:
 
 ```mdx path="post.mdx"
@@ -337,7 +337,7 @@ import Contributing from "./docs/contributing.mdx";
 ```
 
 To solve this, a _[context][]_ can be used in React, Preact, and Vue.
-上下文提供了一种通过组件树传递数据的方法，而不必在每个级别手动传递道具。
+上下文提供了一种通过组件树传递数据的方法，而不必在每个级别手动传递属性。
 这样设置：
 
 1. Install either [`@mdx-js/react`][mdx-react], [`@mdx-js/preact`][mdx-preact],
@@ -427,7 +427,7 @@ using `Component4`.
 …which results in `h2`s using `Component3` and `h3`s using `Component4`.
 No component is used for `h1`.
 
-如果不嵌套MDX文件，或者不经常嵌套它们，请不要使用提供程序：显式传递组件。
+如果不嵌套 MDX 文件，或者不经常嵌套它们，请不要使用提供程序：显式传递组件。
 
 [context]: https://reactjs.org/docs/context.html
 [start]: /docs/getting-started/

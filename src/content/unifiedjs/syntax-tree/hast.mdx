@@ -1,0 +1,653 @@
+---
+title: hast(超文本抽象语法树格式)
+---
+
+**H**ypertext **A**bstract **S**yntax **T**ree format.
+
+> https://github.com/syntax-tree/hast
+
+---
+
+**hast** 是用于将[HTML][]（以及嵌入的[SVG][]或[MathML][]）表示为抽象[语法树][syntax-tree]的规范。
+它实现了 **[unist][]** 规范。
+
+此文档可能不会发布。
+有关已发布的文档，请参见[releases][]。
+最新发布的版本是[`2.4.0`][latest]。
+
+## 介绍
+
+本文档定义了将超文本表示为[抽象语法树][syntax-tree]的格式.
+hast 于 2016 年 4 月开始开发，用于[rehype][].
+这个规范是用类似[Web IDL][webidl]的语法编写的。
+
+### 本规范适用的地方
+
+hast 扩展了语法树格式[unist][]，以受益于其[实用程序生态系统][utilities].
+
+hast 与[JavaScript][]的关系在于，它有一个[实用程序生态系统][list-of-utilities]，用于处理 JavaScript 中的兼容语法树。
+然而，hast 并不局限于 JavaScript，也可以用于其他编程语言。
+
+hast 与[unified][]和[rehype][]项目有关，因为在它们的生态系统中使用了 hast 语法树。
+
+### 虚拟 DOM
+
+引入新的`虚拟`DOM 的原因主要是：
+
+- [DOM][]在浏览器外实现非常繁重，精简的虚拟 DOM 可以在任何地方使用
+- 大多数虚拟 DOM 并不关注转换中的易用性
+- 其他虚拟 DOM 不能完整地表示 HTML 的语法（想想注释和文档类型）
+- DOM 和虚拟 DOM 都不关注位置信息
+
+## Types
+
+如果您使用的是 TypeScript，您可以通过将 hast 类型与 npm 一起安装来使用它们：
+
+```sh
+npm install @types/hast
+```
+
+## Nodes (abstract)
+
+### `Literal`
+
+```idl
+interface Literal <: UnistLiteral {
+  value: string
+}
+```
+
+**Literal** (**[UnistLiteral][dfn-unist-literal]**)表示 hast 中包含值的节点。
+
+### `Parent`
+
+```idl
+interface Parent <: UnistParent {
+  children: [Comment | Doctype | Element | Text]
+}
+```
+
+**Parent** (**[UnistParent][dfn-unist-parent]**) 表示包含其他节点的 hast 中的节点 (据说是 _[children][term-child]_).
+
+其内容仅限于其他 hast 内容。
+
+## Nodes
+
+### `Comment`
+
+```idl
+interface Comment <: Literal {
+  type: 'comment'
+}
+```
+
+**Comment** (**[Literal][dfn-literal]**) 表示[Comment][concept-comment]([\[DOM\]][dom]).
+
+例如，以下 HTML：
+
+```html
+<!--Charlie-->
+```
+
+产生:
+
+```js
+{type: 'comment', value: 'Charlie'}
+```
+
+### `Doctype`
+
+```idl
+interface Doctype <: Node {
+  type: 'doctype'
+}
+```
+
+**Doctype** (**[Node][dfn-unist-node]**) 代表[DocumentType][concept-documenttype] ([\[DOM\]][dom]).
+
+例如，以下 HTML：
+
+```html
+<!DOCTYPE html>
+```
+
+产生:
+
+```js
+{
+  type: "doctype";
+}
+```
+
+### `Element`
+
+```idl
+interface Element <: Parent {
+  type: 'element'
+  tagName: string
+  properties: Properties?
+  content: Root?
+  children: [Comment | Element | Text]
+}
+```
+
+**Element** (**[Parent][dfn-parent]**) 代表 [Element][concept-element]([\[DOM\]][dom]).
+
+必须存在`tagName`字段。
+它表示元素的[本地名称][concept-local-name] ([\[DOM\]][dom]).
+
+`properties`字段表示与元素相关联的信息。
+`properties`字段的值实现了 **[properties][dfn-properties]** 接口。
+
+如果`tagName`字段为`template`，则可以存在`content`字段。
+`content`字段的值实现了 **[Root][dfn-Root]** 接口。
+
+如果`tagName`字段是`template`，则元素必须是 _[leaf][term-leaf]_.
+
+如果`tagName`字段为`'noscript'`, 其 _[children][term-child]_ 应表示为 _[scripting is disabled][concept-scripting]_ ([\[HTML\]][html]).
+
+例如，以下 HTML：
+
+```html
+<a href="https://alpha.com" class="bravo" download></a>
+```
+
+产生:
+
+```js
+{
+  type: 'element',
+  tagName: 'a',
+  properties: {
+    href: 'https://alpha.com',
+    className: ['bravo'],
+    download: true
+  },
+  children: []
+}
+```
+
+### `Root`
+
+```idl
+interface Root <: Parent {
+  type: 'root'
+}
+```
+
+**Root** (**[Parent][dfn-parent]**) 表示文档。
+
+**Root**可以用作 _[tree][term-tree]_ 的 _[root][term-root]_ ，也可以用作 `'template'` **[Element][dfn-element]** 上`content` 字段的值，而不能用作 _[child][term-child]_。
+
+### `Text`
+
+```idl
+interface Text <: Literal {
+  type: 'text'
+}
+```
+
+**Text** (**[Literal][dfn-literal]**)表示[文本][concept-text]([\[DOM\]][dom]).
+
+例如，以下 HTML：
+
+```html
+<span>Foxtrot</span>
+```
+
+产生:
+
+```js
+{
+  type: 'element',
+  tagName: 'span',
+  properties: {},
+  children: [{type: 'text', value: 'Foxtrot'}]
+}
+```
+
+## 其他类型
+
+### `Properties`
+
+```idl
+interface Properties {}
+```
+
+**Properties**表示与元素相关联的信息。
+
+每个字段都必须是 **[PropertyName][dfn-property-name]**，每个值都必须是 **[PropertyValue][dfn-property-value]**。
+
+### `PropertyName`
+
+```idl
+typedef string PropertyName
+```
+
+属性名称是 **[Properties][dfn-properties]** 对象上的键，反映 HTML、SVG、ARIA、XML、XMLNS 或 XLink 属性名称。
+通常，它们与相应的属性具有相同的值（例如，`id`是反映`id`属性名称的属性名称），但存在一些显著差异。
+
+> 这些规则并不简单。
+> 使用[`hastscript`][h]（或直接使用[`property-information`][pi]）可以提供帮助。
+
+以下规则用于将 HTML 属性名称转换为属性名称。
+这些规则基于[ARIA 在 DOM 中的反映方式][concept-aria-reflection] ([\[ARIA\]][aria])，不同于一些（旧的）HTML 属性在 DOM 中反映的方式。
+
+1.  任何引用多个单词组合的名称（如`笔划斜接限制`）都将成为一个基于骆驼的属性名称，并将每个单词边界大写。
+    这包括有时被写成几个单词的组合。
+    例如, `stroke-miterlimit`变为`strokeMiterLimit`，`autocorrect`变为`autoCorrect`，`allowfullscreen`变为`allowFullScreen`。
+2.  任何可以连字符的名称都将成为一个基于骆驼的属性名称，并将每个边界大写。
+    例如，`read-only`变为 `readOnly`.
+3.  不与空格或连字符一起使用的复合词将被视为普通词，并适用以前的规则。
+    例如，`“placeholder”`、`“strikethrough”`和`“playback”`保持不变。
+4.  姓名中的首字母缩略词被视为一个正常单词，并适用以前的规则。
+    例如, `itemid` 变为 `itemId` 和 `bgcolor` 变为 `bgColor`.
+
+###### 例外情况
+
+有些术语被视为一个词，尽管词典可能不会将其视为一词。
+例如， `nohref` 变为 `noHref`, `playsinline` 变为 `playsInline`,和 `accept-charset` 变为 `acceptCharset`.
+
+HTML 属性`class`和`for`分别变为与 DOM 对齐的`className`和`htmlFor`。
+除了大小写的变化之外，没有其他属性作为属性获得不同的名称。
+
+###### 笔记
+
+[`property-information`][pi] 列出了所有属性名称。
+
+以下属性的属性名称规则与 HTML 在 DOM 中的反映方式不同：
+
+<details>
+<summary>查看差异列表</summary>
+
+- `charoff` 变为 `charOff` (不是 `chOff`)
+- `char` 保持 `char` (不会变成 `ch`)
+- `rel` 保持 `rel` (不会变成 `relList`)
+- `checked` 保持 `checked` (不会变成 `defaultChecked`)
+- `muted` 保持 `muted` (不会变成 `defaultMuted`)
+- `value` 保持 `value` (不会变成 `defaultValue`)
+- `selected` 保持 `selected` (不会变成 `defaultSelected`)
+- `allowfullscreen` 变为 `allowFullScreen` (不是 `allowFullscreen`)
+- `hreflang` 变为 `hrefLang`, 不是 `hreflang`
+- `autoplay` 变为 `autoPlay`, 不是 `autoplay`
+- `autocomplete` 变为 `autoComplete` (不是 `autocomplete`)
+- `autofocus` 变为 `autoFocus`, 不是 `autofocus`
+- `enctype` 变为 `encType`, 不是 `enctype`
+- `formenctype` 变为 `formEncType` (不是 `formEnctype`)
+- `vspace` 变为 `vSpace`, 不是 `vspace`
+- `hspace` 变为 `hSpace`, 不是 `hspace`
+- `lowsrc` 变为 `lowSrc`, 不是 `lowsrc`
+
+</details>
+
+### `PropertyValue`
+
+```idl
+typedef any PropertyValue
+```
+
+属性值应反映由其属性名称确定的数据类型。
+例如， HTML `<div hidden></div>`具有`hidden`属性，该属性被反映为设置为属性值`true`的`hidden`属性名称，并且`<input minlength="5">`具有`minlength`属性，其被反映为设置为属性值`5`的`minLength`属性名称。
+
+> 在[JSON][]中，必须将值`null`视为不包括该属性。
+> 在[JavaScript][]中，必须类似地忽略`null`和`undefined`。
+
+DOM 在如何将 HTML 强制为期望值方面有严格的规则，而 hast 在如何反映源代码方面则更为宽松。
+当 DOM 将`<div hidden="no"></div>`视为值为`true`，将`<img width="yes">`视为由值为`0`时，它们应分别在 hast 中反映为`'no'`和`'yes'`。
+
+> 这样做的原因是允许插件和实用程序检查这些非标准值。
+
+DOM 还指定逗号分隔和空格分隔的列表属性值。
+在 hast 中，这些应该被视为有序列表。
+例如， `<div class="alpha bravo"></div>`表示为`['alpha','bravo']`.
+
+> `style`属性名称的属性值没有特殊格式。
+
+## 术语汇编
+
+请参阅[unist 词汇表][glossary].
+
+## 公用设施清单
+
+有关更多实用程序，请参阅[unist 公用设施列表][utilities]。
+
+- [`hastscript`](https://github.com/syntax-tree/hastscript)
+  — 创建树
+- [`hast-util-assert`](https://github.com/syntax-tree/hast-util-assert)
+  — 断言节点
+- [`hast-util-class-list`](https://github.com/shredsnews/hast-util-class-list)
+  — 为 hast 节点模拟浏览器的`classList`API
+- [`hast-util-classnames`](https://github.com/syntax-tree/hast-util-classnames)
+  — 将类名合并在一起
+- [`hast-util-embedded`](https://github.com/syntax-tree/hast-util-embedded)
+  — 检查节点是否为嵌入元素
+- [`hast-util-excerpt`](https://github.com/syntax-tree/hast-util-excerpt)
+  — 将树截断为注释
+- [`hast-util-find-and-replace`](https://github.com/syntax-tree/hast-util-find-and-replace)
+  — 查找和替换树中的文本
+- [`hast-util-from-dom`](https://github.com/syntax-tree/hast-util-from-dom)
+  — 从 DOM 树转换
+- [`hast-util-from-html`](https://github.com/syntax-tree/hast-util-from-html)
+  — 从 HTML 解析
+- [`hast-util-from-parse5`](https://github.com/syntax-tree/hast-util-from-parse5)
+  — 从 Parse5 的 AST 转换
+- [`hast-util-from-selector`](https://github.com/syntax-tree/hast-util-from-selector)
+  — 将 CSS 选择器解析为节点
+- [`hast-util-from-string`](https://github.com/rehypejs/rehype-minify/tree/main/packages/hast-util-from-string)
+  — 设置节点的纯文本值 (`textContent`)
+- [`hast-util-from-text`](https://github.com/syntax-tree/hast-util-from-text)
+  — 设置节点的纯文本值 (`innerText`)
+- [`hast-util-from-webparser`](https://github.com/Prettyhtml/prettyhtml/tree/HEAD/packages/hast-util-from-webparser)
+  — 将 Webparser 的 AST 转换为 hast
+- [`hast-util-has-property`](https://github.com/syntax-tree/hast-util-has-property)
+  — 检查元素是否具有特定属性
+- [`hast-util-heading`](https://github.com/syntax-tree/hast-util-heading)
+  — 检查节点是否为标题内容
+- [`hast-util-heading-rank`](https://github.com/syntax-tree/hast-util-heading-rank)
+  — 获取标题的级别（也称为深度或级别）
+- [`hast-util-interactive`](https://github.com/syntax-tree/hast-util-interactive)
+  — 检查节点是否是交互式的
+- [`hast-util-is-body-ok-link`](https://github.com/rehypejs/rehype-minify/tree/main/packages/hast-util-is-body-ok-link)
+  — 检查`link`元素是否为“Body OK”
+- [`hast-util-is-conditional-comment`](https://github.com/rehypejs/rehype-minify/tree/HEAD/packages/hast-util-is-conditional-comment)
+  — 检查`node`是否为条件注释
+- [`hast-util-is-css-link`](https://github.com/rehypejs/rehype-minify/tree/main/packages/hast-util-is-css-link)
+  — 检查`node`是否为 CSS`link`
+- [`hast-util-is-css-style`](https://github.com/rehypejs/rehype-minify/tree/main/packages/hast-util-is-css-style)
+  — 检查`node`是否为 CSS`style`
+- [`hast-util-is-element`](https://github.com/syntax-tree/hast-util-is-element)
+  — 检查`node`是否是（特定）元素
+- [`hast-util-is-event-handler`](https://github.com/rehypejs/rehype-minify/tree/main/packages/hast-util-is-event-handler)
+  — 检查`property`是否是事件处理程序
+- [`hast-util-is-javascript`](https://github.com/rehypejs/rehype-minify/tree/main/packages/hast-util-is-javascript)
+  — 检查`node`是否为 JavaScript`script`
+- [`hast-util-labelable`](https://github.com/syntax-tree/hast-util-labelable)
+  — 检查`node`是否可标记
+- [`hast-util-parse-selector`](https://github.com/syntax-tree/hast-util-parse-selector)
+  — 从一个简单的 CSS 选择器创建一个元素
+- [`hast-util-phrasing`](https://github.com/syntax-tree/hast-util-phrasing)
+  — 检查节点是否正在对内容进行措辞
+- [`hast-util-raw`](https://github.com/syntax-tree/hast-util-raw)
+  — 再次解析树
+- [`hast-util-reading-time`](https://github.com/syntax-tree/hast-util-reading-time)
+  — 估计阅读时间
+- [`hast-util-sanitize`](https://github.com/syntax-tree/hast-util-sanitize)
+  — 清除节点
+- [`hast-util-script-supporting`](https://github.com/syntax-tree/hast-util-script-supporting)
+  — 检查`node`是否是支持脚本的内容
+- [`hast-util-select`](https://github.com/syntax-tree/hast-util-select)
+  — `querySelector`, `querySelectorAll`, 和 `matches`
+- [`hast-util-sectioning`](https://github.com/syntax-tree/hast-util-sectioning)
+  — 检查`node`是否正在分段内容
+- [`hast-util-shift-heading`](https://github.com/syntax-tree/hast-util-shift-heading)
+  — 更改航向等级（深度、水平）
+- [`hast-util-table-cell-style`](https://github.com/mapbox/hast-util-table-cell-style)
+  — 将表单元格上不推荐使用的样式属性转换为内联样式
+- [`hast-util-to-dom`](https://github.com/syntax-tree/hast-util-to-dom)
+  — 转换为 DOM 树
+- [`hast-util-to-estree`](https://github.com/syntax-tree/hast-util-to-estree)
+  — 转换为 estree（JavaScript AST）JSX
+- [`hast-util-to-html`](https://github.com/syntax-tree/hast-util-to-html)
+  — 序列化为 HTML
+- [`hast-util-to-jsx`](https://github.com/mapbox/jsxtreme-markdown/tree/HEAD/packages/hast-util-to-jsx)
+  — 将 hast 转换为 JSX
+- [`hast-util-to-jsx-runtime`](https://github.com/syntax-tree/hast-util-to-jsx-runtime)
+  — 转化为 preact, react, solid, svelte, vue,等
+- [`hast-util-to-mdast`](https://github.com/syntax-tree/hast-util-to-mdast)
+  — 转换为 mdast (markdown)
+- [`hast-util-to-nlcst`](https://github.com/syntax-tree/hast-util-to-nlcst)
+  — 转换为 nlcst (natural language)
+- [`hast-util-to-parse5`](https://github.com/syntax-tree/hast-util-to-parse5)
+  — 转换为 Parse5 的 AST
+- [`hast-util-to-portable-text`](https://github.com/rexxars/hast-util-to-portable-text)
+  — 转换为可移植文本
+- [`hast-util-to-string`](https://github.com/rehypejs/rehype-minify/tree/HEAD/packages/hast-util-to-string)
+  — 获取节点的纯文本值 (`textContent`)
+- [`hast-util-to-text`](https://github.com/syntax-tree/hast-util-to-text)
+  — 获取节点的纯文本值 (`innerText`)
+- [`hast-util-to-xast`](https://github.com/syntax-tree/hast-util-to-xast)
+  — 转换为 xast (xml)
+- [`hast-util-transparent`](https://github.com/syntax-tree/hast-util-transparent)
+  — 检查`node`是否为透明内容
+- [`hast-util-truncate`](https://github.com/syntax-tree/hast-util-truncate)
+  — 将树截断为一定数量的字符
+- [`hast-util-whitespace`](https://github.com/syntax-tree/hast-util-whitespace)
+  — 检查`node`是否为元素间空白
+
+## 相关 HTML 实用程序
+
+- [`a-rel`](https://github.com/wooorm/a-rel)
+  — `a`/ `area`上`rel`的链接类型列表
+- [`aria-attributes`](https://github.com/wooorm/aria-attributes)
+  — ARIA 属性列表
+- [`collapse-white-space`](https://github.com/wooorm/collapse-white-space)
+  — 用单个空格替换多个空白字符
+- [`comma-separated-tokens`](https://github.com/wooorm/comma-separated-tokens)
+  — 分析/字符串化逗号分隔的标记
+- [`html-tag-names`](https://github.com/wooorm/html-tag-names)
+  — HTML 标记名称列表
+- [`html-dangerous-encodings`](https://github.com/wooorm/html-dangerous-encodings)
+  — 危险 HTML 字符编码标签列表
+- [`html-encodings`](https://github.com/wooorm/html-encodings)
+  — HTML 字符编码标签列表
+- [`html-element-attributes`](https://github.com/wooorm/html-element-attributes)
+  — HTML 属性映射
+- [`html-event-attributes`](https://github.com/wooorm/html-event-attributes)
+  — HTML 事件处理程序内容属性列表
+- [`html-void-elements`](https://github.com/wooorm/html-void-elements)
+  — 无效 HTML 标记名列表
+- [`link-rel`](https://github.com/wooorm/link-rel)
+  — `link`上`rel`的链接类型列表`
+- [`mathml-tag-names`](https://github.com/wooorm/mathml-tag-names)
+  — MathML 标记名称列表
+- [`meta-name`](https://github.com/wooorm/meta-name)
+  — `meta`上`name`的值列表`
+- [`property-information`](https://github.com/wooorm/property-information)
+  — 有关 HTML 属性的信息
+- [`space-separated-tokens`](https://github.com/wooorm/space-separated-tokens)
+  — 解析/字符串分隔的标记
+- [`svg-tag-names`](https://github.com/wooorm/svg-tag-names)
+  — SVG 标记名称列表
+- [`svg-element-attributes`](https://github.com/wooorm/svg-element-attributes)
+  — SVG 属性图
+- [`svg-event-attributes`](https://github.com/wooorm/svg-event-attributes)
+  — SVG 事件处理程序内容属性列表
+- [`web-namespaces`](https://github.com/wooorm/web-namespaces)
+  — web 命名空间映射
+
+## 工具书类
+
+- **unist**:
+  [通用语法树][unist].
+  T. Wormer; et al.
+- **JavaScript**:
+  [ECMAScript 语言规范][javascript].
+  Ecma International.
+- **HTML**:
+  [HTML 标准][html],
+  A. van Kesteren; et al.
+  WHATWG.
+- **DOM**:
+  [DOM 标准][dom],
+  A. van Kesteren,
+  A. Gregor,
+  Ms2ger.
+  WHATWG.
+- **SVG**:
+  [可缩放矢量图形 (SVG)][svg],
+  N. Andronikos,
+  R. Atanassov,
+  T. Bah,
+  B. Birtles,
+  B. Brinza,
+  C. Concolato,
+  E. Dahlström,
+  C. Lilley,
+  C. McCormack,
+  D. Schepers,
+  R. Schwerdtfeger,
+  D. Storey,
+  S. Takagi,
+  J. Watt.
+  W3C.
+- **MathML**:
+  [数学标记语言标准][mathml],
+  D. Carlisle,
+  P. Ion,
+  R. Miner.
+  W3C.
+- **ARIA**:
+  [可访问的富互联网应用程序 (WAI-ARIA)][aria],
+  J. Diggs,
+  J. Craig,
+  S. McCarron,
+  M. Cooper.
+  W3C.
+- **JSON**
+  [JavaScript 对象表示法（JSON）数据交换格式][json],
+  T. Bray.
+  IETF.
+- **Web IDL**:
+  [Web IDL][webidl],
+  C. McCormack.
+  W3C.
+
+## 安全
+
+由于 hast 代表 HTML，不正确使用 HTML 可能会导致[跨站点脚本（XSS）][XSS]攻击，因此不正确使用 hast 也是不安全的。
+始终要小心用户输入，并使用[`hast-util-santize`][sanitize]确保 hast 树的安全。
+
+## 相关的
+
+- [mdast](https://github.com/syntax-tree/mdast)
+  — Markdown 抽象语法树格式
+- [nlcst](https://github.com/syntax-tree/nlcst)
+  — 自然语言具体语法树格式
+- [xast](https://github.com/syntax-tree/xast)
+  — 可扩展抽象语法树
+
+## 贡献
+
+有关入门方法，请参阅[`syntax-tree/.github`][health]中的[`contributing.md`][contributing]。
+有关获得帮助的方法，请参阅[`support.md`][support]。
+有关新实用程序和工具的想法可以发布在[`syntax-tree/ideas`][ideas]中。
+
+在[awesome syntax-tree][awesome]中可以找到一个精心策划的真棒语法树、unist、mdast、hast、xast 和 nlcst 资源列表。
+
+这个项目有[行为准则][coc].
+通过与此存储库、组织或社区交互，您同意遵守其条款。
+
+## Acknowledgments
+
+该项目的初始版本由[**@wooorm**](https://github.com/wooorm)撰写.
+
+特别感谢[**@eush77**](https://github.com/eush77)感谢他们的工作、想法和极其宝贵的反馈！
+
+感谢
+[**@andrewburgess**](https://github.com/andrewburgess),
+[**@arobase-che**](https://github.com/arobase-che),
+[**@arystan-sw**](https://github.com/arystan-sw),
+[**@BarryThePenguin**](https://github.com/BarryThePenguin),
+[**@brechtcs**](https://github.com/brechtcs),
+[**@ChristianMurphy**](https://github.com/ChristianMurphy),
+[**@ChristopherBiscardi**](https://github.com/ChristopherBiscardi),
+[**@craftzdog**](https://github.com/craftzdog),
+[**@cupojoe**](https://github.com/cupojoe),
+[**@davidtheclark**](https://github.com/davidtheclark),
+[**@derhuerst**](https://github.com/derhuerst),
+[**@detj**](https://github.com/detj),
+[**@DxCx**](https://github.com/DxCx),
+[**@erquhart**](https://github.com/erquhart),
+[**@flurmbo**](https://github.com/flurmbo),
+[**@Hamms**](https://github.com/Hamms),
+[**@Hypercubed**](https://github.com/Hypercubed),
+[**@inklesspen**](https://github.com/inklesspen),
+[**@jeffal**](https://github.com/jeffal),
+[**@jlevy**](https://github.com/jlevy),
+[**@Justineo**](https://github.com/Justineo),
+[**@lfittl**](https://github.com/lfittl),
+[**@kgryte**](https://github.com/kgryte),
+[**@kmck**](https://github.com/kmck),
+[**@kthjm**](https://github.com/kthjm),
+[**@KyleAMathews**](https://github.com/KyleAMathews),
+[**@macklinu**](https://github.com/macklinu),
+[**@medfreeman**](https://github.com/medfreeman),
+[**@Murderlon**](https://github.com/Murderlon),
+[**@nevik**](https://github.com/nevik),
+[**@nokome**](https://github.com/nokome),
+[**@phiresky**](https://github.com/phiresky),
+[**@revolunet**](https://github.com/revolunet),
+[**@rhysd**](https://github.com/rhysd),
+[**@Rokt33r**](https://github.com/Rokt33r),
+[**@rubys**](https://github.com/rubys),
+[**@s1n**](https://github.com/s1n),
+[**@Sarah-Seo**](https://github.com/Sarah-Seo),
+[**@sethvincent**](https://github.com/sethvincent),
+[**@simov**](https://github.com/simov),
+[**@s1n**](https://github.com/s1n),
+[**@StarpTech**](https://github.com/StarpTech),
+[**@stefanprobst**](https://github.com/stefanprobst),
+[**@stuff**](https://github.com/stuff),
+[**@subhero24**](https://github.com/subhero24),
+[**@tripodsan**](https://github.com/tripodsan),
+[**@tunnckoCore**](https://github.com/tunnckoCore),
+[**@vhf**](https://github.com/vhf),
+[**@voischev**](https://github.com/voischev), 和
+[**@zjaml**](https://github.com/zjaml),
+感谢您为 hast 和相关项目做出的贡献！
+
+## 许可证
+
+[CC-BY-4.0][license] © [Titus Wormer][author]
+
+[health]: https://github.com/syntax-tree/.github
+[contributing]: https://github.com/syntax-tree/.github/blob/HEAD/contributing.md
+[support]: https://github.com/syntax-tree/.github/blob/HEAD/support.md
+[coc]: https://github.com/syntax-tree/.github/blob/HEAD/code-of-conduct.md
+[awesome]: https://github.com/syntax-tree/awesome-syntax-tree
+[ideas]: https://github.com/syntax-tree/ideas
+[license]: https://creativecommons.org/licenses/by/4.0/
+[author]: https://wooorm.com
+[logo]: https://raw.githubusercontent.com/syntax-tree/hast/6a36689/logo.svg?sanitize=true
+[releases]: https://github.com/syntax-tree/hast/releases
+[latest]: https://github.com/syntax-tree/hast/releases/tag/2.4.0
+[dfn-unist-node]: https://github.com/syntax-tree/unist#node
+[dfn-unist-parent]: https://github.com/syntax-tree/unist#parent
+[dfn-unist-literal]: https://github.com/syntax-tree/unist#literal
+[list-of-utilities]: #list-of-utilities
+[unist]: https://github.com/syntax-tree/unist
+[syntax-tree]: https://github.com/syntax-tree/unist#syntax-tree
+[javascript]: https://www.ecma-international.org/ecma-262/9.0/index.html
+[dom]: https://dom.spec.whatwg.org/
+[html]: https://html.spec.whatwg.org/multipage/
+[svg]: https://svgwg.org/svg2-draft/
+[mathml]: https://www.w3.org/Math/draft-spec/
+[aria]: https://w3c.github.io/aria/
+[json]: https://tools.ietf.org/html/rfc7159
+[webidl]: https://heycam.github.io/webidl/
+[glossary]: https://github.com/syntax-tree/unist#glossary
+[utilities]: https://github.com/syntax-tree/unist#list-of-utilities
+[unified]: https://github.com/unifiedjs/unified
+[rehype]: https://github.com/rehypejs/rehype
+[h]: https://github.com/syntax-tree/hastscript
+[pi]: https://github.com/wooorm/property-information
+[concept-element]: https://dom.spec.whatwg.org/#interface-element
+[concept-local-name]: https://dom.spec.whatwg.org/#concept-element-local-name
+[concept-documenttype]: https://dom.spec.whatwg.org/#documenttype
+[concept-comment]: https://dom.spec.whatwg.org/#interface-comment
+[concept-text]: https://dom.spec.whatwg.org/#interface-text
+[concept-scripting]: https://html.spec.whatwg.org/multipage/webappapis.html#enabling-and-disabling-scripting
+[concept-aria-reflection]: https://w3c.github.io/aria/#idl_attr_disambiguation
+[xss]: https://en.wikipedia.org/wiki/Cross-site_scripting
+[sanitize]: https://github.com/syntax-tree/hast-util-sanitize
+[term-tree]: https://github.com/syntax-tree/unist#tree
+[term-child]: https://github.com/syntax-tree/unist#child
+[term-root]: https://github.com/syntax-tree/unist#root
+[term-leaf]: https://github.com/syntax-tree/unist#leaf
+[dfn-parent]: #parent
+[dfn-literal]: #literal
+[dfn-root]: #root
+[dfn-element]: #element
+[dfn-properties]: #properties
+[dfn-property-name]: #propertyname
+[dfn-property-value]: #propertyvalue

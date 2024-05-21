@@ -36,6 +36,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "img.shields.io",
+        port: "",
+        pathname: "/**",
+      },
     ],
     // loader: "custom",
     // loaderFile: "./img-loader.ts",

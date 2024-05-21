@@ -1,0 +1,688 @@
+---
+title: lowlight
+---
+
+基于[`highlight.js`][highlight-js]的虚拟 DOM 和非 HTML 内容的虚拟语法高亮显示.
+
+<img src="https://img.shields.io/github/stars/wooorm%2Flowlight" width="88" height="20" />
+
+## 这是什么？
+
+此包使用[`highlight.js`][highlight-js]进行语法高亮显示并输出对象（AST），而不是 HTML 字符串。
+它可以支持 190 多种编程语言。
+
+## 我什么时候该用这个？
+
+当您想在序列化 HTML 无法工作或工作不好的地方执行语法高亮显示时，此包非常有用。
+例如，当您想通过渲染到 ANSI 序列在 CLI 中显示代码时，当您使用虚拟 DOM 框架（如 React 或 Preact）以使 diffing 具有性能时，或者当您使用 AST（rehype）时，可以使用 lowlight。
+
+如果您想使用[Prism][]语法，可以使用类似的[`refractor`][refractor]。
+如果你正在寻找一个 _非常好_ （但相当沉重）的替代品，请使用[`starry-night`][starry-night]。
+
+## 安装
+
+此程序包是[ESM only][ESM]。
+在 Node.js（16+版本）中，使用[npm][]安装：
+
+```sh
+npm install lowlight
+```
+
+在带有[`esm.sh`][esmsh]的 Deno 中：
+
+```js
+import { all, common, createLowlight } from "https://esm.sh/lowlight@3";
+```
+
+在带有[`esm.sh`][esmsh]的浏览器中：
+
+```html
+<script type="module">
+  import { all, common, createLowlight } from "https://esm.sh/lowlight@3?bundle";
+</script>
+```
+
+## 使用
+
+```js
+import { common, createLowlight } from "lowlight";
+
+const lowlight = createLowlight(common);
+
+const tree = lowlight.highlight("js", '"use strict";');
+
+console.dir(tree, { depth: undefined });
+```
+
+Yields:
+
+```js
+{
+  type: 'root',
+  children: [
+    {
+      type: 'element',
+      tagName: 'span',
+      properties: {className: ['hljs-meta']},
+      children: [{type: 'text', value: '"use strict"'}]
+    },
+    {type: 'text', value: ';'}
+  ],
+  data: {language: 'js', relevance: 10}
+}
+```
+
+## API
+
+此包导出标识符[`all`][api-all], [`common`][api-common], 和 [`createLowlight`][api-create-lowlight]。
+没有默认导出。
+
+### `all`
+
+所有（±190）语法的映射 ([`Record<string, LanguageFn>`][api-language-fn]).
+
+### `common`
+
+常见(37)语法图 ([`Record<string, LanguageFn>`][api-language-fn]).
+
+### `createLowlight([grammars])`
+
+创建一个`lowlight`实例。
+
+###### 参数
+
+- `grammars` ([`Record<string, LanguageFn>`][api-language-fn], 可选择的)
+  — 要添加的语法
+
+###### 返回
+
+Lowlight (`Lowlight`).
+
+### `lowlight.highlight(language, value[, options])`
+
+Highlight `value` (code) 作为 `language` (name).
+
+###### 参数
+
+- `language` (`string`)
+  — 程序设计语言 [name][names]
+- `value` (`string`)
+  — 要突出显示的代码
+- `options` ([`Options`][api-options], optional)
+  — 配置
+
+###### 返回
+
+树 ([`Root`][hast-root]); 具有以下`data`字段: `language` (`string`), 检测到的编程语言名称; `relevance` (`number`), lowlight 是如何确定给定的代码在该语言中。
+
+###### 实例
+
+```js
+import { common, createLowlight } from "lowlight";
+
+const lowlight = createLowlight(common);
+
+console.log(lowlight.highlight("css", "em { color: red }"));
+```
+
+Yields:
+
+```js
+{type: 'root', children: [Array], data: {language: 'css', relevance: 3}}
+```
+
+### `lowlight.highlightAuto(value[, options])`
+
+突出显示`value` (code)并猜测其编程语言。
+
+###### 参数
+
+- `value` (`string`)
+  — 要突出显示的代码
+- `options` ([`AutoOptions`][api-auto-options], optional)
+  — 配置
+
+###### 返回
+
+Tree ([`Root`][hast-root]); with the following `data` fields: `language`
+(`string`), detected programming language name; `relevance` (`number`), how
+sure lowlight is that the given code is in the language.
+
+###### 实例
+
+```js
+import { common, createLowlight } from "lowlight";
+
+const lowlight = createLowlight(common);
+
+console.log(lowlight.highlightAuto('"hello, " + name + "!"'));
+```
+
+Yields:
+
+```js
+{type: 'root', children: [Array], data: {language: 'arduino', relevance: 2}}
+```
+
+### `lowlight.listLanguages()`
+
+List registered languages.
+
+###### 返回
+
+[Names][] of registered language (`Array<string>`).
+
+###### 实例
+
+```js
+import { createLowlight } from "lowlight";
+import markdown from "highlight.js/lib/languages/markdown";
+
+const lowlight = createLowlight();
+
+console.log(lowlight.listLanguages()); // => []
+
+lowlight.register({ markdown });
+
+console.log(lowlight.listLanguages()); // => ['markdown']
+```
+
+### `lowlight.register(grammars)`
+
+Register languages.
+
+###### 签名
+
+- `register(name, grammar)`
+- `register(grammars)`
+
+###### 参数
+
+- `name` (`string`)
+  — programming language [name][names]
+- `grammar` ([`LanguageFn`][api-language-fn])
+  — grammar
+- `grammars` ([`Record<string, LanguageFn>`][api-language-fn], optional)
+  — grammars
+
+###### 返回
+
+Nothing (`undefined`).
+
+###### 实例
+
+```js
+import { createLowlight } from "lowlight";
+import xml from "highlight.js/lib/languages/xml";
+
+const lowlight = createLowlight();
+
+lowlight.register({ xml });
+
+// Note: `html` is an alias for `xml`.
+console.log(lowlight.highlight("html", "<em>Emphasis</em>"));
+```
+
+Yields:
+
+```js
+{type: 'root', children: [Array], data: {language: 'html', relevance: 2}}
+```
+
+### `lowlight.registerAlias(aliases)`
+
+Register aliases.
+
+###### 签名
+
+- `registerAlias(aliases)`
+- `registerAlias(name, alias)`
+
+###### 参数
+
+- `aliases` (`Record<string, Array<string> | string>`)
+  — map of programming language [names][] to one or more aliases
+- `name` (`string`)
+  — programming language [name][names]
+- `alias` (`Array<string> | string`)
+  — one or more aliases for the programming language
+
+###### 返回
+
+Nothing (`undefined`).
+
+###### 实例
+
+```js
+import { createLowlight } from "lowlight";
+import markdown from "highlight.js/lib/languages/markdown";
+
+const lowlight = createLowlight();
+
+lowlight.register({ markdown });
+
+// lowlight.highlight('mdown', '<em>Emphasis</em>')
+// ^ would throw: Error: Unknown language: `mdown` is not registered
+
+lowlight.registerAlias({ markdown: ["mdown", "mkdn", "mdwn", "ron"] });
+lowlight.highlight("mdown", "<em>Emphasis</em>");
+// ^ Works!
+```
+
+### `lowlight.registered(aliasOrlanguage)`
+
+Check whether an alias or name is registered.
+
+###### 参数
+
+- `aliasOrlanguage` (`string`)
+  — [name][names] of a language or alias for one
+
+###### 返回
+
+Whether `aliasOrName` is registered (`boolean`).
+
+###### 实例
+
+```js
+import { createLowlight } from "lowlight";
+import javascript from "highlight.js/lib/languages/javascript";
+
+const lowlight = createLowlight({ javascript });
+
+console.log(lowlight.registered("funkyscript")); // => `false`
+
+lowlight.registerAlias({ javascript: "funkyscript" });
+console.log(lowlight.registered("funkyscript")); // => `true`
+```
+
+### `AutoOptions`
+
+Configuration for `highlightAuto` (TypeScript type).
+
+###### 领域
+
+- `prefix` (`string`, default: `'hljs-'`)
+  — class prefix
+- `subset` (`Array<string>`, default: all registered languages)
+  — list of allowed languages
+
+### `LanguageFn`
+
+Highlight.js grammar (TypeScript type).
+
+###### Type
+
+```ts
+type {LanguageFn} from 'highlight.js'
+```
+
+### `Options`
+
+Configuration for `highlight` (TypeScript type).
+
+###### 领域
+
+- `prefix` (`string`, default: `'hljs-'`)
+  — class prefix
+
+## 示例
+
+### 示例：将 hast 序列化为 html
+
+lowlight 返回的 hast 树可以用[`hast-util-to-html`][hast-util-to-html]进行序列化：
+
+```js
+import { common, createLowlight } from "lowlight";
+import { toHtml } from "hast-util-to-html";
+
+const lowlight = createLowlight(common);
+
+const tree = lowlight.highlight("js", '"use strict";');
+
+console.log(toHtml(tree));
+```
+
+Yields:
+
+```html
+<span class="hljs-meta">"use strict"</span>;
+```
+
+### 例如：把 hast 变成 preact, react 等
+
+lowlight 返回的 hast 树可以转换为支持 JSX 的任何框架的节点，如 preact, react, solid, svelte, vue 等，使用[[`hast-util-to-jsx-runtime`][hast-util-to-jsx-runtime]：
+
+```js
+import { toJsxRuntime } from "hast-util-to-jsx-runtime";
+// @ts-expect-error: react types don’t type these.
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+import { common, createLowlight } from "lowlight";
+
+const lowlight = createLowlight(common);
+
+const tree = lowlight.highlight("js", '"use strict";');
+
+console.log(toJsxRuntime(tree, { Fragment, jsx, jsxs }));
+```
+
+Yields:
+
+```js
+{
+  $$typeof: Symbol(react.element),
+  type: Symbol(react.fragment),
+  key: null,
+  ref: null,
+  props: {children: [[Object], ';']},
+  _owner: null,
+  _store: {}
+}
+```
+
+## Types
+
+此包是使用[TypeScript][]完全键入的。
+它导出其他类型[`AutoOptions`][api-auto-options], [`LanguageFn`][api-language-fn], 和 [`Options`][api-options]
+
+它还将`root.data`注册为`@types/hast`。
+如果您正在处理数据字段，请确保将此包导入到类型中的某个位置，因为这会在文件中注册新字段。
+
+```js
+/**
+ * @typedef {import('hast').Root} Root
+ *
+ * @typedef {import('lowlight')}
+ */
+
+import { VFile } from "vfile";
+
+/** @type {Root} */
+const root = { type: "root", children: [] };
+
+console.log(root.data?.language); //=> TS now knows that this is a `string?`.
+```
+
+<a name="syntaxes"></a>
+
+## 数据
+
+如果您使用的是`createLowlight()`，则尚未包含语法。
+您可以导入`all`或`common`并传递它们，例如使用`createLowlight(all)`。
+选中的语法包含在`common`中。
+所有语法都包含在`all`中。
+
+您还可以从`highlight.js/lib/languages/xxx`手动导入语法，其中`xxx`是名称，例如`'highlight.js/lib/languages/wasm'`。
+
+- [ ] `1c` — 1C:Enterprise
+- [ ] `abnf` — Augmented Backus-Naur Form
+- [ ] `accesslog` — Apache Access Log
+- [ ] `actionscript` (`as`) — ActionScript
+- [ ] `ada` — Ada
+- [ ] `angelscript` (`asc`) — AngelScript
+- [ ] `apache` (`apacheconf`) — Apache config
+- [ ] `applescript` (`osascript`) — AppleScript
+- [ ] `arcade` — ArcGIS Arcade
+- [x] `arduino` (`ino`) — Arduino
+- [ ] `armasm` (`arm`) — ARM Assembly
+- [ ] `asciidoc` (`adoc`) — AsciiDoc
+- [ ] `aspectj` — AspectJ
+- [ ] `autohotkey` (`ahk`) — AutoHotkey
+- [ ] `autoit` — AutoIt
+- [ ] `avrasm` — AVR Assembly
+- [ ] `awk` — Awk
+- [ ] `axapta` (`x++`) — X++
+- [x] `bash` (`sh`) — Bash
+- [ ] `basic` — BASIC
+- [ ] `bnf` — Backus–Naur Form
+- [ ] `brainfuck` (`bf`) — Brainfuck
+- [x] `c` (`h`) — C
+- [ ] `cal` — C/AL
+- [ ] `capnproto` (`capnp`) — Cap’n Proto
+- [ ] `ceylon` — Ceylon
+- [ ] `clean` (`icl`, `dcl`) — Clean
+- [ ] `clojure` (`clj`, `edn`) — Clojure
+- [ ] `clojure-repl` — Clojure REPL
+- [ ] `cmake` (`cmake.in`) — CMake
+- [ ] `coffeescript` (`coffee`, `cson`, `iced`) — CoffeeScript
+- [ ] `coq` — Coq
+- [ ] `cos` (`cls`) — Caché Object Script
+- [x] `cpp` (`cc`, `c++`, `h++`, `hpp`, `hh`, `hxx`, `cxx`) — C++
+- [ ] `crmsh` (`crm`, `pcmk`) — crmsh
+- [ ] `crystal` (`cr`) — Crystal
+- [x] `csharp` (`cs`, `c#`) — C#
+- [ ] `csp` — CSP
+- [x] `css` — CSS
+- [ ] `d` — D
+- [ ] `dart` — Dart
+- [ ] `delphi` (`dpr`, `dfm`, `pas`, `pascal`) — Delphi
+- [x] `diff` (`patch`) — Diff
+- [ ] `django` (`jinja`) — Django
+- [ ] `dns` (`bind`, `zone`) — DNS Zone
+- [ ] `dockerfile` (`docker`) — Dockerfile
+- [ ] `dos` (`bat`, `cmd`) — Batch file (DOS)
+- [ ] `dsconfig` — undefined
+- [ ] `dts` — Device Tree
+- [ ] `dust` (`dst`) — Dust
+- [ ] `ebnf` — Extended Backus-Naur Form
+- [ ] `elixir` (`ex`, `exs`) — Elixir
+- [ ] `elm` — Elm
+- [ ] `erb` — ERB
+- [ ] `erlang` (`erl`) — Erlang
+- [ ] `erlang-repl` — Erlang REPL
+- [ ] `excel` (`xlsx`, `xls`) — Excel formulae
+- [ ] `fix` — FIX
+- [ ] `flix` — Flix
+- [ ] `fortran` (`f90`, `f95`) — Fortran
+- [ ] `fsharp` (`fs`, `f#`) — F#
+- [ ] `gams` (`gms`) — GAMS
+- [ ] `gauss` (`gss`) — GAUSS
+- [ ] `gcode` (`nc`) — G-code (ISO 6983)
+- [ ] `gherkin` (`feature`) — Gherkin
+- [ ] `glsl` — GLSL
+- [ ] `gml` — GML
+- [x] `go` (`golang`) — Go
+- [ ] `golo` — Golo
+- [ ] `gradle` — Gradle
+- [x] `graphql` (`gql`) — GraphQL
+- [ ] `groovy` — Groovy
+- [ ] `haml` — HAML
+- [ ] `handlebars` (`hbs`, `html.hbs`, `html.handlebars`, `htmlbars`) — Handlebars
+- [ ] `haskell` (`hs`) — Haskell
+- [ ] `haxe` (`hx`) — Haxe
+- [ ] `hsp` — HSP
+- [ ] `http` (`https`) — HTTP
+- [ ] `hy` (`hylang`) — Hy
+- [ ] `inform7` (`i7`) — Inform 7
+- [x] `ini` (`toml`) — TOML, also INI
+- [ ] `irpf90` — IRPF90
+- [ ] `isbl` — ISBL
+- [x] `java` (`jsp`) — Java
+- [x] `javascript` (`js`, `jsx`, `mjs`, `cjs`) — JavaScript
+- [ ] `jboss-cli` (`wildfly-cli`) — JBoss CLI
+- [x] `json` — JSON
+- [ ] `julia` — Julia
+- [ ] `julia-repl` (`jldoctest`) — Julia REPL
+- [x] `kotlin` (`kt`, `kts`) — Kotlin
+- [ ] `lasso` (`ls`, `lassoscript`) — Lasso
+- [ ] `latex` (`tex`) — LaTeX
+- [ ] `ldif` — LDIF
+- [ ] `leaf` — Leaf
+- [x] `less` — Less
+- [ ] `lisp` — Lisp
+- [ ] `livecodeserver` — LiveCode
+- [ ] `livescript` (`ls`) — LiveScript
+- [ ] `llvm` — LLVM IR
+- [ ] `lsl` — LSL (Linden Scripting Language)
+- [x] `lua` — Lua
+- [x] `makefile` (`mk`, `mak`, `make`) — Makefile
+- [x] `markdown` (`md`, `mkdown`, `mkd`) — Markdown
+- [ ] `mathematica` (`mma`, `wl`) — Mathematica
+- [ ] `matlab` — Matlab
+- [ ] `maxima` — Maxima
+- [ ] `mel` — MEL
+- [ ] `mercury` (`m`, `moo`) — Mercury
+- [ ] `mipsasm` (`mips`) — MIPS Assembly
+- [ ] `mizar` — Mizar
+- [ ] `mojolicious` — Mojolicious
+- [ ] `monkey` — Monkey
+- [ ] `moonscript` (`moon`) — MoonScript
+- [ ] `n1ql` — N1QL
+- [ ] `nestedtext` (`nt`) — Nested Text
+- [ ] `nginx` (`nginxconf`) — Nginx config
+- [ ] `nim` — Nim
+- [ ] `nix` (`nixos`) — Nix
+- [ ] `node-repl` — Node REPL
+- [ ] `nsis` — NSIS
+- [x] `objectivec` (`mm`, `objc`, `obj-c`, `obj-c++`, `objective-c++`) — Objective-C
+- [ ] `ocaml` (`ml`) — OCaml
+- [ ] `openscad` (`scad`) — OpenSCAD
+- [ ] `oxygene` — Oxygene
+- [ ] `parser3` — Parser3
+- [x] `perl` (`pl`, `pm`) — Perl
+- [ ] `pf` (`pf.conf`) — Packet Filter config
+- [ ] `pgsql` (`postgres`, `postgresql`) — PostgreSQL
+- [x] `php` — undefined
+- [x] `php-template` — PHP template
+- [x] `plaintext` (`text`, `txt`) — Plain text
+- [ ] `pony` — Pony
+- [ ] `powershell` (`pwsh`, `ps`, `ps1`) — PowerShell
+- [ ] `processing` (`pde`) — Processing
+- [ ] `profile` — Python profiler
+- [ ] `prolog` — Prolog
+- [ ] `properties` — .properties
+- [ ] `protobuf` (`proto`) — Protocol Buffers
+- [ ] `puppet` (`pp`) — Puppet
+- [ ] `purebasic` (`pb`, `pbi`) — PureBASIC
+- [x] `python` (`py`, `gyp`, `ipython`) — Python
+- [x] `python-repl` (`pycon`) — undefined
+- [ ] `q` (`k`, `kdb`) — Q
+- [ ] `qml` (`qt`) — QML
+- [x] `r` — R
+- [ ] `reasonml` (`re`) — ReasonML
+- [ ] `rib` — RenderMan RIB
+- [ ] `roboconf` (`graph`, `instances`) — Roboconf
+- [ ] `routeros` (`mikrotik`) — MikroTik RouterOS script
+- [ ] `rsl` — RenderMan RSL
+- [x] `ruby` (`rb`, `gemspec`, `podspec`, `thor`, `irb`) — Ruby
+- [ ] `ruleslanguage` — Oracle Rules Language
+- [x] `rust` (`rs`) — Rust
+- [ ] `sas` — SAS
+- [ ] `scala` — Scala
+- [ ] `scheme` (`scm`) — Scheme
+- [ ] `scilab` (`sci`) — Scilab
+- [x] `scss` — SCSS
+- [x] `shell` (`console`, `shellsession`) — Shell Session
+- [ ] `smali` — Smali
+- [ ] `smalltalk` (`st`) — Smalltalk
+- [ ] `sml` (`ml`) — SML (Standard ML)
+- [ ] `sqf` — SQF
+- [x] `sql` — SQL
+- [ ] `stan` (`stanfuncs`) — Stan
+- [ ] `stata` (`do`, `ado`) — Stata
+- [ ] `step21` (`p21`, `step`, `stp`) — STEP Part 21
+- [ ] `stylus` (`styl`) — Stylus
+- [ ] `subunit` — SubUnit
+- [x] `swift` — Swift
+- [ ] `taggerscript` — Tagger Script
+- [ ] `tap` — Test Anything Protocol
+- [ ] `tcl` (`tk`) — Tcl
+- [ ] `thrift` — Thrift
+- [ ] `tp` — TP
+- [ ] `twig` (`craftcms`) — Twig
+- [x] `typescript` (`ts`, `tsx`, `mts`, `cts`) — TypeScript
+- [ ] `vala` — Vala
+- [x] `vbnet` (`vb`) — Visual Basic .NET
+- [ ] `vbscript` (`vbs`) — VBScript
+- [ ] `vbscript-html` — VBScript in HTML
+- [ ] `verilog` (`v`, `sv`, `svh`) — Verilog
+- [ ] `vhdl` — VHDL
+- [ ] `vim` — Vim Script
+- [x] `wasm` — WebAssembly
+- [ ] `wren` — Wren
+- [ ] `x86asm` — Intel x86 Assembly
+- [ ] `xl` (`tao`) — XL
+- [x] `xml` (`html`, `xhtml`, `rss`, `atom`, `xjb`, `xsd`, `xsl`, `plist`, `wsf`, `svg`) — HTML, XML
+- [ ] `xquery` (`xpath`, `xq`, `xqm`) — XQuery
+- [x] `yaml` (`yml`) — YAML
+- [ ] `zephir` (`zep`) — Zephir
+
+## CSS
+
+`lowlight`不为语法高亮显示的代码注入 CSS（因为 lowlight 不必转换成 HTML，也可能不会在浏览器中运行！）。
+如果你在浏览器中，你可以使用任何`highlight.js`主题。
+例如，要从 cdnjs 获取 GitHub Dark：
+
+```html
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" />
+```
+
+## 兼容性
+
+此包与 Node.js 的维护版本兼容。
+
+当我们剪切一个新的主要版本时，我们会放弃对 Node 的未维护版本的支持。
+这意味着我们试图保持当前发布行`lowlight@^3`与 Node.js 16 兼容。
+
+## 安全
+
+这个包裹是安全的。
+
+## 相关的
+
+- [`refractor`][refractor]
+  — 与微光相同，但带有[Prism][]
+- [`starry-night`][starry-night]
+  — 类似但像 GitHub，非常好
+
+## 项目
+
+- [`emphasize`](https://github.com/wooorm/emphasize)
+  — ANSI 中的语法高亮显示（用于终端）
+- [`react-lowlight`](https://github.com/rexxars/react-lowlight)
+  — [React][]的语法高亮
+- [`react-syntax-highlighter`](https://github.com/conorhastings/react-syntax-highlighter)
+  — 语法高亮显示的[React][]组件
+- [`rehype-highlight`](https://github.com/rehypejs/rehype-highlight)
+  — [**rehype**](https://github.com/rehypejs/rehype) 突出显示代码块的插件
+- [`jstransformer-lowlight`](https://github.com/ai/jstransformer-lowlight)
+  — [JSTransformers](https://github.com/jstransformers) 和 [Pug](https://pugjs.org/language/filters.html)的语法高亮显示
+
+## 贡献
+
+是的，请！请参阅[如何为开源做出贡献][contribute]。
+
+## 许可证
+
+[MIT][license] © [Titus Wormer][author]
+
+[build-badge]: https://github.com/wooorm/lowlight/workflows/main/badge.svg
+[build]: https://github.com/wooorm/lowlight/actions
+[coverage-badge]: https://img.shields.io/codecov/c/github/wooorm/lowlight.svg
+[coverage]: https://codecov.io/github/wooorm/lowlight
+[downloads-badge]: https://img.shields.io/npm/dm/lowlight.svg
+[downloads]: https://www.npmjs.com/package/lowlight
+[size-badge]: https://img.shields.io/bundlephobia/minzip/lowlight.svg
+[size]: https://bundlephobia.com/result?p=lowlight
+[npm]: https://docs.npmjs.com/cli/install
+[esmsh]: https://esm.sh
+[license]: license
+[author]: https://wooorm.com
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+[typescript]: https://www.typescriptlang.org
+[contribute]: https://opensource.guide/how-to-contribute/
+[hast-root]: https://github.com/syntax-tree/hast#root
+[highlight-js]: https://github.com/highlightjs/highlight.js
+[names]: https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md
+[react]: https://facebook.github.io/react/
+[prism]: https://github.com/PrismJS/prism
+[refractor]: https://github.com/wooorm/refractor
+[starry-night]: https://github.com/wooorm/starry-night
+[hast-util-to-html]: https://github.com/syntax-tree/hast-util-to-html
+[hast-util-to-jsx-runtime]: https://github.com/syntax-tree/hast-util-to-jsx-runtime
+[api-all]: #all
+[api-auto-options]: #autooptions
+[api-common]: #common
+[api-create-lowlight]: #createlowlightgrammars
+[api-language-fn]: #languagefn
+[api-options]: #options

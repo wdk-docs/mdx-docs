@@ -29,6 +29,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     Check: ({ children }) => <Check>{children}</Check>,
     Cross: ({ children }) => <Cross>{children}</Cross>,
     Note: (props) => <Alert {...props}></Alert>,
+    Alert: (props) => <Alert {...props}></Alert>,
     ...components,
   };
 }

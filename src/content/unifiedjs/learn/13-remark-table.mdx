@@ -1,0 +1,175 @@
+---
+group: recipe
+index: 5
+title: remark中的支持表格
+description: 如何在remark中支持GitHub样式表 (或 react-markdown)
+tags:
+  - remark
+  - plugin
+  - gfm
+  - github
+  - table
+author: Titus Wormer
+authorTwitter: wooorm
+authorGithub: wooorm
+published: 2021-02-24
+modified: 2021-02-24
+---
+
+## 如何支持 remark 中的表格
+
+表是 markdown 中的一个非标准功能：它们**不**是在[CommonMark][]中定义的，不会在任何地方都工作。
+
+表是 GitHub 在其[GFM][]中支持的扩展。
+他们在大多数地方都在`github.com`上工作：自述、问题、公关、讨论、评论等。
+
+remark 和 unified 可以通过插件支持它们: [`remark-gfm`][remark-gfm].
+
+### 什么是 tables？
+
+markdown 中的表用于表格数据，如下所示：
+
+```markdown
+| Beep |  No.   |   Boop |
+| :--- | :----: | -----: |
+| beep |  1024  |    xyz |
+| boop | 338845 |    tuv |
+| foo  | 10106  | qrstuv |
+| bar  |   45   |   lmno |
+```
+
+网站上的结果看起来是这样的：
+
+| Beep |  No.   |   Boop |
+| :--- | :----: | -----: |
+| beep |  1024  |    xyz |
+| boop | 338845 |    tuv |
+| foo  | 10106  | qrstuv |
+| bar  |   45   |   lmno |
+
+### 如何编写表格
+
+在行中的单元格之间使用竖线字符(`|`)。
+新行开始新行。
+您不必对齐管道(`|`)来形成一个漂亮的网格，但它确实使源代码更具可读性。
+
+第一行是*表格标题*，其单元格是各自列的标签。
+
+第二行是*对齐行*，每个`“cell”`必须包含一个短划线 (`-`).
+一个单元格可以与开头的冒号左对齐 (`:--`), 右对齐，末尾有冒号 (`--:`), 或在开始和结束时以冒号居中对齐 (`:-:`).
+
+其他行是*表体*，是可选的。
+它们的单元格是表格数据。
+
+### 如何支持表格
+
+As tables are non-standard, remark does not support them by default.
+But it can support them with a plugin: [`remark-gfm`][remark-gfm].
+Let’s say we have some markdown with a GFM table, in an `example.md` file:
+
+```markdown
+# Table
+
+| Branch  | Commit           |
+| ------- | ---------------- |
+| main    | 0123456789abcdef |
+| staging | fedcba9876543210 |
+```
+
+And a script set up to transform markdown with tables to HTML, `example.js`:
+
+```javascript
+import fs from "node:fs";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+
+const doc = fs.readFileSync("example.md");
+
+const file = unified()
+  .use(remarkParse) // Parse markdown.
+  .use(remarkGfm) // Support GFM (tables, autolinks, tasklists, strikethrough).
+  .use(remarkRehype) // Turn it into HTML.
+  .use(rehypeStringify) // Serialize HTML.
+  .processSync(doc);
+
+console.log(String(file));
+```
+
+Now, running `node example` yields:
+
+```html
+<h1>Table</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Branch</th>
+      <th>Commit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>main</td>
+      <td>0123456789abcdef</td>
+    </tr>
+    <tr>
+      <td>staging</td>
+      <td>fedcba9876543210</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+### 如何在`react-markdown`中支持表
+
+由于表是非标准的，默认情况下`react-markdown`不支持它们。
+但它可以通过插件支持它们: [`remark-gfm`][remark-gfm].
+
+假设我们在`example.md`文件中使用 GFM 表进行了一些标记：
+
+```js
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+const markdown = `# Table
+
+| Branch  | Commit           |
+| ------- | ---------------- |
+| main    | 0123456789abcdef |
+| staging | fedcba9876543210 |`;
+
+console.log(<ReactMarkdown plugins={[remarkGfm]} children={markdown} />);
+```
+
+Yields in JSX:
+
+```javascript
+<>
+  <h1>Table</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Branch</th>
+        <th>Commit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>main</td>
+        <td>0123456789abcdef</td>
+      </tr>
+      <tr>
+        <td>staging</td>
+        <td>fedcba9876543210</td>
+      </tr>
+    </tbody>
+  </table>
+</>
+```
+
+[commonmark]: https://commonmark.org
+[gfm]: https://github.github.com/gfm/
+[remark-gfm]: https://github.com/remarkjs/remark-gfm

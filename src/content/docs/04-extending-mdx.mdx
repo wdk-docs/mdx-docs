@@ -3,7 +3,7 @@ title: 扩展 MDX
 ---
 
 本文解释了如何扩展 MDX 内容，特别是如何使用插件转换内容。 {/* more */}
-关于如何传递组件、道具和布局，请参见[§使用 MDX][use]。
+关于如何传递组件、属性和布局，请参见[§使用 MDX][use]。
 有关如何将 MDX 集成到您的项目中，请参阅[§入门][start]。
 
 ## 组件和插件
@@ -36,15 +36,13 @@ title: 扩展 MDX
 - [`remcohaszing/recma-export-filepath`](https://github.com/remcohaszing/recma-export-filepath)
   — 导出文件路径
 - [`ipikuka/recma-mdx-change-props`](https://github.com/ipikuka/recma-mdx-change-props)
-  — changes the param as `_props` in the `_createMdxContent` function
+  — 在`_createMdxContent`函数中将参数更改为`_props`
 - [`domdomegg/recma-mdx-displayname`](https://github.com/domdomegg/recma-mdx-displayname)
-  — add a `displayName` to `MDXContent` components, to enable switching
-  on them in production
+  — 向`MDXContent`组件添加`displayName`，以便在生产中打开它们
 - [`ipikuka/recma-mdx-escape-missing-components`](https://github.com/ipikuka/recma-mdx-escape-missing-components)
-  — set a default value of `() => null` for missing components instead of
-  throwing an error
+  — 为丢失的组件设置默认值`() => null`，而不是引发错误
 - [`remcohaszing/recma-mdx-is-mdx-component`](https://github.com/remcohaszing/recma-mdx-is-mdx-component)
-  — add an `isMdxComponent` field on MDX components
+  — 在 MDX 组件上添加`isMdxComponent`字段
 - [`remcohaszing/recma-nextjs-static-props`](https://github.com/remcohaszing/recma-nextjs-static-props)
   — 生成[`getStaticProps`](https://nextjs.org/docs/basic-features/data-fetching/get-static-props)，在 Next.js 中公开顶级标识符
 - [`remcohaszing/rehype-mdx-title`](https://github.com/remcohaszing/rehype-mdx-title)
@@ -52,7 +50,7 @@ title: 扩展 MDX
 - [`pangelani/remark-mdx-chartjs`](https://github.com/pangelani/remark-mdx-chartjs)
   — 使用[`react-chattjs-2`](https://react-chartjs-2.js.org/)将受保护的代码块替换为图表.
 - [`remcohaszing/remark-mdx-code-meta`](https://github.com/remcohaszing/remark-mdx-code-meta)
-  — 将代码`meta`字段解释为 JSX 道具
+  — 将代码`meta`字段解释为 JSX 属性
 - [`remcohaszing/remark-mdx-frontmatter`](https://github.com/remcohaszing/remark-mdx-frontmatter)
   — 将 frontmatter（YAML）元数据更改为导出
 - [`remcohaszing/remark-mdx-images`](https://github.com/remcohaszing/remark-mdx-images)
@@ -60,7 +58,7 @@ title: 扩展 MDX
 - [`goodproblems/remark-mdx-math-enhanced`](https://github.com/goodproblems/remark-mdx-math-enhanced)
   — 使用 JavaScript 增强数学
 
-<Note type="info">是否有另一个*专门*与MDX配合使用的统一插件？请发送PR添加到此处！</Note>
+<Note type="info">是否有另一个*专门*与MDX配合使用的unified插件？请发送PR添加到此处！</Note>
 
 ## 使用插件
 

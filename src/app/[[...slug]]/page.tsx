@@ -22,12 +22,12 @@ async function getMdx(params: any) {
   // if (!existsSync(file)) file = `@/content/docs/${path}/index.mdx`;
   // if (!existsSync(file)) return undefined;
   const file = linkMap[path];
-  console.log(path, file);
+  // console.log(path, file);
   const Mdx: any = await import(`@/content/${file}`);
   return Mdx;
 }
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  console.log({ params });
+  // console.log({ params });
   const Mdx = await getMdx(params);
   // console.log(Mdx.tableOfContents);
   if (!Mdx) return { title: "未找到" };

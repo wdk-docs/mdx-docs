@@ -7,7 +7,7 @@ MDX 支持标准的 markdown 语法([CommonMark][]).
 这意味着默认情况下不支持 frontmatter。
 
 MDX 提供了一种强大而动态的前端替代方案，即 ESM(`import`/`export`).
-这些 exports:
+这些将导出:
 
 ```mdx path="example.mdx"
 export const name = "World";
@@ -25,7 +25,7 @@ console.log(Post.title); // Prints 'Hi, World!'
 ```
 
 不过，您可能更喜欢 frontmatter，因为它允许您定义可以在编译之*前*从文件系统中提取的数据。
-假设我们的前体 MDX 看起来是这样的:
+假设我们的 MDX 看起来是这样的:
 
 ```mdx path="example.mdx"
 ---
@@ -47,7 +47,7 @@ matter(file);
 console.log(file.data.matter);
 ```
 
-我们的编译器`@mdx-js/mdx`默认情况下不理解 YAML frontmatter，但可以通过使用备注插件[`remark-frontmatter`][remark-frontmatter]来启用它:
+我们的编译器`@mdx-js/mdx`默认情况下不理解 YAML frontmatter，但可以通过使用 remark 插件[`remark-frontmatter`][remark-frontmatter]来启用它:
 
 ```tsx path="example.js"
 import fs from "node:fs/promises";
@@ -62,7 +62,7 @@ console.log(file);
 ```
 
 现在它`工作`了。
-渲染前体时不会将其视为降价。
+渲染前体时不会将其视为 markdown。
 但嵌入前台的数据无法从 MDX _内部_ 获得。
 如果我们也想要呢？
 就像这样:
@@ -77,7 +77,7 @@ title: Hi, World!
 
 这正是 remark 插件[`remark-mdx-frontmatter`][remark-mdx-frontmatter]所做的。
 
-与所有备注插件一样，该插件可以[在`ProcessorOptions`中作为`remarkPlugins`][processor-options]传递.
+与所有 remark 插件一样，该插件可以[在`ProcessorOptions`中作为`remarkPlugins`][processor-options]传递.
 有关插件的更多信息，请参阅[§扩展 MDX][extend]
 
 [commonmark]: https://spec.commonmark.org/current/

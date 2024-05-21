@@ -2,25 +2,22 @@
 title: "@mdx-js/mdx"
 ---
 
-MDX compiler.
+MDX 编译器.
 
-## What is this?
+## 这是什么？
 
-This package is a compiler that turns MDX into JavaScript.
-It can also evaluate MDX code.
+这个包是一个将 MDX 转换为 JavaScript 的编译器。
+它还可以评估 MDX 代码。
 
-## When should I use this?
+## 我什么时候该用这个？
 
-This is the core compiler for turning MDX into JavaScript which gives you the
-most control.
-If you’re using a bundler (Rollup, esbuild, webpack), a site builder (Next.js),
-or build system (Vite) which comes with a bundler, you’re better off using an
-integration: see [§ Integrations][integrations].
+这是将 MDX 转换为 JavaScript 的核心编译器，它为您提供了最大的控制权。
+如果您使用捆绑器（Rollup、esbuild、webpack）、站点构建器（Next.js）或捆绑器附带的构建系统（Vite），则最好使用集成: 参见[§集成][integrations].
 
-## Install
+## 安装
 
-This package is [ESM only][esm].
-In Node.js (version 16+), install with [npm][]:
+此程序包[仅限 ESM][esm].
+在 Node.js（16+版本）中，使用[npm][]安装:
 
 ```sh
 npm install @mdx-js/mdx
@@ -32,7 +29,7 @@ In Deno with [`esm.sh`][esmsh]:
 import { compile } from "https://esm.sh/@mdx-js/mdx@3";
 ```
 
-In browsers with [`esm.sh`][esmsh]:
+在带有[`esm.sh`][esmsh]的浏览器中:
 
 ```html
 <script type="module">
@@ -40,9 +37,9 @@ In browsers with [`esm.sh`][esmsh]:
 </script>
 ```
 
-## Use
+## 使用
 
-Say we have an MDX document, `example.mdx`:
+假设我们有 MDX 文档, `example.mdx`:
 
 ```mdx
 export function Thing() {
@@ -52,7 +49,7 @@ export function Thing() {
 # Hello, <Thing />
 ```
 
-…and some code in `example.js` to compile `example.mdx` to JavaScript:
+…以及`example.js`中的一些代码将`example.mdx`编译为 JavaScript:
 
 ```tsx
 import fs from "node:fs/promises";
@@ -63,7 +60,7 @@ const compiled = await compile(await fs.readFile("example.mdx"));
 console.log(String(compiled));
 ```
 
-Yields roughly:
+输出:
 
 ```tsx
 import { Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
@@ -85,41 +82,40 @@ export default function MDXContent(props = {}) {
 }
 ```
 
-See [§ Using MDX][using-mdx] for more on how MDX work and how to use the result.
+有关 MDX 如何工作以及如何使用结果的更多信息，请参阅[§使用 MDX][using-mdx]。
 
 ## API
 
-This package exports the following identifiers:
+此包导出以下标识符:
 [`compile`][api-compile],
 [`compileSync`][api-compile-sync],
 [`createProcessor`][api-create-processor],
 [`evaluate`][api-evaluate],
 [`evaluateSync`][api-evaluate-sync],
 [`nodeTypes`][api-node-types],
-[`run`][api-run], and
+[`run`][api-run], 和
 [`runSync`][api-run-sync].
-There is no default export.
+没有默认导出。
 
 ### `compile(file, options?)`
 
-Compile MDX to JS.
+将 MDX 编译为 JS。
 
-###### Parameters
+###### 参数
 
-- `file` ([`Compatible` from `vfile`][vfile-compatible])
-  — MDX document to parse
-- `options` ([`CompileOptions`][api-compile-options], optional)
-  — compile configuration
+- `file` ([`Compatible` 来自 `vfile`][vfile-compatible])
+  — 要分析的 MDX 文档
+- `options` ([`CompileOptions`][api-compile-options], 可选)
+  — 编译配置
 
-###### Returns
+###### 返回
 
-Promise to compiled file ([`Promise<VFile>`][vfile]).
+承诺编译文件 ([`Promise<VFile>`][vfile]).
 
-###### Examples
+###### 示例
 
-The input value for `file` can be many different things.
-You can pass a `string`, `Uint8Array` in UTF-8, [`VFile`][vfile], or anything
-that can be given to `new VFile`.
+`file`的输入值可以是许多不同的内容。
+您可以传递`string`、UTF-8 格式的`Uint8Array`、[`VFile`][vfile]或任何可以赋予`new VFile`的内容。
 
 ```tsx
 import { compile } from "@mdx-js/mdx";
@@ -131,7 +127,7 @@ await compile({ path: "path/to/file.mdx", value: "🥳" });
 await compile(new VFile({ path: "path/to/file.mdx", value: "🤭" }));
 ```
 
-The output `VFile` can be used to access more than the generated code:
+输出`VFile`可用于访问生成的代码以外的内容:
 
 ```tsx
 import { compile } from "@mdx-js/mdx";
@@ -143,7 +139,7 @@ const file = await compile("*like this* or _like this_?", { remarkPlugins: [rema
 console.error(reporter(file));
 ```
 
-Yields:
+输出:
 
 ```txt
   1:16-1:27  warning  Emphasis should use `*` as a marker  emphasis-marker  remark-lint
@@ -153,33 +149,33 @@ Yields:
 
 ### `compileSync(file, options?)`
 
-Synchronously compile MDX to JS.
+将 MDX 同步编译为 JS。
 
-When possible please use the async [`compile`][api-compile].
+如果可能，请使用 async[`compile`][api-compile].
 
-###### Parameters
+###### 参数
 
 - `file` ([`Compatible` from `vfile`][vfile-compatible])
-  — MDX document to parse
-- `options` ([`CompileOptions`][api-compile-options], optional)
-  — compile configuration
+  — 要分析的 MDX 文档
+- `options` ([`CompileOptions`][api-compile-options], 可选)
+  — 编译配置
 
-###### Returns
+###### 返回
 
-Compiled file ([`VFile`][vfile]).
+已编译文件 ([`VFile`][vfile]).
 
 ### `createProcessor(options?)`
 
-Create a processor to compile markdown or MDX to JavaScript.
+创建一个处理器，将 markdown 或 MDX 编译为 JavaScript。
 
-> **Note**: `format: 'detect'` is not allowed in `ProcessorOptions`.
+> **笔记**: `format: 'detect'` 在`ProcessorOptions`中不允许.
 
-###### Parameters
+###### 参数
 
-- `options` ([`ProcessorOptions`][api-processor-options], optional)
+- `options` ([`ProcessorOptions`][api-processor-options], 可选)
   — process configuration
 
-###### Returns
+###### 返回
 
 Processor ([`Processor` from `unified`][unified-processor]).
 
@@ -187,28 +183,24 @@ Processor ([`Processor` from `unified`][unified-processor]).
 
 [Compile][api-compile] and [run][api-run] MDX.
 
-When you trust your content, `evaluate` can work.
-When possible, use [`compile`][api-compile], write to a file, and then run with
-Node or use one of the [§ Integrations][integrations].
+当你信任你的内容时，`evaluate`可以起作用。
+如果可能，请使用[`compile`][api-compile]，写入文件，然后使用 Node 运行，或者使用[§集成][Integrations]之一。
 
-> ☢️ **Danger**: it’s called **evaluate** because it `eval`s JavaScript.
+> ☢️ **危险**: 它之所以被称为**evaluate**，是因为它是 `eval` 的 JavaScript。
 
-###### Parameters
+###### 参数
 
 - `file` ([`Compatible` from `vfile`][vfile-compatible])
-  — MDX document to parse
+  — 要分析的 MDX 文档
 - `options` ([`EvaluateOptions`][api-evaluate-options], **required**)
-  — configuration
+  — 配置
 
-###### Returns
+###### 返回
 
-Promise to a module ([`Promise<MDXModule>` from
-`mdx/types.js`][mdx-types-module]).
+对模块的承诺 ([`Promise<MDXModule>` from `mdx/types.js`][mdx-types-module]).
 
-The result is an object with a `default` field set to the component;
-anything else that was exported is available too.
-For example, assuming the contents of `example.mdx` from [§ Use][use] was in
-`file`, then:
+结果是一个对象，其`default`字段设置为组件;其他任何导出的内容也可用。
+例如，假设[§使用][Use]中的`example.mdx`的内容在`file`中，则：
 
 ```tsx
 import { evaluate } from "@mdx-js/mdx";
@@ -223,15 +215,12 @@ console.log(await evaluate(file, runtime));
 {Thing: [Function: Thing], default: [Function: MDXContent]}
 ```
 
-###### Notes
+###### 笔记
 
-Compiling (and running) MDX takes time.
+编译（和运行）MDX 需要时间。
 
-If you are live-rendering a string of MDX that often changes using a virtual DOM
-based framework (such as React), one performance improvement is to call the
-`MDXContent` component yourself.
-The reason is that the `evaluate` creates a new function each time, which cannot
-be diffed:
+如果您正在使用基于虚拟 DOM 的框架（如 React）实时呈现经常更改的 MDX 字符串，则一个性能改进是自己调用`MDXContent`组件。
+原因是`evaluate`每次都会创建一个无法区分的新函数：
 
 ```diff
  const {default: MDXContent} = await evaluate('…')
@@ -242,51 +231,48 @@ be diffed:
 
 ### `evaluateSync(file, options)`
 
-Compile and run MDX, synchronously.
+同步编译并运行 MDX。
 
-When possible please use the async [`evaluate`][api-evaluate].
+如果可能，请使用 async[`evaluate`][api-evaluate].
 
-> ☢️ **Danger**: it’s called **evaluate** because it `eval`s JavaScript.
+> ☢️ **危险**: 它之所以被称为**evaluate**，是因为它是 eval 的 JavaScript。
 
-###### Parameters
+###### 参数
 
 - `file` ([`Compatible` from `vfile`][vfile-compatible])
-  — MDX document to parse
+  — 要分析的 MDX 文档
 - `options` ([`EvaluateOptions`][api-evaluate-options], **required**)
-  — configuration
+  — 配置
 
-###### Returns
+###### 返回
 
 Module ([`MDXModule` from `mdx/types.js`][mdx-types-module]).
 
 ### `nodeTypes`
 
-List of node types made by `mdast-util-mdx`, which have to be passed
-through untouched from the mdast tree to the hast tree (`Array<string>`).
+由`mdast-util-mdx`生成的节点类型列表，这些节点类型必须从 mdast 树原封不动地传递到 hast 树 (`Array<string>`).
 
 ### `run(code, options)`
 
-Run code compiled with `outputFormat: 'function-body'`.
+运行使用`outputFormat: 'function-body'`编译的代码.
 
-> ☢️ **Danger**: this `eval`s JavaScript.
+> ☢️ **危险**: 这是 `eval` 的 JavaScript。
 
-###### Parameters
+###### 参数
 
-- `code` ([`VFile`][vfile] or `string`)
-  — JavaScript function body to run
+- `code` ([`VFile`][vfile] 或 `string`)
+  — 要运行的 JavaScript 函数体
 - `options` ([`RunOptions`][api-run-options], **required**)
-  — configuration
+  — 配置
 
-###### Returns
+###### 返回
 
-Promise to a module ([`Promise<MDXModule>` from
-`mdx/types.js`][mdx-types-module]);
-the result is an object with a `default` field set to the component;
-anything else that was exported is available too.
+对模块的承诺 ([`Promise<MDXModule>` 来自 `mdx/types.js`][mdx-types-module]);
+结果是一个对象，其中`default`字段设置为该组件；其他任何导出的内容也可用。
 
-###### Example
+###### 实例
 
-On the server:
+在服务器上:
 
 ```tsx
 import { compile } from "@mdx-js/mdx";
@@ -295,7 +281,7 @@ const code = String(await compile("# hi", { outputFormat: "function-body" }));
 // To do: send `code` to the client somehow.
 ```
 
-On the client:
+在客户端上:
 
 ```tsx
 import { run } from "@mdx-js/mdx";
@@ -316,34 +302,31 @@ console.log(Content);
 
 ### `runSync(code, options)`
 
-Run code, synchronously.
+同步运行代码。
 
-When possible please use the async [`run`][api-run].
+如果可能，请使用 async[`run`][api-run].
 
-> ☢️ **Danger**: this `eval`s JavaScript.
+> ☢️ **危险**: 这是 `eval` 的 JavaScript。
 
-###### Parameters
+###### 参数
 
 - `code` ([`VFile`][vfile] or `string`)
-  — JavaScript function body to run
+  — 要运行的 JavaScript 函数体
 - `options` ([`RunOptions`][api-run-options], **required**)
-  — configuration
+  — 配置
 
-###### Returns
+###### 返回
 
 Module ([`MDXModule` from `mdx/types.js`][mdx-types-module]).
 
 ### `CompileOptions`
 
-Configuration for `compile` (TypeScript type).
+`compile`的配置 (TypeScript type).
 
-`CompileOptions` is the same as [`ProcessorOptions`][api-processor-options]
-with the exception that the `format` option supports a `'detect'` value,
-which is the default.
-The `'detect'` format means to use `'md'` for files with an extension in
-`mdExtensions` and `'mdx'` otherwise.
+`CompileOptions`与[`ProcessorOptions`][api-processor-options]相同，不同之处在于`format`选项支持默认的`'detect'`值。
+`'detect'`格式意味着对扩展名为`mdExtensions`的文件使用`'md'`，否则使用`mdx`。
 
-###### Type
+###### 类型
 
 ```tsx
 /**
@@ -359,15 +342,11 @@ type CompileOptions = Omit<ProcessorOptions, "format"> & {
 
 ### `EvaluateOptions`
 
-Configuration for `evaluate` (TypeScript type).
+`evaluate`的配置 (TypeScript type).
 
-`EvaluateOptions` is the same as [`CompileOptions`][api-compile-options],
-except that the options `baseUrl`, `jsx`, `jsxImportSource`, `jsxRuntime`,
-`outputFormat`, `pragma`, `pragmaFrag`, `pragmaImportSource`, and
-`providerImportSource` are not allowed, and that
-[`RunOptions`][api-run-options] are also used.
+`EvaluateOptions` 与相同 [`CompileOptions`][api-compile-options],除了选项`baseUrl`, `jsx`, `jsxImportSource`, `jsxRuntime`,`outputFormat`, `pragma`, `pragmaFrag`, `pragmaImportSource`, 和`providerImportSource` 不允许, 并且还使用了[`RunOptions`][api-run-options]。
 
-###### Type
+###### 类型
 
 ```tsx
 /**
@@ -390,9 +369,9 @@ type EvaluateOptions = Omit<
 
 ### `Fragment`
 
-Represent the children, typically a symbol (TypeScript type).
+表示子级，通常是一个符号（TypeScript 类型）。
 
-###### Type
+###### 类型
 
 ```ts
 type Fragment = unknown;
@@ -400,55 +379,54 @@ type Fragment = unknown;
 
 ### `Jsx`
 
-Create a production element (TypeScript type).
+创建生产元素（TypeScript 类型）。
 
-###### Parameters
+###### 参数
 
 - `type` (`unknown`)
-  — element type: `Fragment` symbol, tag name (`string`), component
+  — 元素类型: `Fragment` symbol, 标记名称 (`string`), 组件
 - `properties` (`Properties`)
-  — element properties and `children`
-- `key` (`string` or `undefined`)
-  — key to use
+  — 元素属性和`children`
+- `key` (`string` 或 `undefined`)
+  — 要使用的 key
 
-###### Returns
+###### 返回
 
-Element from your framework (`JSX.Element`).
+框架中的元素 (`JSX.Element`).
 
 ### `JsxDev`
 
-Create a development element (TypeScript type).
+创建开发元素 (TypeScript type).
 
-###### Parameters
+###### 参数
 
 - `type` (`unknown`)
-  — element type: `Fragment` symbol, tag name (`string`), component
+  — 元素类型: `Fragment` symbol, tag name (`string`), component
 - `properties` (`Properties`)
-  — element properties and `children`
+  — 元素属性和`children`
 - `key` (`string` or `undefined`)
-  — key to use
+  — 要使用的 key
 - `isStaticChildren` (`boolean`)
-  — whether two or more children are passed (in an array), which is whether
-  `jsxs` or `jsx` would be used
+  — 是否传递了两个或多个子项（在数组中），即是否使用`jsxs`或`jsx`
 - `source` (`Source`)
-  — info about source
+  — 关于来源的信息
 - `self` (`unknown`)
-  — context object (`this`)
+  — 上下文对象 (`this`)
 
 ### `ProcessorOptions`
 
-Configuration for `createProcessor` (TypeScript type).
+配置`createProcessor` (TypeScript 类型).
 
-###### Fields
+###### 字段
 
-- `SourceMapGenerator` (`SourceMapGenerator` from [`source-map`][source-map],optional)
-  — add a source map (object form) as the `map` field on the resulting file
+- `SourceMapGenerator` (`SourceMapGenerator` 来自 [`source-map`][source-map],可选)
+  — 在生成的文件中添加源映射（对象形式）作为`map`字段
 
   <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
-  Assuming `example.mdx` from [§ Use][use] exists, then:
+  假设[§使用][use]中的`example.mdx`存在，则：
 
   ```tsx
   import fs from "node:fs/promises";
@@ -474,15 +452,14 @@ Configuration for `createProcessor` (TypeScript type).
 
   </details>
 
-- `baseUrl` (`URL` or `string`, optional, example: `import.meta.url`)
-  — use this URL as `import.meta.url` and resolve `import` and
-  `export … from` relative to it
+- `baseUrl` (`URL` 或 `string`, 可选, 实例: `import.meta.url`)
+  — 将此 URL 用作 `import.meta.url`并解析相对于它的`import`和`export … from`
 
       <details>
 
-        <summary>Expand example</summary>
+        <summary>展开示例</summary>
 
-        Say we have a module `example.js`:
+        假设我们有一个模块`example.js`：
 
         ```tsx
         import { compile } from "@mdx-js/mdx";
@@ -493,7 +470,7 @@ Configuration for `createProcessor` (TypeScript type).
         console.log(String(await compile(code, { baseUrl })));
         ```
 
-        …now running `node example.js` yields:
+        …现在运行`node-example.js`会产生：
 
         ```tsx
         import { jsx as _jsx } from "react/jsx-runtime";
@@ -508,26 +485,21 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `development` (`boolean`, default: `false`)
-  — whether to add extra info to error messages in generated code and use the
-  development automatic JSX runtime (`Fragment` and `jsxDEV` from
-  `/jsx-dev-runtime`);
-  when using the webpack loader (`@mdx-js/loader`) or the Rollup integration
-  (`@mdx-js/rollup`) through Vite, this is automatically inferred from how
-  you configure those tools
+- `development` (`boolean`, 默认: `false`)
+  — 是否向生成的代码中的错误消息添加额外信息，并使用开发自动 JSX 运行时（来自`/jsx-dev-runtime`的`Fragment`和`jsxDEV`）；
+  当通过 Vite 使用 webpack 加载程序（`@mdx-js/loader`）或 Rollup 集成（`@mdx-js/rollup`）时，这是从配置这些工具的方式自动推断出来的
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
-  Say we had some MDX that references a component that can be passed or
-  provided at runtime:
+  假设我们有一些 MDX 引用了一个可以在运行时传递或提供的组件：
 
   ```mdx
   **Note**<NoteIcon />: some stuff.
   ```
 
-  And a module to evaluate that:
+  以及一个评估模块：
 
   ```tsx
   import fs from "node:fs/promises";
@@ -541,7 +513,7 @@ Configuration for `createProcessor` (TypeScript type).
   console.log(MDXContent({}));
   ```
 
-  …running that would normally (production) yield:
+  …正常（生产）产量的运行:
 
   ```txt
   Error: Expected component `NoteIcon` to be defined: you likely forgot to import, pass, or provide it.
@@ -551,7 +523,7 @@ Configuration for `createProcessor` (TypeScript type).
       at main (…/example.js:11:15)
   ```
 
-  …but if we add `development: true` to our example:
+  …但如果我们在我们的例子中加上`development: true`：
 
   ```diff
   @@ -7,6 +7,6 @@
@@ -568,7 +540,7 @@ Configuration for `createProcessor` (TypeScript type).
   console.log(MDXContent({}))
   ```
 
-  …and we’d run it again, we’d get:
+  …我们会再次运行它，我们会得到:
 
   ```txt
   Error: Expected component `NoteIcon` to be defined: you likely forgot to import, pass, or provide it.
@@ -582,21 +554,20 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `elementAttributeNameCase` (`'html'` or `'react`, default: `'react'`)
-  — casing to use for attribute names;
-  HTML casing is for example `class`, `stroke-linecap`, `xml:lang`;
-  React casing is for example `className`, `strokeLinecap`, `xmlLang`;
-  for JSX components written in MDX, the author has to be aware of which
-  framework they use and write code accordingly;
-  for AST nodes generated by this project, this option configures it
+- `elementAttributeNameCase` (`'html'` 或 `'react`, 默认: `'react'`)
+  — 用于属性名称的大小写；
+  HTML 大小写例如， `class`, `stroke-linecap`, `xml:lang`;
+  React 套管例如， `className`, `strokeLinecap`, `xmlLang`;
+  对于用 MDX 编写的 JSX 组件，作者必须知道它们使用的是哪个框架，并相应地编写代码；
+  对于此项目生成的 AST 节点，此选项对其进行配置
 
-- `format` (`'md'` or `'mdx'`, default: `'mdx'`)
-  — format of the file;
-  `'md'` means treat as markdown and `'mdx'` means treat as [MDX][mdx-syntax]
+- `format` (`'md'` 或 `'mdx'`, 默认: `'mdx'`)
+  — 文件的格式；
+  `'md'`意味着视为 markdown，`'mdx'`意味着将其视为[mdx][mdx-syntax]
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
   ```tsx
   compile("…"); // Seen as MDX.
@@ -606,22 +577,20 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `jsx` (`boolean`, default: `false`)
-  — whether to keep JSX;
-  the default is to compile JSX away so that the resulting file is
-  immediately runnable.
+- `jsx` (`boolean`, 默认: `false`)
+  — 是否保留 JSX；默认情况是编译掉 JSX，这样生成的文件就可以立即运行。
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
-  If `file` is the contents of `example.mdx` from [§ Use][use], then:
+  如果`file`是[§使用][Use]中`example.mdx`的内容，则：
 
   ```tsx
   compile(file, { jsx: true });
   ```
 
-  …yields this difference:
+  …产生这种差异:
 
   ```diff
   -import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from 'react/jsx-runtime'
@@ -657,22 +626,20 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `jsxImportSource` (`string`, default: `'react'`)
-  — place to import automatic JSX runtimes from;
-  when in the `automatic` runtime, this is used to define an import for
-  `Fragment`, `jsx`, `jsxDEV`, and `jsxs`
+- `jsxImportSource` (`string`, 默认: `'react'`)
+  — 从中导入自动 JSX 运行时的位置；在`automatic`运行时，它用于定义`Fragment`、`jsx`、`jsxDEV`和`jsxs`的导入
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
-  If `file` is the contents of `example.mdx` from [§ Use][use], then:
+  如果`file`是[§使用][Use]中`example.mdx`的内容，则：
 
   ```tsx
   compile(file, { jsxImportSource: "preact" });
   ```
 
-  …yields this difference:
+  …产生这种差异:
 
   ```diff
   -import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from 'react/jsx-runtime'
@@ -681,68 +648,46 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `jsxRuntime` (`'automatic'` or `'classic'`, default: `'automatic'`)
-  — JSX runtime to use;
-  the automatic runtime compiles to `import _jsx from
-'$importSource/jsx-runtime'\n_jsx('p')`;
-  the classic runtime compiles to calls such as `h('p')`
+- `jsxRuntime` (`'automatic'` 或 `'classic'`, 默认: `'automatic'`)
+  — 要使用的 JSX 运行时；自动运行时编译为 `import _jsx from '$importSource/jsx-runtime'\n_jsx('p')`;经典的运行时编译为调用，例如 `h('p')`
 
-  > 👉 **Note**: support for the classic runtime is deprecated and will
-  > likely be removed in the next major version.
+  > 👉 **笔记**: 对经典运行时的支持已被弃用，并可能在下一个主要版本中被删除。
 
-                    <details>
+<details>
+  <summary>展开示例</summary>
 
-  {" "}
+如果`file`是[§使用][use]中`example.mdx`的内容，则：
 
-  {" "}
+```tsx
+compile(file, { jsxRuntime: "classic" });
+```
 
-  {" "}
+…产生这种差异:
 
-  {" "}
+```diff
+-import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from 'react/jsx-runtime'
++import React from 'react'
 
-  {" "}
+export function Thing() {
+-  return _jsx(_Fragment, {children: 'World'})
++  return React.createElement(React.Fragment, null, 'World!')
+}
+…
+```
 
-  {" "}
+</details>
 
-  {" "}
-
-  {" "}
-  <summary>Expand example</summary>
-
-  If `file` is the contents of `example.mdx` from [§ Use][use], then:
-
-  ```tsx
-  compile(file, { jsxRuntime: "classic" });
-  ```
-
-  …yields this difference:
-
-  ```diff
-  -import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from 'react/jsx-runtime'
-  +import React from 'react'
-
-  export function Thing() {
-  -  return _jsx(_Fragment, {children: 'World'})
-  +  return React.createElement(React.Fragment, null, 'World!')
-  }
-  …
-  ```
-
-                    </details>
-
-- `outputFormat` (`'function-body'` or `'program'`, default: `'program'`)
-  — output format to generate;
-  in most cases `'program'` should be used, it results in a whole program;
-  internally [`evaluate`][api-evaluate] uses `'function-body'` to compile to
-  code that can be passed to [`run`][api-run];
-  in some cases, you might want what `evaluate` does in separate steps, such
-  as when compiling on the server and running on the client.
+- `outputFormat` (`'function-body'` 或 `'program'`, 默认: `'program'`)
+  — 要生成的输出格式；
+  在大多数情况下，应该使用`program`，它会产生一个完整的程序；
+  内部[`evaluate`][api-evaluate]使用`'function-body'`编译为可以传递给[`run`][api-run]的代码；
+  在某些情况下，您可能希望在单独的步骤中执行`evaluate`的操作，例如在服务器上编译和在客户端上运行时。
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
-  With a module `example.js`:
+  使用模块`example.js`：
 
   ```tsx
   import { compile } from "@mdx-js/mdx";
@@ -779,39 +724,30 @@ Configuration for `createProcessor` (TypeScript type).
   return { no, default: MDXContent };
   ```
 
-  The `'program'` format will use import statements to import the runtime (and
-  optionally provider) and use an export statement to yield the `MDXContent`
-  component.
+  `'program'`格式将使用导入语句导入运行时（以及可选的提供程序），并使用导出语句生成`MDXContent`组件。
 
-  The `'function-body'` format will get the runtime (and optionally provider)
-  from `arguments[0]`, rewrite export statements, and use a return statement to
-  yield what was exported.
+  `'function-body'`格式将从`arguments[0]`中获取运行时（以及可选的提供程序），重写导出语句，并使用返回语句生成导出的内容。
 
       </details>
 
-- `mdExtensions` (`Array<string>`, default: `['.md', '.markdown', '.mdown',
+- `mdExtensions` (`Array<string>`, 默认: `['.md', '.markdown', '.mdown',
 '.mkdn', '.mkd', '.mdwn', '.mkdown', '.ron']`)
-  — list of markdown extensions, with dot
-  affects [§ Integrations][integrations]
+  — 带点影响的 markdownarkdown 扩展列表[§集成][integrations]
 
-- `mdxExtensions` (`Array<string>`, default: `['.mdx']`)
-  — list of MDX extensions, with dot;
-  affects [§ Integrations][integrations]
+- `mdxExtensions` (`Array<string>`, 默认: `['.mdx']`)
+  — MDX 扩展列表，带点；影响[§整合][integrations]
 
-- `pragma` (`string`, default: `'React.createElement'`)
-  — pragma for JSX, used in the classic runtime as an identifier for function
-  calls: `<x />` to `React.createElement('x')`;
-  when changing this, you should also define `pragmaFrag` and
-  `pragmaImportSource` too
+- `pragma` (`string`, 默认: `'React.createElement'`)
+  — 用于 JSX 的 pragma，在经典运行时中用作函数调用的标识符：`<x />`到`React.createElement('x')`;
+  更改此项时，还应定义`pragmaFrag`和`pragmaImportSource`
 
-  > 👉 **Note**: support for the classic runtime is deprecated and will
-  > likely be removed in the next major version.
+  > 👉 **笔记**: 对经典运行时的支持已被弃用，并可能在下一个主要版本中被删除。
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
-  If `file` is the contents of `example.mdx` from [§ Use][use], then:
+  如果`file`是[§Use][use]中`example.mdx`的内容，则：
 
   ```tsx
   compile(file, {
@@ -822,7 +758,7 @@ Configuration for `createProcessor` (TypeScript type).
   });
   ```
 
-  …yields this difference:
+  …产生这种差异:
 
   ```diff
   -import React from 'react'
@@ -837,45 +773,35 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `pragmaFrag` (`string`, default: `'React.Fragment'`)
-  — pragma for fragment symbol, used in the classic runtime as an identifier
-  for unnamed calls: `<>` to `React.createElement(React.Fragment)`;
-  when changing this, you should also define `pragma` and `pragmaImportSource`
-  too
+- `pragmaFrag` (`string`, 默认: `'React.Fragment'`)
+  — 用于片段符号的 pragma，在经典运行时用作未命名调用的标识符: `<>` 到 `React.createElement(React.Fragment)`;
+  更改此项时，还应定义`pragma`和`pragmaImportSource`
 
-  > 👉 **Note**: support for the classic runtime is deprecated and will
-  > likely be removed in the next major version.
+  > 👉 **笔记**: 对经典运行时的支持已被弃用，并可能在下一个主要版本中被删除。
 
-- `pragmaImportSource` (`string`, default: `'react'`)
-  — where to import the identifier of `pragma` from, used in the classic
-  runtime;
-  to illustrate, when `pragma` is `'a.b'` and `pragmaImportSource` is `'c'`
-  the following will be generated: `import a from 'c'` and things such as
-  `a.b('h1', {})`;
-  when changing this, you should also define `pragma` and `pragmaFrag` too
+- `pragmaImportSource` (`string`, 默认: `'react'`)
+  — 从何处导入在经典运行时中使用的`pragma`的标识符；
+  来说明,当`pragma`为`'a.b'`且`pragmaImportSource`为`'c'`时，将生成以下内容: `import a from 'c'` 以及诸如 `a.b('h1', {})`;
+  更改此项时，还应定义`pragma`和`pragmaFrag`
 
-  > 👉 **Note**: support for the classic runtime is deprecated and will
-  > likely be removed in the next major version.
+  > 👉 **笔记**: 对经典运行时的支持已被弃用，并可能在下一个主要版本中被删除。
 
-- `providerImportSource` (`string`, optional, example: `'@mdx-js/react'`)
-  — place to import a provider from;
-  normally it’s used for runtimes that support context (React, Preact), but
-  it can be used to inject components into the compiled code;
-  the module must export and identifier `useMDXComponents` which is called
-  without arguments to get an object of components (see
-  [`UseMdxComponents`][api-use-mdx-components])
+- `providerImportSource` (`string`, 可选, 实例: `'@mdx-js/react'`)
+  — 导入提供者的位置；
+  通常，它用于支持上下文（React、Preact）的运行时，但也可以用于将组件注入已编译的代码中；
+  模块必须导出和标识符`useMDXComponents`，该标识符在不带参数的情况下调用以获取组件的对象 (参看 [`UseMdxComponents`][api-use-mdx-components])
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
-  If `file` is the contents of `example.mdx` from [§ Use][use], then:
+  如果`file`是[§使用][use]中`example.mdx`的内容，则：
 
   ```tsx
   compile(file, { providerImportSource: "@mdx-js/react" });
   ```
 
-  …yields this difference:
+  …产生这种差异:
 
   ```diff
   import {Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs} from 'react/jsx-runtime'
@@ -908,15 +834,13 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `recmaPlugins` ([`PluggableList` from `unified`][unified-pluggable-list],
-  optional)
-  — list of recma plugins;
-  this is a new ecosystem, currently in beta, to transform [esast][] trees
-  (JavaScript)
+- `recmaPlugins` ([`PluggableList` from `unified`][unified-pluggable-list],可选)
+  — recma 插件列表;
+  这是一个新的生态系统，目前正处于测试阶段，用于改造[esast][]树(JavaScript)
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
   ```tsx
   import recmaMdxIsMdxComponent from "recma-mdx-is-mdx-component";
@@ -927,12 +851,12 @@ Configuration for `createProcessor` (TypeScript type).
       </details>
 
 - `rehypePlugins` ([`PluggableList` from `unified`][unified-pluggable-list],
-  optional)
-  — list of [rehype plugins][rehype-plugins]
+  可选)
+  — [rehype 插件]列表[rehype-plugins]
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
   ```tsx
   import rehypeKatex from "rehype-katex"; // Render math with KaTeX.
@@ -949,13 +873,13 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `remarkPlugins` ([`PluggableList` from `unified`][unified-pluggable-list],
-  optional)
-  — list of [remark plugins][remark-plugins]
+- `remarkPlugins` ([`PluggableList` 来自 `unified`][unified-pluggable-list],
+  可选)
+  — [remark 插件]列表[remark-plugins]
 
       <details>
 
-  <summary>Expand example</summary>
+  <summary>展开示例</summary>
 
   ```tsx
   import remarkFrontmatter from "remark-frontmatter"; // YAML and such.
@@ -969,70 +893,92 @@ Configuration for `createProcessor` (TypeScript type).
 
       </details>
 
-- `remarkRehypeOptions` ([`Options` from
-  `remark-rehype`][remark-rehype-options], optional)
-  — options to pass through to `remark-rehype`;
-  the option `allowDangerousHtml` will always be set to `true` and the MDX
-  nodes (see [`nodeTypes`][api-node-types]) are passed through;
-  In particular, you might want to pass configuration for footnotes if your
-  content is not in English
+- `remarkRehypeOptions` ([`Options` 来自 `remark-rehype`][remark-rehype-options], 可选)
+  — 要传递到`remark-rehype`的选项`;
+选项`allowDangerousHtml`将始终设置为`true`，并且MDX节点(餐卡 [`nodeTypes`][api-node-types])将通过；
+  特别是，如果您的内容不是英文的，您可能希望传递脚注的配置
 
-      <details>
+                                        <details>
 
-  <summary>Expand example</summary>
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+
+  {" "}
+  <summary>展开示例</summary>
 
   ```tsx
   compile({ value: "…" }, { remarkRehypeOptions: { clobberPrefix: "comment-1" } });
   ```
 
-      </details>
+                                        </details>
 
-- `stylePropertyNameCase` (`'css'` or `'dom`, default: `'dom'`)
-  — casing to use for property names in `style` objects;
-  CSS casing is for example `background-color` and `-webkit-line-clamp`;
-  DOM casing is for example `backgroundColor` and `WebkitLineClamp`;
-  for JSX components written in MDX, the author has to be aware of which
-  framework they use and write code accordingly;
-  for AST nodes generated by this project, this option configures it
+- `stylePropertyNameCase` (`'css'` 或 `'dom`, 默认: `'dom'`)
+  — 用于`style`对象中的属性名称的大小写；
+  例如，CSS 大小写为`background-color`，并且 `-webkit-line-clamp`;
+  DOM 大小写为例如`backgroundColor`和`WebkitLineClamp`;
+  对于用 MDX 编写的 JSX 组件，作者必须知道它们使用的是哪个框架，并相应地编写代码；
+  对于此项目生成的 AST 节点，此选项对其进行配置
 
-- `tableCellAlignToStyle` (`boolean`, default: `true`)
-  — turn obsolete `align` properties on `td` and `th` into CSS `style`
-  properties
+- `tableCellAlignToStyle` (`boolean`, 默认: `true`)
+  — 将`td`和`th`上过时的`align`属性转换为 CSS 的`style`属性
 
 ### `RunOptions`
 
-Configuration to run compiled code (TypeScript type).
+运行编译代码的配置 (TypeScript 类型).
 
-`Fragment`, `jsx`, and `jsxs` are used when the code is compiled in production
-mode (`development: false`).
-`Fragment` and `jsxDEV` are used when compiled in development mode
-(`development: true`).
-`useMDXComponents` is used when the code is compiled with
-`providerImportSource: '#'` (the exact value of this compile option doesn’t
-matter).
+在生产模式下编译代码时，将使用`Fragment`, `jsx`, 和 `jsxs` (`development: false`).
+在开发模式下编译时使用`Fragment` 和 `jsxDEV`(`development: true`).
+`useMDXComponents` 在使用`providerImportSource: '#'`编译代码时使用 (这个编译选项的确切值无关紧要).
 
-###### Fields
+###### 字段
 
-- `Fragment` ([`Fragment`][api-fragment], **required**)
-  — symbol to use for fragments
-- `baseUrl` (`URL` or `string`, optional, example: `import.meta.url`)
-  — use this URL as `import.meta.url` and resolve `import` and
-  `export … from` relative to it;
-  this option can also be given at compile time in `CompileOptions`;
-  you should pass this (likely at runtime), as you might get runtime errors
-  when using `import.meta.url` / `import` / `export … from ` otherwise
-- `jsx` ([`Jsx`][api-jsx], optional)
-  — function to generate an element with static children in production mode
-- `jsxDEV` ([`JsxDev`][api-jsx-dev], optional)
-  — function to generate an element in development mode
-- `jsxs` ([`Jsx`][api-jsx], optional)
-  — function to generate an element with dynamic children in production mode
-- `useMDXComponents` ([`UseMdxComponents`][api-use-mdx-components], optional)
-  — function to get components to use
+- `Fragment` ([`Fragment`][api-fragment], **必选**)
+  — 用于碎片的符号
+- `baseUrl` (`URL` 或 `string`, 可选，示例: `import.meta.url`)
+  — 将此 URL 用作`import.meta.url`，并解析与其相关的`import`和`export … from`；
+  也可以在编译时在`CompileOptions`中提供此选项；
+  您应该传递此信息（可能在运行时），因为在使用`import.meta.url` / `import` / `export … from `时可能会出现运行时错误，否则
+- `jsx` ([`Jsx`][api-jsx], 可选)
+  — 函数在生产模式下生成具有静态子项的元素
+- `jsxDEV` ([`JsxDev`][api-jsx-dev], 可选)
+  — 在开发模式中生成元素的函数
+- `jsxs` ([`Jsx`][api-jsx], 可选)
+  — 用于在生产模式中生成具有动态子项的元素的函数
+- `useMDXComponents` ([`UseMdxComponents`][api-use-mdx-components], 可选)
+  — 获取要使用的组件的函数
 
-###### Examples
+###### 示例
 
-A `/jsx-runtime` module will expose `Fragment`, `jsx`, and `jsxs`:
+`/jsx-runtime`模块将公开`Fragment`、`jsx`和`jsxs`：
 
 ```tsx
 import * as runtime from "react/jsx-runtime";
@@ -1040,7 +986,7 @@ import * as runtime from "react/jsx-runtime";
 const { default: Content } = await evaluate("# hi", { ...runtime, baseUrl: import.meta.url, ...otherOptions });
 ```
 
-A `/jsx-dev-runtime` module will expose `Fragment` and `jsxDEV`:
+`/jsx-dev-runtime`模块将公开`Fragment`和`jsxDEV`：
 
 ```tsx
 import * as runtime from "react/jsx-dev-runtime";
@@ -1053,7 +999,7 @@ const { default: Content } = await evaluate("# hi", {
 });
 ```
 
-Our providers will expose `useMDXComponents`:
+我们的提供商将公开`useMDXComponents`：
 
 ```tsx
 import * as provider from "@mdx-js/react";
@@ -1069,20 +1015,20 @@ const { default: Content } = await evaluate("# hi", {
 
 ### `UseMdxComponents`
 
-Get components (TypeScript type).
+获取组件 (TypeScript type).
 
-###### Parameters
+###### 参数
 
-There are no parameters.
+没有参数。
 
-###### Returns
+###### 返回
 
-Components ([`MDXComponents` from `mdx/types.js`][mdx-types-components]).
+组件 ([`MDXComponents` 来自 `mdx/types.js`][mdx-types-components]).
 
-## Types
+## 类型
 
-This package is fully typed with [TypeScript][].
-It exports the additional types
+此包是使用[TypeScript][]完全键入的.
+它导出附加类型
 [`CompileOptions`][api-compile-options],
 [`EvaluateOptions`][api-evaluate-options],
 [`Fragment`][api-fragment],
@@ -1092,106 +1038,58 @@ It exports the additional types
 [`RunOptions`][api-run-options], and
 [`UseMdxComponents`][api-use-mdx-components].
 
-For types of evaluated MDX to work, make sure the TypeScript `JSX` namespace is
-typed.
-This is done by installing and using the types of your framework, such as
-[`@types/react`](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/HEAD/types/react).
-See [§ Types][types] on our website for information.
+要使评估的 MDX 类型正常工作，请确保 TypeScript`JSX`命名空间是类型化的。
+这是通过安装和使用您的框架类型来完成的, 例如[`@types/react`](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/HEAD/types/react).
+有关信息，请参阅我们网站上的[§类型][types]。
 
-## Architecture
+## 架构
 
-To understand what this project does, it’s very important to first understand
-what unified does: please read through the [`unifiedjs/unified`][unified] readme
-(the part until you hit the API section is required reading).
+要了解这个项目的作用，首先了解 unified 的作用是非常重要的: 请通读[`unifiedjs/unified`][unified]自述文件 (达到 API 部分之前的部分是必读的).
 
-`@mdx-js/mdx` is a unified pipeline — wrapped so that most folks don’t need to
-know about unified: [`core.js#L65`][core].
-The processor goes through these steps:
+`@mdx-js/mdx` 是一个 unified 的管道——被包裹起来，这样大多数人就不需要了解 unified: [`core.js#L65`][core].处理器执行以下步骤:
 
-1. parse MDX (serialized markdown with embedded JSX, ESM, and expressions)
-   to mdast (markdown syntax tree)
-2. transform through remark (markdown ecosystem)
-3. transform mdast to hast (HTML syntax tree)
-4. transform through rehype (HTML ecosystem)
-5. transform hast to esast (JS syntax tree)
-6. do the work needed to get a component
-7. transform through recma (JS ecosystem)
-8. serialize esast as JavaScript
+1. 解析 MDX (使用嵌入式 JSX、ESM 和表达式进行序列化标记)到 mdast (markdown 语法树)
+2. 通过 remark 进行转换（markdown 生态系统）
+3. 将 mdast 转换为 hast（HTML 语法树）
+4. 通过 rehype 进行转换（HTML 生态系统）
+5. 将 hast 转换为 esast（JS 语法树）
+6. 完成获取组件所需的工作
+7. 通过 recma 进行转换（JS 生态系统）
+8. 将 esast 序列化为 JavaScript
 
-The _input_ is MDX (serialized markdown with embedded JSX, ESM, and
-expressions).
-The markdown is parsed with [`micromark/micromark`][micromark] and the embedded
-JS with one of its extensions
-[`micromark/micromark-extension-mdxjs`][micromark-extension-mdxjs] (which in
-turn uses [acorn][]).
-Then [`syntax-tree/mdast-util-from-markdown`][mdast-util-from-markdown] and its
-extension [`syntax-tree/mdast-util-mdx`][mdast-util-mdx] are used to turn the
-results from the parser into a syntax tree: [mdast][].
+_输入_ 是 MDX（使用嵌入的 JSX、ESM 和表达式进行序列化标记）。
+markdown 使用[`micromark/micromark`][micromark]和带有其扩展名[`micromark/micromark-extension-mdxjs`][micromark-extension-mdxjs](它反过来使用[acorn][])之一的嵌入式 JS 进行解析.
+然后[`syntax-tree/mdast-util-from-markdown`][mdast-util-from-markdown]及其扩展[`syntax-tree/mdast-util-mdx`][mdast-util-mdx]用于将解析器的结果转换为语法树: [mdast][].
 
-Markdown is closest to the source format.
-This is where [remark plugins][remark-plugins] come in.
-Typically, there shouldn’t be much going on here.
-But perhaps you want to support GFM (tables and such) or frontmatter?
-Then you can add a plugin here: `remark-gfm` or `remark-frontmatter`,
-respectively.
+Markdown 最接近源格式。
+这就是[remark 插件][remark-plugins]的用武之地。
+通常情况下，这里不应该发生太多事情。
+但也许你想支持 GFM（表格等）或 frontmatter？
+然后你可以在这里添加一个插件: `remark-gfm` 或 `remark-frontmatter`, 分别地.
 
-After markdown, we go to [hast][] (HTML).
-This transformation is done by
-[`syntax-tree/mdast-util-to-hast`][mdast-util-to-hast].
-Wait, why, what is HTML needed?
-Part of the reason is that we care about HTML semantics: we want to know that
-something is an `<a>`, not whether it’s a link with a resource (`[text](url)`)
-or a reference to a defined link definition (`[text][id]\n\n[id]: url`).
-So an HTML AST is _closer_ to where we want to go.
-Another reason is that there are many things folks need when they go MDX -> JS,
-markdown -> HTML, or even folks who only process their HTML -> HTML: use cases
-other than MDX.
-By having a single AST in these cases and writing a plugin that works on that
-AST, that plugin can supports _all_ these use cases (for example,
-[`rehypejs/rehype-highlight`][rehype-highlight] for syntax highlighting or
-[`rehypejs/rehype-katex`][rehype-katex] for math).
-So, this is where [rehype plugins][rehype-plugins] come in: most of the plugins,
-probably.
+markdown 后，我们去 [hast][] (HTML).
+此转换由[`syntax-tree/mdast-util-to-hast`][mdast-util-to-hast]完成.
+等等，为什么，HTML 需要什么？
+部分原因是我们关心 HTML 语义：我们想知道某个东西是`<a>`，而不是它是带有资源(`[text](url)`) 的链接还是对已定义链接定义的引用(`[text][id]\n\n[id]: url`).
+因此，HTML AST 更*接近*我们想要去的地方。
+另一个原因是，当人们使用 MDX -> JS,markdown -> HTML,甚至那些只处理 HTML -> HTML 的人时，他们需要很多东西：MDX 以外的用例。
+通过在这些情况下使用一个 AST，并编写一个在该 AST 上工作的插件，该插件可以支持*所有*这些用例 (例如, [`rehypejs/rehype-highlight`][rehype-highlight] 用于语法高亮显示 或 [`rehypejs/rehype-katex`][rehype-katex] 用于数学).
+所以，这就是[rehype plugins][rehype-plugins]的用武之地：可能是大多数插件。
 
-Then we go to JavaScript: [esast][] (JS; an
-AST which is compatible with estree but looks a bit more like other unist ASTs).
-This transformation is done by
-[`syntax-tree/hast-util-to-estree`][hast-util-to-estree].
-This is a new ecosystem that does not have utilities or plugins yet.
-But it’s where `@mdx-js/mdx` does its thing: where it adds imports/exports,
-where it compiles JSX away into `_jsx()` calls, and where it does the other cool
-things that it provides.
+然后我们转到 JavaScript: [esast][] (JS; AST 与 estree 兼容，但看起来更像其他中性 AST).
+此转换由[`syntax-tree/hast-util-to-estree`][hast-util-to-estree]完成.
+这是一个新的生态系统，还没有实用程序或插件。
+但这正是`@mdx-js/mdx`发挥作用的地方: 在其中添加导入/导出，在其中将 JSX 编译为`_jsx()`调用, 以及它在哪里做它提供的其他很酷的事情。
 
-Finally, The output is serialized JavaScript.
-That final step is done by [astring][], a
-small and fast JS generator.
+最后，输出是序列化的 JavaScript。
+最后一步是通过[跨步][]完成的, 一个小型且快速的 JS 生成器。
 
-## Compatibility
+## 兼容性
 
-Projects maintained by the unified collective are compatible with maintained
-versions of Node.js.
+unified 集体维护的项目与 Node.js 的维护版本兼容。
 
-When we cut a new major release, we drop support for unmaintained versions of
-Node.
-This means we try to keep the current release line, `@mdx-js/mdx@^3`,
-compatible with Node.js 16.
-
-## Security
-
-See [§ Security][security] on our website for information.
-
-## Contribute
-
-See [§ Contribute][contribute] on our website for ways to get started.
-See [§ Support][support] for ways to get help.
-
-This project has a [code of conduct][coc].
-By interacting with this repository, organization, or community you agree to
-abide by its terms.
-
-## License
-
-[MIT][] © Compositor and [Vercel][]
+当我们剪切一个新的主要版本时，我们会放弃对 Node 的未维护版本的支持。
+这意味着我们试图保持当前发布行`@mdx-js/mdx@^3`与 Node.js 16 兼容。
 
 [build-badge]: https://github.com/mdx-js/mdx/workflows/main/badge.svg
 [build]: https://github.com/mdx-js/mdx/actions

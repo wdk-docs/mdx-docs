@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="drawer-content">
             <Header />
             <Breadcrumb />
-            <div className="max-w-[100vw] px-6 pb-6 xl:pr-2">{children}</div>
+            <div className="max-w-[100vw] px-6 pb-6 xl:pr-2 min-h-screen">{children}</div>
             <Footer />
           </div>
           <div className="drawer-side z-40" style={{ scrollBehavior: "smooth", scrollPaddingTop: "5rem" }}>

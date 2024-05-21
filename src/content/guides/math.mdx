@@ -3,9 +3,9 @@ title: Math
 ---
 
 本指南探讨如何在 MDX 中支持数学（LaTeX）。 {/* more */}
-MDX 支持标准的降价语法 ([CommonMark][]).
+MDX 支持标准的 markdown 语法 ([CommonMark][]).
 这意味着默认情况下不支持数学。
-数学可以通过使用备注插件来启用: [`remark-math`][remark-math],与重新键入的插件相结合: 不是[`rehype-katex`][rehype-katex] (KaTeX) 就是 [`rehype-mathjax`][rehype-mathjax](MathJax).
+数学可以通过使用 remark 插件来启用: [`remark-math`][remark-math],与重新键入的插件相结合: 不是[`rehype-katex`][rehype-katex] (KaTeX) 就是 [`rehype-mathjax`][rehype-mathjax](MathJax).
 与其他注释和重新键入插件一样，它们可以[分别在`ProcessorOptions`中的`remarkPlugins`和`rehypePlugins`中传递][processor-options].
 有关插件的更多信息，请参阅[§扩展 MDX][extend]
 

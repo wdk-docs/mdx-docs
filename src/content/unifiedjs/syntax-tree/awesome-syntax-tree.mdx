@@ -1,0 +1,124 @@
+---
+title: awesome syntax-tree
+---
+
+> 精心策划的语法树列表, **[unist][]**, **[mdast][]**
+> (markdown), **[hast][]** (HTML), **[xast][]** (XML), **[esast][]** (JS), and
+> **[nlcst][]** (prose) resources.
+
+**syntax-tree** 是一个组织住房 **[unist][]** 及其主要实现 **[mdast][]**, **[hast][]**, **[xast][]**, **[esast][]**, 和
+**[nlcst][]**.
+**[unist][]** 是语法树的规范，它附带了一个大型的 JavaScript 实用程序生态系统，用于处理这些树。
+在 **[unist][]** 及其实现之上，还有 **[unified][]** 的其余部分，它们处理各种内容。
+
+## 官方
+
+- [syntax-tree](https://github.com/syntax-tree) - 组织.
+- [unist](https://github.com/syntax-tree/unist) - **unist** 规格.
+- [mdast](https://github.com/syntax-tree/mdast) - **mdast** (markdown) 规格.
+- [hast](https://github.com/syntax-tree/hast) - **hast** (HTML) 规格.
+- [xast](https://github.com/syntax-tree/xast) - **xast** (XML) 规格.
+- [esast](https://github.com/syntax-tree/esast) - **esast** (JS) 规格.
+- [nlcst](https://github.com/syntax-tree/nlcst) - **nlcst** (prose) 规格.
+- [unified](https://github.com/unifiedjs/unified) - 生态系统.
+- [unifiedjs.com](https://unifiedjs.com) - 生态系统网站。
+
+## unist 实用程序
+
+- [unist-builder](https://github.com/syntax-tree/unist-builder) - 使用良好的语法创建树。
+- [unist-util-is](https://github.com/syntax-tree/unist-util-is) - 检查节点是否通过测试。
+- [unist-util-visit](https://github.com/syntax-tree/unist-util-visit) - 访问节点。
+- [unist-util-map](https://github.com/syntax-tree/unist-util-map) -通过映射所有节点创建一个新树。
+- [unist-util-filter](https://github.com/syntax-tree/unist-util-filter) - 使用通过筛选的节点创建一个新树。
+- [unist-util-remove](https://github.com/syntax-tree/unist-util-remove) - 从树中删除节点。
+- [unist-util-select](https://github.com/syntax-tree/unist-util-select) - 使用类似 CSS 的选择器选择节点。
+- [unist-util-inspect](https://github.com/syntax-tree/unist-util-inspect) - 检查节点。
+- [unist-util-assert](https://github.com/syntax-tree/unist-util-assert) - 断言节点。
+
+[查找更多实用程序 »](https://github.com/syntax-tree/unist#list-of-utilities)
+
+## mdast 实用程序
+
+- [mdast-util-to-hast](https://github.com/syntax-tree/mdast-util-to-hast) - 转换为 hast。
+- [mdast-util-to-nlcst](https://github.com/syntax-tree/mdast-util-to-nlcst) - 转换为 nlcst。
+- [mdast-util-to-string](https://github.com/syntax-tree/mdast-util-to-string) - 获取节点的纯文本内容。
+- [mdast-util-definitions](https://github.com/syntax-tree/mdast-util-definitions) - 查找定义。
+- [mdast-util-toc](https://github.com/syntax-tree/mdast-util-toc) - 生成目录。
+- [mdast-normalize-headings](https://github.com/syntax-tree/mdast-normalize-headings) - 固定航向深度。
+- [mdast-util-heading-range](https://github.com/syntax-tree/mdast-util-heading-range) - 使用标题作为范围。
+- [mdast-zone](https://github.com/syntax-tree/mdast-zone) - 使用注释作为范围和标记。
+- [mdast-util-assert](https://github.com/syntax-tree/mdast-util-assert) - 断言节点。
+
+[查找更多实用程序 »](https://github.com/syntax-tree/mdast#list-of-utilities)
+
+## hast 实用程序
+
+- [hastscript](https://github.com/syntax-tree/hastscript) - 使用良好的语法创建树。
+- [hast-util-from-dom](https://github.com/syntax-tree/hast-util-from-dom) - 从 DOM 树进行转换。
+- [hast-util-from-text](https://github.com/syntax-tree/hast-util-from-text) - Set plain-text content.
+- [hast-util-to-dom](https://github.com/syntax-tree/hast-util-to-dom) - Transform to a DOM tree.
+- [hast-util-to-jsx-runtime](https://github.com/syntax-tree/hast-util-to-jsx-runtime) - Transform to preact, react, solid, svelte, vue, etc.
+- [hast-util-to-html](https://github.com/syntax-tree/hast-util-to-html) - Transform to an HTML string.
+- [hast-util-to-mdast](https://github.com/syntax-tree/hast-util-to-mdast) - Transform to mdast.
+- [hast-util-to-nlcst](https://github.com/syntax-tree/hast-util-to-nlcst) - Transform to nlcst.
+- [hast-util-to-text](https://github.com/syntax-tree/hast-util-to-text) - Get plain-text content.
+- [hast-util-to-xast](https://github.com/syntax-tree/hast-util-to-xast) - Transform to xast.
+- [hast-util-find-and-replace](https://github.com/syntax-tree/hast-util-find-and-replace) - Find and replace text in a tree.
+- [hast-util-sanitize](https://github.com/syntax-tree/hast-util-sanitize) - Sanitize a tree.
+- [hast-util-select](https://github.com/syntax-tree/hast-util-select) - `querySelector`, `querySelectorAll`, and `matches`.
+- [hast-util-has-property](https://github.com/syntax-tree/hast-util-has-property) - Check if a node has a property.
+- [hast-util-is-element](https://github.com/syntax-tree/hast-util-is-element) - Check if a node is a (certain) element.
+- [hast-util-assert](https://github.com/syntax-tree/hast-util-assert) - Assert nodes.
+
+[查找更多实用程序 »](https://github.com/syntax-tree/hast#list-of-utilities)
+
+## xast 实用程序
+
+- [xastscript](https://github.com/syntax-tree/xastscript) - 创建 xast 树。
+- [xast-util-feed](https://github.com/syntax-tree/xast-util-feed) - 构建提要 (RSS, Atom).
+- [xast-util-from-xml](https://github.com/syntax-tree/xast-util-from-xml) - 从 XML 字符串转换。
+- [xast-util-sitemap](https://github.com/syntax-tree/xast-util-sitemap) - 构建站点地图。
+- [xast-util-to-xml](https://github.com/syntax-tree/xast-util-to-xml) - 转换为 XML 字符串。
+
+[查找更多实用程序 »](https://github.com/syntax-tree/xast#list-of-utilities)
+
+## esast 实用程序
+
+- [estree-util-attach-comments](https://github.com/syntax-tree/estree-util-attach-comments) - 将注释附加到树上。
+- [estree-util-build-jsx](https://github.com/syntax-tree/estree-util-build-jsx) - 将 JSX 转换为函数调用。
+- [esast-util-from-js](https://github.com/syntax-tree/esast-util-from-js) - 从 JavaScript 字符串转换。
+- [estree-util-to-js](https://github.com/syntax-tree/estree-util-to-js) - 转换为 JavaScript 字符串。
+- [estree-util-value-to-estree](https://github.com/remcohaszing/estree-util-value-to-estree) - 将 JavaScript 值转换为 estree 表达式
+
+[查找更多实用程序 »](https://github.com/syntax-tree/esast#list-of-utilities)
+
+## nlcst 实用程序
+
+- [nlcst-search](https://github.com/syntax-tree/nlcst-search) - 在树中搜索图案。
+- [nlcst-to-string](https://github.com/syntax-tree/nlcst-to-string) - 转换为字符串。
+- [nlcst-is-literal](https://github.com/syntax-tree/nlcst-is-literal) - 检查节点是否是字面意思。
+- [nlcst-normalize](https://github.com/syntax-tree/nlcst-normalize) - 规范化一个单词以便于比较。
+- [nlcst-test](https://github.com/syntax-tree/nlcst-test) - 断言节点。
+
+[查找更多实用程序 »](https://github.com/syntax-tree/nlcst#list-of-utilities)
+
+## 相关列表
+
+- [awesome unified](https://github.com/unifiedjs/awesome-unified)
+- [awesome remark](https://github.com/remarkjs/awesome-remark)
+- [awesome rehype](https://github.com/rehypejs/awesome-rehype)
+- [awesome retext](https://github.com/retextjs/awesome-retext)
+- [awesome mdx](https://github.com/mdx-js/awesome)
+
+[license]: https://creativecommons.org/licenses/by/4.0/
+[license-badge]: https://mirrors.creativecommons.org/presskit/buttons/80x15/svg/by.svg
+[author]: https://wooorm.com
+[awesome-badge]: https://awesome.re/badge.svg
+[self]: https://github.com/remarkjs/awesome-remark
+[unified]: https://github.com/unifiedjs/unified
+[unist]: https://github.com/syntax-tree/unist
+[hast]: https://github.com/syntax-tree/hast
+[xast]: https://github.com/syntax-tree/xast
+[esast]: https://github.com/syntax-tree/esast
+[mdast]: https://github.com/syntax-tree/mdast
+[nlcst]: https://github.com/syntax-tree/nlcst

@@ -1,0 +1,158 @@
+---
+title: "Highlight.js vs Shiki"
+---
+
+西蒙·麦克唐纳的头像
+西蒙·麦克唐纳
+2021 年 11 月 9 日
+
+建筑师 LogoPhoto by Prateek Katyal
+
+JavaScript 最棒的地方之一就是它的生态系统。似乎总有一个包可以完成你的任务。然而，JavaScript 最糟糕的一点是，许多包经常做同样的事情。
+
+哪种包装最好并不总是显而易见的。我们如何知道该使用哪一个？我们的评判标准是：
+
+- GitHub stars
+- npm 下载
+- 包装尺寸
+- 表演
+
+由于我们将在 AWS Lambda 函数中执行代码，因此我们希望牢记以下最佳实践:
+
+1. 最大限度地减少部署包的大小以满足其运行时的需要
+2. 控制函数部署包中的依赖项
+3. 快速执行
+
+这篇文章将比较两个流行的包，它们在 JavaScript、highlight.js 和 shiki 中使用 markdown-it 进行语法高亮显示。
+
+## 人气
+
+首先，让我们来看看每个套餐的受欢迎程度。
+
+| highlight.js | 人气            | shiki     |
+| ------------ | --------------- | --------- |
+| 7,431,930    | 每周 npm 下载量 | 1,532,823 |
+| 23k          | GitHub 星数     | 8.5k      |
+
+在这种情况下，`highlight.js` 是最大的赢家，但流行度并不是比较包的最佳方式。查看这两个包的 GitHub 存储库，你可以发现这两个软件包都在积极开发中，并且在过去的一个月里发布了新版本。
+
+这并没有告诉我们太多，所以让我们去称重吧。
+
+## 大小
+
+使用 BundlePhobia 来检查捆绑包的大小，shiki 脱颖而出，因为它是更轻的包装。
+
+| highlight.js | 大小                 | shiki   |
+| ------------ | -------------------- | ------- |
+| 886.4kB      | 束大小               | 108.4kB |
+| 279.5kB      | 束大小 + gzip’d      | 30.9kB  |
+| 5.59s        | 下载时间 (缓慢的 3G) | 0.62s   |
+| 319ms        | 下载时间 (4G)        | 35ms    |
+
+但让我们通过运行慢速 deps 来深入了解。此命令将显示每个包的大小和安装时间，包括其依赖项。
+
+```mdx
+npx slow-deps
+Analyzing 2 dependencies...
+[====================] 100% 0.0s
+
+---
+
+## | Dependency | Time | Size | # Deps |
+
+| shiki | 1.5s | 9.1 MB | 6 |
+| highlight.js | 824ms | 3.9 MB | 1 |
+
+---
+```
+
+虽然 shiki 一开始在这个类别中看起来不错，但 highlight.js 恢复得很好，因为它没有任何外部依赖关系，而 shiki 有五个，将其未封装的大小增加到 9.1 MB。
+
+## 功能
+
+好吧，`highlight.js` 很早就领先了，但这两个包的工作效果如何？我们将在两个包中运行相同的文本，看看会发生什么。
+
+### highlight.js
+
+以下代码:
+
+```js
+const hljs = require("highlight.js/lib/common");
+
+const html = hljs.highlight(
+  `// async
+let arc = require ('@architect/functions')
+exports. handler = arc. events. subscribe (handler)
+async function handler (event) {
+console. log (event)
+return
+}`,
+  { language: "js" }
+).value;
+
+console.log(html);
+```
+
+在浏览器中查看时会生成以下输出。
+
+highlight.js
+
+### shiki
+
+而使用 shiki 的类似代码：
+
+```js
+const shiki = require("shiki");
+
+shiki.getHighlighter({ theme: "nord" }).then((highlighter) => {
+  let html = highlighter.codeToHtml(
+    `// async
+    let arc = require ('@architect/functions')
+    exports. handler = arc. events. subscribe (handler)
+    async function handler (event) {
+    console. log (event)
+    return
+    }`,
+    "js"
+  );
+  console.log(html);
+});
+```
+
+在浏览器中查看时是这样的。
+
+shiki
+
+有什么区别？
+
+如果它没有跳出来，我会原谅你，但 exports 关键字在 highlight.js 和 shiki 中的颜色不同。除此之外，这两个包都使用 Atom One Dark 主题突出显示了代码。优势，没有人。
+
+## 速度
+
+最后，让我们比较一下这两个包的速度。我们将在上面的代码中添加 console.time，以评测每个包执行所需的时间。
+
+| highlight.js  | Speed | shiki                     |
+| ------------- | ----- | ------------------------- |
+| 6.588ms       | time  | 312.826ms                 |
+| $0.0000000147 | cost  | $0.0000006573             |
+| $0.0147       | cost  | per 1M executions $0.6573 |
+
+这就是 highlight.js 打出制胜一击的地方。Highlight.js 最终比 shiki 快 44 倍。速度对我们来说至关重要，原因有二：
+
+我们通过 Lambda 函数提供 HTML，我们希望以最快的执行时间将时间减少到第一个字节。
+Lambda 以毫秒为单位计费，因此较低的执行时间将有助于保持较低的成本。
+
+## 结论
+
+在评估了这两个包之后，很明显 highlight.js 是最适合我们用例的包，在我们评估的四个类别中有三个排名第一。
+
+| highlight.js | 类别 | shiki |
+| ------------ | ---- | ----- |
+| 🟢           | 人气 | 🔴    |
+| 🟢           | 重量 | 🔴    |
+| 🟡           | 功能 | 🟡    |
+| 🟢           | 速度 | 🔴    |
+
+这并不意味着你不应该使用 shiki，因为你的用例可能与我们的不同。例如，如果你正在进行静态站点生成（SSG），你可能不会像你的最终用户永远不会看到的那样担心整个构建时间。
+
+我们试图强调（双关语），在选择包裹时进行尽职调查是值得的。最受欢迎的套餐最终可能不是最佳选择，你可能会看到性能的剧烈波动，这可能会影响你的最终选择。

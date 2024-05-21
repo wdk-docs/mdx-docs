@@ -2,15 +2,7 @@
 title: "next-mdx-remote"
 ---
 
-一组轻型实用程序，允许在`getStaticProps`或`getServerSideProps`中加载mdx，并在客户端上正确水合。
-
-<Image
-  alt="next-mdx-remote"
-  srclight="/imgs/header.png"
-  srcdark="/imgs/header.png"
-  width="1500"
-  height="500"
-/>
+一组轻型实用程序，允许在`getStaticProps`或`getServerSideProps`中加载 mdx，并在客户端上正确水合。
 
 ---
 
@@ -50,16 +42,16 @@ export async function getStaticProps() {
 }
 ```
 
-虽然在同一个文件中看到这两个可能看起来很奇怪，但这是Next.js的一个很酷的地方——`getStaticProps`和`TestPage`，虽然出现在同一文件中，但在两个不同的地方运行。最终，您的浏览器捆绑包将完全不包括`getStaticProps`，也不包括它仅在服务器上使用的任何函数，因此`serialize`将完全从浏览器捆绑包中删除。
+虽然在同一个文件中看到这两个可能看起来很奇怪，但这是 Next.js 的一个很酷的地方——`getStaticProps`和`TestPage`，虽然出现在同一文件中，但在两个不同的地方运行。最终，您的浏览器捆绑包将完全不包括`getStaticProps`，也不包括它仅在服务器上使用的任何函数，因此`serialize`将完全从浏览器捆绑包中删除。
 
-> **IMPORTANT**: 将任何`mdx-remote`代码放入单独的`实用程序`文件时要非常小心。这样做可能会导致nextjs的代码分割能力出现问题——它必须能够清楚地确定哪些只在服务器端使用，哪些应该留在客户端捆绑包中。如果将`mdx-remote`代码放入外部实用程序文件中，但某些内容已损坏，请将其删除，然后在提交问题之前从上面的简单示例开始。
+> **IMPORTANT**: 将任何`mdx-remote`代码放入单独的`实用程序`文件时要非常小心。这样做可能会导致 nextjs 的代码分割能力出现问题——它必须能够清楚地确定哪些只在服务器端使用，哪些应该留在客户端捆绑包中。如果将`mdx-remote`代码放入外部实用程序文件中，但某些内容已损坏，请将其删除，然后在提交问题之前从上面的简单示例开始。
 
 ### 其他示例
 
 <details>
   <summary>正在分析Frontmatter</summary>
 
-Markdown通常与frontmatter配对，通常这意味着在处理Markdown的方式中添加一些额外的自定义处理。为了解决这个问题，`next-mdx-remote`提供了可选的frontmatter解析，可以通过将`parseFrontmatter: true`传递给`serialize`来启用。
+Markdown 通常与 frontmatter 配对，通常这意味着在处理 Markdown 的方式中添加一些额外的自定义处理。为了解决这个问题，`next-mdx-remote`提供了可选的 frontmatter 解析，可以通过将`parseFrontmatter: true`传递给`serialize`来启用。
 
 这是它的样子:
 
@@ -101,11 +93,11 @@ _[`vfile-matter`](https://github.com/vfile/vfile-matter) 用于解析前面的�
 <details>
   <summary>将自定义数据传递给具有`scope`的组件`</summary>
 
-`<MDXRemote />`接受一个`scope`属性，它使所有值都可在MDX中使用。
+`<MDXRemote />`接受一个`scope`属性，它使所有值都可在 MDX 中使用。
 
-`scope`参数中的每个键/值对都将作为javascript变量公开。因此，例如，您可以想象，如果您有一个类似于`{ foo: 'bar' }`的作用域，它将被解释为`const foo = 'bar'`。
+`scope`参数中的每个键/值对都将作为 javascript 变量公开。因此，例如，您可以想象，如果您有一个类似于`{ foo: 'bar' }`的作用域，它将被解释为`const foo = 'bar'`。
 
-这特别意味着您需要确保`scope`参数中的键名是有效的javascript变量名。例如，传入`{ 'my-variable-name': 'bar' }`会产生*错误*，因为键名不是有效的javascript变量名。
+这特别意味着您需要确保`scope`参数中的键名是有效的 javascript 变量名。例如，传入`{ 'my-variable-name': 'bar' }`会产生*错误*，因为键名不是有效的 javascript 变量名。
 
 还需要注意的是，`scope`变量必须作为组件的参数使用，不能在文本中间呈现。这在下面的示例中显示。
 
@@ -141,7 +133,7 @@ export async function getStaticProps() {
 
 您还可以将自定义数据传递到`serialize`中，后者将传递值并使其从结果中可用。通过将结果从`source`扩展到`<MDXRemote />`，数据将可用。
 
-请注意，传递到`serialize`的任何作用域值都需要是可序列化的，这意味着传递函数或组件是不可能的。此外，`scope`参数中命名的任何键都必须是有效的javascript变量名。如果需要传递不可序列化的自定义作用域，可以将`scope`直接传递到`<MDXRemote />'`中进行渲染。本节上面有一个如何做到这一点的示例。
+请注意，传递到`serialize`的任何作用域值都需要是可序列化的，这意味着传递函数或组件是不可能的。此外，`scope`参数中命名的任何键都必须是有效的 javascript 变量名。如果需要传递不可序列化的自定义作用域，可以将`scope`直接传递到`<MDXRemote />'`中进行渲染。本节上面有一个如何做到这一点的示例。
 
 ```jsx
 import { serialize } from "next-mdx-remote/serialize";
@@ -254,9 +246,9 @@ export async function getStaticProps() {
 <details>
   <summary>懒散的水合作用</summary>
 
-懒惰的水合作用会推迟客户端组件的水合作用。这是一种优化技术，用于提高应用程序的初始负载，但可能会在MDX内容中的任何动态内容的交互中引入意外延迟。
+懒惰的水合作用会推迟客户端组件的水合作用。这是一种优化技术，用于提高应用程序的初始负载，但可能会在 MDX 内容中的任何动态内容的交互中引入意外延迟。
 
-_笔记: 这将在渲染的MDX周围添加一个额外的包装`div`，这对于避免[渲染过程中的水合不匹配](https://reactjs.org/docs/react-dom.html#hydrate)是必要的._
+_笔记: 这将在渲染的 MDX 周围添加一个额外的包装`div`，这对于避免[渲染过程中的水合不匹配](https://reactjs.org/docs/react-dom.html#hydrate)是必要的._
 
 ```jsx
 import { serialize } from "next-mdx-remote/serialize";
@@ -290,7 +282,7 @@ export async function getStaticProps() {
 
 - **`serialize(source: string, { mdxOptions?: object, scope?: object, parseFrontmatter?: boolean })`**
 
-  **`serialize`** 使用一个MDX字符串。它也可以选择性地被传递[直接传递给MDX](https://mdxjs.com/docs/extending-mdx/)的选项, 以及可以包括在mdx作用域中的作用域对象。该函数返回一个要直接传递到`<MDXRemote />`中的对象。
+  **`serialize`** 使用一个 MDX 字符串。它也可以选择性地被传递[直接传递给 MDX](https://mdxjs.com/docs/extending-mdx/)的选项, 以及可以包括在 mdx 作用域中的作用域对象。该函数返回一个要直接传递到`<MDXRemote />`中的对象。
 
   ```ts
   serialize(
@@ -317,7 +309,7 @@ export async function getStaticProps() {
 
 - **`<MDXRemote compiledSource={string} components?={object} scope?={object} lazy?={boolean} />`**
 
-  **`<MDXRemote />`**使用`serialize`的输出以及可选的组件参数。其结果可以直接渲染到组件中。要推迟内容的水合并立即提供静态标记，请传递`lazy`道具。
+  **`<MDXRemote />`**使用`serialize`的输出以及可选的组件参数。其结果可以直接渲染到组件中。要推迟内容的水合并立即提供静态标记，请传递`lazy`属性。
 
   ```ts
   <MDXRemote {...source} components={components} />
@@ -325,7 +317,7 @@ export async function getStaticProps() {
 
 ### 替换默认组件
 
-渲染将在后台使用[`MDXProvider`](https://mdxjs.com/docs/using-mdx/#mdx-provider)。这意味着您可以用自定义组件替换HTML标记。这些组件在MDXJS[组件表](https://mdxjs.com/table-of-components/)中列出.
+渲染将在后台使用[`MDXProvider`](https://mdxjs.com/docs/using-mdx/#mdx-provider)。这意味着您可以用自定义组件替换 HTML 标记。这些组件在 MDXJS[组件表](https://mdxjs.com/table-of-components/)中列出.
 
 一个示例用例是使用首选样式库呈现内容。
 
@@ -342,50 +334,50 @@ const components = { Test, h2: (props) => <Typography variant="h2" {...props} />
 
 ## 背景与理论
 
-在Next.js应用程序中加载mdx文件并没有一个好的默认方法。之前，我们编写了[`next-mdx-enhanced`](https://github.com/hashicorp/next-mdx-enhanced)，以便能够将mdx文件渲染到布局中，并导入它们的前端内容以创建索引页。
+在 Next.js 应用程序中加载 mdx 文件并没有一个好的默认方法。之前，我们编写了[`next-mdx-enhanced`](https://github.com/hashicorp/next-mdx-enhanced)，以便能够将 mdx 文件渲染到布局中，并导入它们的前端内容以创建索引页。
 
-mdx增强版的此工作流很好，但引入了一些限制，这些限制已通过`next-mdx-remote`删除：
+mdx 增强版的此工作流很好，但引入了一些限制，这些限制已通过`next-mdx-remote`删除：
 
-- **文件内容必须是本地的。** 您不能将MDX文件存储在另一个repo、数据库等中。对于一个足够大的操作，最终会在创作内容的人和处理内容表示的人之间产生分歧。在同一个repo中重叠这两个关注点会使每个人的工作流程更加困难。
-- **您已绑定到基于文件系统的路由。** 您的页面是根据位置生成URL的。 或者，您可以使用`exportPathMap`重新映射它们，这会给作者带来困惑。 无论如何，以任何方式移动页面都会破坏一些东西——要么是页面的url，要么是您的`exportPathMap`配置。
-- **您最终会遇到性能问题。** Webpack是一个JavaScript捆绑器，强制它加载成百上千页的文本内容将耗尽您的内存需求。Webpack将每个页面存储为具有大量元数据的不同对象。我们的一个实现有几百个页面，达到了编译网站所需的8GB以上的内存。构建耗时超过25分钟。
-- **您将在构建关系数据的方式上受到限制。** 当您的整个数据结构被解析为javascript对象并保存在内存中时，很难将内容组织成动态的相关类别。
+- **文件内容必须是本地的。** 您不能将 MDX 文件存储在另一个 repo、数据库等中。对于一个足够大的操作，最终会在创作内容的人和处理内容表示的人之间产生分歧。在同一个 repo 中重叠这两个关注点会使每个人的工作流程更加困难。
+- **您已绑定到基于文件系统的路由。** 您的页面是根据位置生成 URL 的。 或者，您可以使用`exportPathMap`重新映射它们，这会给作者带来困惑。 无论如何，以任何方式移动页面都会破坏一些东西——要么是页面的 url，要么是您的`exportPathMap`配置。
+- **您最终会遇到性能问题。** Webpack 是一个 JavaScript 捆绑器，强制它加载成百上千页的文本内容将耗尽您的内存需求。Webpack 将每个页面存储为具有大量元数据的不同对象。我们的一个实现有几百个页面，达到了编译网站所需的 8GB 以上的内存。构建耗时超过 25 分钟。
+- **您将在构建关系数据的方式上受到限制。** 当您的整个数据结构被解析为 javascript 对象并保存在内存中时，很难将内容组织成动态的相关类别。
 
-因此，`next-mdx-remote`会更改整个模式，以便您不通过导入加载mdx内容，而是通过`getStaticProps`或`getServerProps`加载mdx属性 -- 您知道，这与加载任何其他数据的方式相同。该库提供了以高性能的方式序列化和水合MDX内容的工具。这消除了上面列出的所有限制，并且成本显著降低 -- `next-mdx-enhanced`是一个非常重的库，有很多自定义逻辑和[一些令人讨厌的限制](https://github.com/hashicorp/next-mdx-enhanced/issues/17). 我们的非正式测试表明，构建时间减少了50%或更多。
+因此，`next-mdx-remote`会更改整个模式，以便您不通过导入加载 mdx 内容，而是通过`getStaticProps`或`getServerProps`加载 mdx 属性 -- 您知道，这与加载任何其他数据的方式相同。该库提供了以高性能的方式序列化和水合 MDX 内容的工具。这消除了上面列出的所有限制，并且成本显著降低 -- `next-mdx-enhanced`是一个非常重的库，有很多自定义逻辑和[一些令人讨厌的限制](https://github.com/hashicorp/next-mdx-enhanced/issues/17). 我们的非正式测试表明，构建时间减少了 50%或更多。
 
-自从这个项目最初创建以来，Kent C Dods也做了一个类似的项目，[`mdx-bundler`](https://github.com/kentcdodds/mdx-bundler).该库支持在mdx文件中导入和导出（只要您手动读取每个导入的文件并传递其内容），并自动处理前端事务。如果你有很多文件都导入并使用不同的组件，你可能会从使用`mdx-bundler`中受益，因为`next-mdx-remote`目前只允许导入组件并使其在所有页面上可用。需要注意的是，尽管`mdx-bundler`的输出比`next-mdx-remote`的基本降价内容的输出至少大400%，但此功能还是有成本的。
+自从这个项目最初创建以来，Kent C Dods 也做了一个类似的项目，[`mdx-bundler`](https://github.com/kentcdodds/mdx-bundler).该库支持在 mdx 文件中导入和导出（只要您手动读取每个导入的文件并传递其内容），并自动处理前端事务。如果你有很多文件都导入并使用不同的组件，你可能会从使用`mdx-bundler`中受益，因为`next-mdx-remote`目前只允许导入组件并使其在所有页面上可用。需要注意的是，尽管`mdx-bundler`的输出比`next-mdx-remote`的基本 markdown 内容的输出至少大 400%，但此功能还是有成本的。
 
 ### 如何使用此创建博客？
 
-数据显示，所有开发人员工具99%的用例都在构建不必要的复杂个人博客。只是开玩笑。但说真的，如果你想为个人或小企业创建一个博客，可以考虑只使用普通的html和css。你绝对不需要使用一个沉重的全栈javascript框架来制作一个简单的博客。几年后，当你回来进行更新时，你会感谢自己，因为你的所有依赖项还没有10个突破性的版本。
+数据显示，所有开发人员工具 99%的用例都在构建不必要的复杂个人博客。只是开玩笑。但说真的，如果你想为个人或小企业创建一个博客，可以考虑只使用普通的 html 和 css。你绝对不需要使用一个沉重的全栈 javascript 框架来制作一个简单的博客。几年后，当你回来进行更新时，你会感谢自己，因为你的所有依赖项还没有 10 个突破性的版本。
 
-如果你真的坚持，请查看[我们的官方nextjs示例实现](https://github.com/vercel/next.js/tree/canary/examples/with-mdx-remote). 💖
+如果你真的坚持，请查看[我们的官方 nextjs 示例实现](https://github.com/vercel/next.js/tree/canary/examples/with-mdx-remote). 💖
 
 ## Caveats
 
 ### 环境目标
 
-`next-mdx-remote`生成的代码，用于实际呈现支持模块的mdx目标浏览器。如果需要支持较旧的浏览器，请考虑从`serialize`转换`compiledSource`输出。
+`next-mdx-remote`生成的代码，用于实际呈现支持模块的 mdx 目标浏览器。如果需要支持较旧的浏览器，请考虑从`serialize`转换`compiledSource`输出。
 
 ### `import` / `export`
 
-`import` and `export`语句不能在**MDX文件内**使用。如果您需要在MDX文件中使用组件，则应将它们作为道具提供给`<MDXRemote />`。
+`import` and `export`语句不能在**MDX 文件内**使用。如果您需要在 MDX 文件中使用组件，则应将它们作为属性提供给`<MDXRemote />`。
 
-希望这是有意义的，因为为了工作，导入必须相对于文件路径，并且该库允许从任何地方加载内容，而不是仅从设置的文件路径加载本地内容。至于导出，MDX内容被视为数据，而不是**模块**，因此我们无法访问任何可能从传递给 `next-mdx-remote`的MDX导出的值。
+希望这是有意义的，因为为了工作，导入必须相对于文件路径，并且该库允许从任何地方加载内容，而不是仅从设置的文件路径加载本地内容。至于导出，MDX 内容被视为数据，而不是**模块**，因此我们无法访问任何可能从传递给 `next-mdx-remote`的 MDX 导出的值。
 
 ## 安全
 
-这个库在客户端评估一个JavaScript字符串，这就是它MDX表示MDX内容的方式。如果不小心，将字符串求值为javascript可能是一种危险的做法，因为它可能会引发XSS攻击。重要的是要确保您只将`serialize`函数生成的`mdxSource`输入传递给`<MDXRemote />`，如文档中所述。 **不要将用户输入传递到`<MDXRemote />`。**
+这个库在客户端评估一个 JavaScript 字符串，这就是它 MDX 表示 MDX 内容的方式。如果不小心，将字符串求值为 javascript 可能是一种危险的做法，因为它可能会引发 XSS 攻击。重要的是要确保您只将`serialize`函数生成的`mdxSource`输入传递给`<MDXRemote />`，如文档中所述。 **不要将用户输入传递到`<MDXRemote />`。**
 
-如果您的网站上有一个CSP，不允许通过`eval`或`new Function()`进行代码评估，则需要放宽该限制才能使用`next-mdx-remote`，这可以使用[`unsafe-eval`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#common_sources)来完成.
+如果您的网站上有一个 CSP，不允许通过`eval`或`new Function()`进行代码评估，则需要放宽该限制才能使用`next-mdx-remote`，这可以使用[`unsafe-eval`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#common_sources)来完成.
 
 ## TypeScript
 
-此项目不包括用于TypeScript的本机类型。`serialize`和`<MDXRemote />`通常都有您所期望的类型，并且库还导出一个类型，您可以使用该类型键入`getStaticProps`的结果。
+此项目不包括用于 TypeScript 的本机类型。`serialize`和`<MDXRemote />`通常都有您所期望的类型，并且库还导出一个类型，您可以使用该类型键入`getStaticProps`的结果。
 
 - `MDXRemoteSerializeResult<TScope = Record<string, unknown>>`:表示`serialize`的返回值。可以传递`TScope`泛型类型来表示传入的作用域数据的类型。
 
-下面是TypeScript中一个简单实现的示例。对于TypeScript的每个配置，您可能不需要完全以这种方式实现类型——此示例只是演示了在需要时可以应用类型的位置。
+下面是 TypeScript 中一个简单实现的示例。对于 TypeScript 的每个配置，您可能不需要完全以这种方式实现类型——此示例只是演示了在需要时可以应用类型的位置。
 
 ```tsx
 import { GetStaticProps } from "next";
@@ -415,26 +407,26 @@ export const getStaticProps: GetStaticProps<{
 };
 ```
 
-## React服务器组件（RSC）&Next.js`app`目录支持
+## React 服务器组件（RSC）&Next.js`app`目录支持
 
 > **警告**
-> 我们认为`next-mdx-remote/rsc` API是不稳定的。请自行使用，并注意API和行为可能会在次要版本和/或补丁版本之间发生变化。
+> 我们认为`next-mdx-remote/rsc` API 是不稳定的。请自行使用，并注意 API 和行为可能会在次要版本和/或补丁版本之间发生变化。
 
-从`next-mdx-remote/rsc`导入支持在服务器组件中，特别是在next.js的`app`目录中使用`next-mdx-remote`。以前，序列化和渲染步骤是分开的，但以后的RSC使这种分离变得不必要。
+从`next-mdx-remote/rsc`导入支持在服务器组件中，特别是在 next.js 的`app`目录中使用`next-mdx-remote`。以前，序列化和渲染步骤是分开的，但以后的 RSC 使这种分离变得不必要。
 
 一些值得注意的差异:
 
-- `<MDXRemote />`现在接受`source`道具，而不是接受`next-mdx-remote/serialize`的序列化输出
-- 由于RSC不支持react context，因此无法再使用`@mdx-js/react`中的`MDXProvider`上下文提供自定义组件
-- 要在传递`parseFrontmatter: true`时访问MDX之外的frontmatter，请使用`next-MDX-remote/rsc`中公开的`compileMdx`方法
-- 由于渲染发生在服务器上，因此不再支持`lazy`道具
-- `<MDXRemote />`必须在服务器上呈现，因为它现在是一个异步组件。客户端组件可以作为MDX标记的一部分呈现
+- `<MDXRemote />`现在接受`source`属性，而不是接受`next-mdx-remote/serialize`的序列化输出
+- 由于 RSC 不支持 react context，因此无法再使用`@mdx-js/react`中的`MDXProvider`上下文提供自定义组件
+- 要在传递`parseFrontmatter: true`时访问 MDX 之外的 frontmatter，请使用`next-MDX-remote/rsc`中公开的`compileMdx`方法
+- 由于渲染发生在服务器上，因此不再支持`lazy`属性
+- `<MDXRemote />`必须在服务器上呈现，因为它现在是一个异步组件。客户端组件可以作为 MDX 标记的一部分呈现
 
-有关RSC的更多信息，请查看[Next.js文档](https://nextjs.org/docs/app/building-your-application/rendering/server-components).
+有关 RSC 的更多信息，请查看[Next.js 文档](https://nextjs.org/docs/app/building-your-application/rendering/server-components).
 
 ### 示例
 
-_假设在使用`app`目录的Next.js 13+应用程序中使用。_
+_假设在使用`app`目录的 Next.js 13+应用程序中使用。_
 
 #### 基本的
 
@@ -512,7 +504,7 @@ export default function Home() {
 }
 ```
 
-#### 访问MDX之外的Frontmatter
+#### 访问 MDX 之外的 Frontmatter
 
 ```tsx
 // app/page.js
@@ -540,4 +532,4 @@ This is from Server Components!
 
 ## 许可证
 
-[Mozilla公共许可证2.0版](./LICENSE)
+[Mozilla 公共许可证 2.0 版](./LICENSE)

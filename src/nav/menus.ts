@@ -57,48 +57,102 @@ const menus: any = {
   ],
   packages: [
     {
-      label: "@mdx-js/esbuild",
-      href: "/packages/esbuild",
+      label: "unified",
+      subMenus: [
+        {
+          label: "vfile",
+          href: "/packages/vfile",
+        },
+
+        {
+          label: "vfile-matter",
+          href: "/packages/vfile-matter",
+        },
+      ],
     },
     {
-      label: "@mdx-js/loader",
-      href: "/packages/loader",
+      label: "remark",
+      subMenus: [
+        {
+          label: "remark-mdx",
+          href: "/packages/remark-mdx",
+        },
+        {
+          label: "remark-mdx-frontmatter",
+          href: "/packages/remark-mdx-frontmatter",
+        },
+      ],
     },
     {
-      label: "@mdx-js/mdx",
-      href: "/packages/mdx",
+      label: "rehype",
+      subMenus: [
+        {
+          label: "rehype-highlight",
+          href: "/packages/rehype-highlight",
+        },
+        {
+          label: "rehype-pretty-code",
+          href: "/packages/rehype-pretty-code",
+        },
+      ],
     },
     {
-      label: "@mdx-js/node-loader",
-      href: "/packages/node-loader",
+      label: "retext",
+      subMenus: [
+        {
+          label: "retext",
+          href: "/packages/retextjs",
+        },
+      ],
     },
     {
-      label: "@mdx-js/preact",
-      href: "/packages/preact",
-    },
-    {
-      label: "@mdx-js/react",
-      href: "/packages/react",
-    },
-    {
-      label: "@mdx-js/rollup",
-      href: "/packages/rollup",
-    },
-    {
-      label: "@mdx-js/vue",
-      href: "/packages/vue",
-    },
-    {
-      label: "remark-mdx",
-      href: "/packages/remark-mdx",
-    },
-    {
-      label: "next-mdx-remote",
-      href: "/packages/next-mdx-remote",
-    },
-    {
-      label: "rehype-highlight",
-      href: "/packages/rehype-highlight",
+      label: "mdx",
+      subMenus: [
+        {
+          label: "next-mdx-remote",
+          href: "/packages/next-mdx-remote",
+        },
+        {
+          label: "@mdx-js/esbuild",
+          href: "/packages/esbuild",
+        },
+        {
+          label: "@mdx-js/loader",
+          href: "/packages/loader",
+        },
+        {
+          label: "@mdx-js/mdx",
+          href: "/packages/mdx",
+        },
+        {
+          label: "@mdx-js/node-loader",
+          href: "/packages/node-loader",
+        },
+        {
+          label: "@mdx-js/preact",
+          href: "/packages/preact",
+        },
+        {
+          label: "@mdx-js/react",
+          href: "/packages/react",
+        },
+        {
+          label: "@mdx-js/rollup",
+          href: "/packages/rollup",
+        },
+        {
+          label: "@mdx-js/vue",
+          href: "/packages/vue",
+        },
+        {
+          label: "Prism React 渲染器",
+          href: "/packages/prism-react-renderer",
+        },
+        {
+          label: "lowlight",
+          href: "/packages/lowlight",
+        },
+      ],
     },
   ],
   components: [
@@ -153,6 +207,134 @@ const menus: any = {
     {
       label: "自定义杂注",
       href: "/blog/custom-pragma",
+    },
+    {
+      label: "Highlight.js vs Shiki",
+      href: "/blog/highlightjs-vs-shiki",
+    },
+    {
+      label: "使用Next.js和Retype Pretty Code在MDX中复制到剪贴板按钮",
+      href: "/blog/copy-to-clipboard-button-nextjs-mdx-rehype",
+    },
+  ],
+  unifiedjs: [
+    {
+      label: "学习",
+      href: "/unifiedjs/learn",
+      subMenus: [
+        {
+          label: "简介unified",
+          href: "/unifiedjs/learn/introduction-to-unified",
+        },
+        {
+          label: "使用unified",
+          href: "/unifiedjs/learn/using-unified",
+        },
+        {
+          label: "使用插件",
+          href: "/unifiedjs/learn/using-plugins",
+        },
+        {
+          label: "语法树typescript",
+          href: "/unifiedjs/learn/syntax-trees-typescript",
+        },
+        {
+          label: "语法树导论",
+          href: "/unifiedjs/learn/introduction-to-syntax-trees",
+        },
+        {
+          label: "创建编辑器",
+          href: "/unifiedjs/learn/create-an-editor",
+        },
+        {
+          label: "创建插件",
+          href: "/unifiedjs/learn/create-a-plugin",
+        },
+        {
+          label: "树遍历类型脚本",
+          href: "/unifiedjs/learn/tree-traversal-typescript",
+        },
+        {
+          label: "查找节点",
+          href: "/unifiedjs/learn/find-node",
+        },
+        {
+          label: "remark table",
+          href: "/unifiedjs/learn/remark-table",
+        },
+        {
+          label: "remark html",
+          href: "/unifiedjs/learn/remark-html",
+        },
+        {
+          label: "remove node",
+          href: "/unifiedjs/learn/remove-node",
+        },
+        {
+          label: "构建语法树",
+          href: "/unifiedjs/learn/build-a-syntax-tree",
+        },
+        {
+          label: "树遍历",
+          href: "/unifiedjs/learn/tree-traversal",
+        },
+        {
+          label: "窄node打字脚本",
+          href: "/unifiedjs/learn/narrow-node-typescript",
+        },
+      ],
+    },
+    {
+      label: "社区",
+      subMenus: [
+        {
+          label: "社区",
+          href: "/unifiedjs/community",
+        },
+        {
+          label: "集体的",
+          href: "/unifiedjs/community/collective",
+        },
+      ],
+    },
+    {
+      label: "语法树",
+      href: "/unifiedjs/syntax-tree",
+      subMenus: [
+        {
+          label: "unist(通用语法树)",
+          href: "/unifiedjs/syntax-tree/unist",
+        },
+        {
+          label: "mdast(MD抽象语法树)",
+          href: "/unifiedjs/syntax-tree/mdast",
+        },
+        {
+          label: "hast(超文本抽象语法树)",
+          href: "/unifiedjs/syntax-tree/hast",
+        },
+        {
+          label: "xast(可扩展抽象语法树)",
+          href: "/unifiedjs/syntax-tree/xast",
+        },
+        {
+          label: "esast(ECMAScript抽象语法树)",
+          href: "/unifiedjs/syntax-tree/esast",
+        },
+        {
+          label: "nlcst(自然语言具体语法树)",
+          href: "/unifiedjs/syntax-tree/nlcst ",
+        },
+        {
+          label: "awesome",
+          href: "/unifiedjs/syntax-tree/awesome-syntax-tree ",
+        },
+      ],
+    },
+    {
+      label: "micromark",
+      href: "/unifiedjs/micromark",
+      subMenus: [],
     },
   ],
 };

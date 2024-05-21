@@ -1,0 +1,1 @@
+node index.mjs < example.md > example.html

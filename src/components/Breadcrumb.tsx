@@ -5,7 +5,7 @@ import { useSelectedLayoutSegments } from "next/navigation";
 
 export default function Breadcrumb() {
   const segments = useSelectedLayoutSegments();
-  console.log("segments", segments);
+  // console.log("segments", segments);
   let pathArr = [""];
   // const breadcrumbs = segments.map((segment) => {
   //   console.log("segment", segment.split("/"));

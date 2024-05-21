@@ -3,7 +3,7 @@ title: 语法突出显示
 ---
 
 本指南探讨如何将语法高亮显示应用于代码块。 {/* more */}
-MDX 支持标准的降价语法 ([CommonMark][]).
+MDX 支持标准的 markdown 语法 ([CommonMark][]).
 默认情况下，它不会将语法高亮显示应用于代码块。
 
 有两种方法可以实现语法高亮显示：在编译时或运行时。
@@ -134,7 +134,7 @@ console.log(1);
 这正是 remark 插件[`remark-mdx-code-meta`][remark-mdx-code-meta]的作用。
 它允许您在`meta`部分键入 JSX 属性，您可以通过`pre`的组件访问该部分。
 
-该插件和所有备注插件一样，可以[在`ProcessorOptions`中作为`remarkPlugins`传递][processor-options].
+该插件和所有 remark 插件一样，可以[在`ProcessorOptions`中作为`remarkPlugins`传递][processor-options].
 有关插件的更多信息，请参阅[§扩展 MDX][extend]
 
 [commonmark]: https://spec.commonmark.org/current/

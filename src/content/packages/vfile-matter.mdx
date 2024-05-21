@@ -1,0 +1,189 @@
+---
+title: vfile-matter
+---
+
+[vfile][]实用程序解析 YAML 前端事务。
+
+## 这是什么？
+
+这个包解析在文件中找到的 YAML frontmatter，并将其公开为`file.data.matter`。
+它可以选择性地剥离 frontmatter，这对不理解 frontmatter 的语言很有用，但剥离会使*处理理解*它的语言变得更困难，例如 markdown，因为它会混淆警告和错误的位置信息。
+
+## 我什么时候该用这个？
+
+Frontmatter 是内容前面的一种元数据格式。
+它通常是用 YAML 编写的，并且经常与 markdown 一起使用。
+当您希望具有一定标记经验的作者配置内容的显示位置或方式，或提供有关内容的元数据时，此机制非常有效。
+
+当使用带有 markdown 的 vfiles 时，您可能也会使用[remark][]，在这种情况下，您应该使用[`remark-frontmatter`][remark-frontmatter]，而不是剥离 frontmatter。
+
+## 安装
+
+此程序包[仅限 ESM][esm].
+在 Node.js（16+版本）中，使用[npm][]安装:
+
+```sh
+npm install vfile-matter
+```
+
+在 Deno 中使用[`esm.sh`][esmsh]:
+
+```js
+import { matter } from "https://esm.sh/vfile-matter@5";
+```
+
+在带有[`esm.sh`][esmsh]的浏览器中:
+
+```html
+<script type="module">
+  import { matter } from "https://esm.sh/vfile-matter@5?bundle";
+</script>
+```
+
+## 使用
+
+假设我们的文档`example.html`包含:
+
+```html
+---
+title: Hello, world!
+---
+
+<p>Some more text</p>
+```
+
+…我们的模块 `example.js` 如下所示:
+
+```js
+import { read } from "to-vfile";
+import { matter } from "vfile-matter";
+
+const file = await read("example.html");
+
+matter(file, { strip: true });
+
+console.log(file.data);
+console.log(String(file));
+```
+
+…现在运行`node example.js`会产生:
+
+```js
+{
+  matter: {
+    title: "Hello, world!";
+  }
+}
+```
+
+```html
+<p>Some more text</p>
+```
+
+## API
+
+此包导出标识符[`matter`][api-matter].
+没有默认导出。
+
+### `matter(file[, options])`
+
+解析文件中的 YAML 前端内容，并将其公开为`file.data.matter`。
+
+如果在文件中找不到任何东西，则除了`file.data.matter`被设置为空对象(`{}`)之外，什么都不会发生.
+
+如果文件值是`Uint8Array`，则假定它是用 UTF-8 编码的。
+
+###### 参数
+
+- `file` ([`VFile`][vfile])
+  — 虚拟文件
+- `options` ([`Options`][api-options], default: `{}`)
+  — 配置
+
+###### 返回
+
+Nothing (`undefined`).
+
+### `Options`
+
+配置 (TypeScript type).
+
+###### 字段
+
+- `strip` (`boolean`, default: `false`).
+  — 从文件中删除 YAML 前面的内容
+- `yaml` ([`YamlOptions`][api-yaml-options], default: `{}`)
+  — YAML 解析器的配置, 在`yaml.parse('', x)`中作为`x`传递给[`yaml`][yaml]
+
+### `YamlOptions`
+
+YAML 解析器的选项（TypeScript 类型）。
+
+相当于[`ParseOptions`](https://eemeli.org/yaml/#parse-options),
+[`DocumentOptions`](https://eemeli.org/yaml/#document-options),
+[`SchemaOptions`](https://eemeli.org/yaml/#schema-options), 和
+[`ToJsOptions`](https://eemeli.org/yaml/#tojs-options)的组合.
+
+###### 类型
+
+```ts
+type YamlOptions = ParseOptions & DocumentOptions & SchemaOptions & ToJsOptions;
+```
+
+## 类型
+
+此包是使用[TypeScript][]完全键入的.
+它导出附加类型[`Options`][api-options]和[`YamlOptions`][api-yaml-options].
+
+要键入`file.data.matter`，可以从`vfile`扩充`DataMap`，如下所示:
+
+```ts
+declare module "vfile" {
+  interface DataMap {
+    matter: {
+      // `file.data.matter.string` is typed as `string | undefined`.
+      title?: string | undefined;
+    };
+  }
+}
+
+export {}; // You may not need this, but it makes sure the file is a module.
+```
+
+## 兼容性
+
+unified 集体维护的项目与 Node.js 的维护版本兼容。
+
+当我们剪切一个新的主要版本时，我们会放弃对 Node 的未维护版本的支持。
+这意味着我们试图保持当前发布行`vfile-matter@^5`与 Node.js 16 兼容。
+
+[build-badge]: https://github.com/vfile/vfile-matter/workflows/main/badge.svg
+[build]: https://github.com/vfile/vfile-matter/actions
+[coverage-badge]: https://img.shields.io/codecov/c/github/vfile/vfile-matter.svg
+[coverage]: https://codecov.io/github/vfile/vfile-matter
+[downloads-badge]: https://img.shields.io/npm/dm/vfile-matter.svg
+[downloads]: https://www.npmjs.com/package/vfile-matter
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=vfile-matter
+[size]: https://bundlejs.com/?q=vfile-matter
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+[collective]: https://opencollective.com/unified
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
+[chat]: https://github.com/vfile/vfile/discussions
+[npm]: https://docs.npmjs.com/cli/install
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+[esmsh]: https://esm.sh
+[typescript]: https://www.typescriptlang.org
+[contributing]: https://github.com/vfile/.github/blob/main/contributing.md
+[support]: https://github.com/vfile/.github/blob/main/support.md
+[health]: https://github.com/vfile/.github
+[coc]: https://github.com/vfile/.github/blob/main/code-of-conduct.md
+[license]: license
+[author]: https://wooorm.com
+[vfile]: https://github.com/vfile/vfile
+[remark]: https://github.com/remarkjs/remark
+[remark-frontmatter]: https://github.com/remarkjs/remark-frontmatter
+[yaml]: https://github.com/eemeli/yaml
+[api-matter]: #matterfile-options
+[api-options]: #options
+[api-yaml-options]: #yamloptions

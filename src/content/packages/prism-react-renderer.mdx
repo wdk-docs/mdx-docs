@@ -1,0 +1,345 @@
+---
+title: Prism React Renderer
+---
+
+React 的精简 [Prism](https://github.com/PrismJS/prism) highlight 组件
+
+提供所有功能，可以直接在 React 和 React Native 中渲染 Prismjs 语法高亮显示的代码！
+
+## 介绍
+
+Prism React Renderer 在令人惊叹的[Docusaurus](https://docusaurus.io/)框架和许多其他框架中提供语法高亮显示功能。
+
+该库使用 Prism 标记代码，并提供一个小型渲染属性驱动组件，以快速将其渲染到 React 中。这就是为什么它甚至可以与 React Native 一起使用！它与 Prism 的修改版本捆绑在一起，不会污染全局名称空间，并附带[一些通用语言语法](./packages/generate-prism-languages/index.ts#L9-L23).
+
+_(还有一个[escape-hatch](https://github.com/FormidableLabs/prism-react-renderer#prism)可以使用您自己的 Prism 设置，以防万一)_
+
+它还附带了自己的[类 VSCode 主题格式](#theming)，这意味着默认情况下，您可以轻松地放入不同的主题，使用此库附带的主题，或以编程方式动态创建新主题。
+
+_(如果你只想使用你的 Prism CSS 文件主题，那也没问题)_
+
+## 安装
+
+此模块通过与节点捆绑的 npm 进行分发，应作为项目的`dependencies`之一进行安装：
+
+```sh
+# npm
+npm install --save prism-react-renderer
+# yarn
+yarn add prism-react-renderer
+# pnpm
+pnpm add prism-react-renderer
+```
+
+> Prism React Renderer 对`React`有对等依赖关系
+
+### 用法
+
+Prism React Renderer 为`<Highlight />`组件和`themes`提供了一个命名导出。要查看 Prism React Render 在使用基本样式时的效果，请从该存储库的根目录中查看`packages/demo`或运行`pnpm run start:demo`。
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Highlight, themes } from "prism-react-renderer";
+import styles from "styles.module.css";
+
+const codeBlock = `
+const GroceryItem: React.FC<GroceryItemProps> = ({ item }) => {
+  return (
+    <div>
+      <h2>{item.name}</h2>
+      <p>Price: {item.price}</p>
+      <p>Quantity: {item.quantity}</p>
+    </div>
+  );
+}
+`;
+
+export const App = () => (
+  <Highlight theme={themes.shadesOfPurple} code={codeBlock} language="tsx">
+    {({ className, style, tokens, getLineProps, getTokenProps }) => (
+      <pre style={style}>
+        {tokens.map((line, i) => (
+          <div key={i} {...getLineProps({ line })}>
+            <span>{i + 1}</span>
+            {line.map((token, key) => (
+              <span key={key} {...getTokenProps({ token })} />
+            ))}
+          </div>
+        ))}
+      </pre>
+    )}
+  </Highlight>
+);
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<App />);
+```
+
+### 自定义语言支持
+
+默认情况下，`prism-react-renderer`仅包括 Prism 支持的[基本语言集](https://github.com/FormidableLabs/prism-react-renderer/blob/c914fdea48625ba59c8022174bb3df1ed802ce4d/packages/generate-prism-languages/index.ts#L9-L23)。
+
+> _笔记_: 某些语言（如 Javascript）是其他语言捆绑包的一部分
+
+**根据应用程序的构建系统，在导入自定义语言之前，您可能需要 `await` `import` 或使用 `require` 以确保 `window.Prism` 存在。** 您可以通过在主`prismjs`包中包含它们的定义来添加对更多内容的支持：
+
+```js
+import { Highlight, Prism } from "prism-react-renderer";
+
+(typeof global !== "undefined" ? global : window).Prism = Prism;
+await import("prismjs/components/prism-applescript");
+/** or **/
+require("prismjs/components/prism-applescript");
+```
+
+## 基本属性
+
+这是你可能应该知道的属性列表。下面还有一些[高级属性](#advanced-props)。
+
+这些[高级属性](#advanced-props)中的大多数都包含在`defaultProps`中。
+
+### children
+
+> `function({})` | _required_
+
+这是用对象调用的。在"[Children Function](#children-function)"一节中了解有关此对象属性的更多信息。
+
+### language
+
+> `string` | _required_
+
+这是您的代码将突出显示为的语言。[此处](./packages/generate-prism-languages/index.ts#L9-L23)您可以看到开箱即用的所有支持语言的列表. 并不是所有的语言都包括在内，目前的语言列表有点随意. 你可以使用[escape-hatch](https://github.com/FormidableLabs/prism-react-renderer#prism)使用您自己的 Prism 设置，以防万一，或者[向捆绑的 Prism 添加更多语言](https://github.com/FormidableLabs/prism-react-renderer#faq)。
+
+### code
+
+> `string` | _required_
+
+这是将高亮显示的代码。
+
+## 高级属性
+
+### theme
+
+> `PrismTheme` | _optional; default is vsDark_
+
+如果传递了一个主题，它将用于生成样式属性，这些属性可以通过"[Children Function](#children-function)"中描述的属性获取器进行检索。
+
+在"[Theming](#theming)"一节中阅读有关如何主题化`prism-react-renderer`的更多信息。
+
+### prism
+
+> `prism` | _optional; 默认为 vendored 版本_
+
+这是[Prismjs](https://github.com/PrismJS/prism)库本身。
+Prism 的供应商版本作为此库的一部分提供（也导出）。
+这个 vendored 版本不会污染全局命名空间，而且精简了，而且与您可能安装的任何`prismjs`都不冲突。
+
+如果您只使用`Prism.highlight`，则可以选择使用`prism-react-renderer`的导出、供应商版本的 Prism。
+
+但如果您选择使用自己的 Prism 设置，只需将 Prism 作为属性：
+
+```jsx
+// 无论您以何种方式在此处检索Prism：
+import Prism from 'prismjs/components/prism-core';
+
+<Highlight prism={Prism} {/* ... */} />
+```
+
+## Children Function
+
+这是根据`<Highlight />`的输出渲染所需内容的位置。
+你这样使用它:
+
+```js
+const ui = (
+  <Highlight>
+    {(highlight) => (
+      // 在此处使用实用程序和道具getter, 如 highlight.className, highlight.getTokenProps, 等
+      <pre>{/* more jsx here */}</pre>
+    )}
+  </Highlight>
+);
+```
+
+这个`highlight`对象的属性可以分为两类，如下所示：
+
+### state
+
+这些属性是`<Highlight />`的平面输出。
+它们通常是`状态`的，并且是您通常从基于渲染的 API 中期望的。
+
+| 属性        | 类型        | 描述                                                                                 |
+| ----------- | ----------- | ------------------------------------------------------------------------------------ |
+| `tokens`    | `Token[][]` | 这是一个双重嵌套的令牌数组。外部数组用于单独的行，内部数组用于标记，因此是实际内容。 |
+| `className` | `string`    | 这是应该应用于包装元素的类，通常是`<pre>`                                            |
+
+`Token`是一个表示 Prism 内容片段的对象。它有一个`types`属性和一个`content`属性，前者是指示文本目的和样式的类型数组，后者是实际文本。
+
+您通常会迭代`tokens`，呈现每一行，并迭代其项，呈现出每一个令牌，这是这行的一部分。
+
+### 属性吸气器
+
+> 参见[Kent C.Dods 关于属性获取者的博客文章](https://blog.kentcdodds.com/how-to-give-rendering-control-to-users-with-prop-getters-549eaef76acf)
+
+这些函数用于将属性应用于渲染的元素。这为您提供了最大的灵活性来渲染您喜欢的内容、时间和位置。
+
+您通常会使用一些指定的输入来调用这些函数，并添加它应该通过的所有其他属性。它将正确地覆盖和修改返回给您的属性，因此建议将属性传递给它，而不是直接添加它们。
+
+| 属性            | 类型           | 描述                                                 |
+| --------------- | -------------- | ---------------------------------------------------- |
+| `getLineProps`  | `function({})` | 返回应该应用于任何令牌列表的属性，即包含令牌的元素。 |
+| `getTokenProps` | `function({})` | 返回应该应用于显示所渲染的标记的元素的属性。         |
+
+#### `getLineProps`
+
+您需要向传递给`getLineProps`的对象添加一个`line`属性（type: `Token[]`）。
+
+这个 getter 将返回要扩展到行元素上的属性（通常是`<div>s`）。
+
+它通常会返回一个`className`（如果您传递一个，它将被附加）、`children`、`style`（如果传递一个它将被合并）。它还传递给输入的所有其他属性。
+
+`className`将始终包含`.token-line`。
+
+#### `getTokenProps`
+
+您需要向传递给`getTokenProps`的对象添加一个`token`属性（类型：`token`）。
+
+这个 getter 将返回要扩展到令牌元素上的属性（通常为`<span>s`）。
+
+它通常会返回一个`className`（如果您传递一个，它将被附加）、`children`、`style`（如果传递一个它将被合并）。它还传递给输入的所有其他属性。
+
+`className`将始终包含`.token`。这也提供了与旧的 Prism CSS 文件主题的完全兼容性。
+
+## 实用程序函数
+
+### `useTokenize`
+
+> `(options: TokenizeOptions) => Token[][]`
+
+```ts
+type TokenizeOptions = {
+  prism: PrismLib;
+  code: string;
+  grammar?: PrismGrammar;
+  language: Language;
+};
+```
+
+这是一个 React 钩子，它使用 Prism 标记代码。它返回一个标记数组，这些标记可以使用内置的`<Highlight />`组件或您自己的自定义组件进行渲染。它在内部使用`normalizeTokens`将标记转换为可以渲染的形状。
+
+- `prism: PrismLib`: 用于标记化的 Prism 库。这可以是`prism-react-renderer`中包含的 Prism 的供应商版本，也可以是您配置的 Prism 的自定义版本。
+
+- `code: string`: 包含要标记化的代码的字符串。
+- `grammar?: PrismGrammar`: 用于标记化的 Prism 语法对象。如果忽略了这一点，则标记将被规范化。语法可以从`Prism.languages`获得，也可以从`prismjs/components/`导入语言。
+- `language: Language`: 用于标记化的语言。这应该是 Prism 支持的语言。
+
+### `normalizeTokens`
+
+> `(tokens: (PrismToken | string)[]) => Token[][]`
+
+获取 Prism 的令牌数组，并按行对其进行分组，将字符串转换为令牌。在某些情况下，令牌可能会变得递归，这意味着它们的类型是串联的。然而，纯字符串标记的类型总是`Plain`。
+
+- `PrismToken`是`prismjs`导出的`Token`的内部别名，定义为[此处](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/prismjs/index.d.ts#L347).
+
+- `Token`是一个内部对象，表示 Prism 的令牌化内容片段，具有三个属性：
+  - `types: string[]`: 一组类型，用于指示文本的用途和样式
+  - `content: string`: 令牌的内容
+  - `empty: boolean`: 指示所述令牌是否为空的标志。
+
+## Theming
+
+通常在基本用例中应用的`defaultProps`包含一个默认主题。
+此主题为[vsDark](./packages/prism-react-renderer/src/themes/vsDark.ts).
+
+虽然所有`className`都提供了`<Highlight />`，这样您就可以使用旧的 Prism CSS 文件主题，但您也可以选择使用`prism-react-renderer`的主题，如下所示：
+
+```jsx
+import { Highlight, themes } from 'prism-react-renderer';
+
+<Highlight theme={themes.dracula} {/* ... */} />
+```
+
+这些主题是基于 JSON 的，深受 VSCode 主题格式的启发。
+
+它们的语法，以 Flow 表示，如下所示：
+
+```js
+{
+  plain: StyleObj,
+  styles: Array<{
+    types: string[],
+    languages?: string[],
+    style: StyleObj
+  }>
+}
+```
+
+`plain`属性提供了一个基本样式对象。如果`theme`属性已传递给`<Highlight />`，则此样式对象将直接用于您将从属性获取器接收的`style`属性中。
+
+`styles`属性包含一组定义。每个定义都包含一个`style`属性，它也是一个样式对象。这些样式受`types`和`languages`属性的限制。
+
+`types`属性是 Prism 输出的令牌类型的数组。`languages`属性将样式限制为高亮显示的语言。
+
+当转换 Prism CSS 主题时，通常只需要将类用作`types`，并将声明转换为对象样式语法，然后将它们放在`style`上。
+
+## 升级
+
+如果要从 v1.x 迁移到 v2.x，请执行以下步骤
+
+### 更改模块导入
+
+```diff
+- import Highlight, { defaultProps } from "prism-react-renderer";
++ import { Highlight } from "prism-react-renderer"
+
+const Content = (
+-  <Highlight {...defaultProps} code={exampleCode} language="jsx">
++  <Highlight code={exampleCode} language="jsx">
+```
+
+### 更改主题导入
+
+```diff
+- const theme = require('prism-react-renderer/themes/github')
++ const theme = require('prism-react-renderer').themes.github
+```
+
+### 检查语言支持
+
+> 默认情况下，Prism React 渲染器仅包括 Prism 支持的基本语言集。根据应用程序的构建系统，您可能需要等待导入或使用 require 来确保窗口。Prism 在导入自定义语言之前就已存在。
+
+参见: https://github.com/FormidableLabs/prism-react-renderer#custom-language-support
+
+安装 prismjs（如果还不可用）：
+
+```
+# npm
+npm install --save prismjs
+# yarn
+yarn add prismjs
+# pnpm
+pnpm add prismjs
+```
+
+### 添加语言组件
+
+如果上述语言中尚未绑定该语言，则可以使用以下代码添加其他语言：
+
+```
+import { Highlight, Prism } from "prism-react-renderer";
+
+(typeof global !== "undefined" ? global : window).Prism = Prism
+await import("prismjs/components/prism-applescript")
+/** or **/
+require("prismjs/components/prism-applescript")
+```
+
+## 许可证
+
+MIT
+
+## 维护状态
+
+**忙碌的:** Nearform 正在积极开展该项目，我们希望在可预见的未来继续开展工作。欢迎 Bug 报告、功能请求和拉取请求。
+
+[maintenance-image]: https://img.shields.io/badge/maintenance-active-green.svg

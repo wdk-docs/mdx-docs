@@ -1,0 +1,668 @@
+---
+title: 集体治理
+---
+
+unified 集体是一个由组织组成的联邦系统，依次由项目组成，由指导项目的团队成员管理。
+
+该项目由 unified 的集体核心团队维护，并描述了如何管理集体。
+
+本文档描述了集体的团队。
+其他政策详细描述了治理的其他方面:
+
+- [`decisions.md`][decisions-policy] —如何做出决策
+- [`members.md`][members-policy] — 人们如何参与
+- [`moderation.md`][moderation-policy] — 如何执行行为准则
+- [`organizations.md`][organizations-policy] — 如何管理组织
+- [`permissions.md`][permissions-policy] — 成员拥有的权限
+
+## Teams
+
+```ascii
++-------------------------------------------------+
+|                   COLLECTIVE                    |
+|                core & moderation                |
+|                                                 |
+|                                                 |
+|                  ORGANIZATIONS                  |
+| +-------------+ +-------------+ +-------------+ |
+| |   unified   | |   remark    | |   rehype    | |
+| +-------------+ +-------------+ +-------------+ |
+| +-------------+ +-------------+ +-------------+ |
+| |    retext   | |    redot    | |     mdx     | |
+| +-------------+ +-------------+ +-------------+ |
+| +-------------+ +-------------+ +-------------+ |
+| |  micromark  | |    vfile    | | syntax tree | |
+| +-------------+ +-------------+ +-------------+ |
++-------------------------------------------------+
+```
+
+集体由团队管理。
+团队的范围为一个**组织**或**集体**，分别管理其下的**项目**或**组织**。
+[核心][core]和[适度][moderation]团队很特别。
+
+团队在其范围内发挥领导作用。
+他们:
+
+- **设置方向**:
+  设定在做出权衡决策时使用的价值观，将范围引向特定方向，并领导对计划的讨论
+- **牧羊人倡议**:
+  让利益相关者（受决策强烈影响的人）意识到倡议，找出设计权衡和替代方案，并帮助建立共识
+- **接受或拒绝问题、拉取请求和 RFCs**:
+  决定各项举措，无论是小型举措还是大型举措
+- **提名团队成员**:
+  提名做出重大和有价值贡献的个人加入团队
+
+团队应由以下人员组成:
+
+- **区域专家**:
+  对团队所涵盖的领域有很多兴趣和专业知识，但可能很少参与集体的其他领域的人
+- **利益相关者**:
+  受团队领域决策强烈影响，但可能不是该领域设计或实施方面的专家的人员
+
+团队内部和外部沟通的方式由每个团队决定，但：
+
+- 讨论应尽可能在公共场所进行，最好是关于问题、拉取请求或 GitHub 讨论
+- 团队应积极寻求非成员的讨论和意见
+
+## 组织团队
+
+**组织团队**的范围是一个组织，并管理其下的项目。
+
+他们的职责与[所有团队][all]相同，此外：
+
+- **将影响集体的举措升级为集体团队**
+- **实施公认的集体级举措**
+- **定义应采取何种形式更改的政策**:
+  例如，哪些可以是直接拉取请求或 RFC，需要升级，哪些可以由团队自己处理
+
+组织团队还包括:
+
+- **团队负责人**:
+  负责确保计划以合理的速度进展的人员
+
+### unified 团队
+
+**unified 团队**是负责[**@unifiedjs**](https://github.com/unifiedjs)的 _[组织][organization]_ .
+
+{/* <!--humans start team=unified shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+  (**lead**)
+
+- Remco Haszing
+  ([**@remcohaszing**](https://github.com/remcohaszing))
+  \<remcohaszing\@gmail.com>
+
+##### 合并
+
+- Christian Murphy
+  ([**@ChristianMurphy**](https://github.com/ChristianMurphy))
+  \<christian.murphy.42\@gmail.com>
+
+- John Otander
+  ([**@johno**](https://github.com/johno))
+  \<johnotander\@gmail.com>
+
+- Joun Qin
+  ([**@JounQin**](https://github.com/JounQin))
+  \<admin\@1stg.me>
+
+- Junyoung Choi
+  ([**@Rokt33r**](https://github.com/Rokt33r))
+  \<fluke8259\@gmail.com>
+
+- Merlijn Vos
+  ([**@Murderlon**](https://github.com/Murderlon))
+  \<merlijn\@soverin.net>
+
+#### 贡献者
+
+- Mudit Ameta
+  ([**@zeusdeux**](https://github.com/zeusdeux))
+  \<zeusdeux\@gmail.com>
+
+- Stephan Schneider
+  ([**@zcei**](https://github.com/zcei))
+  \<stephanschndr\@gmail.com>
+
+- Victor Felder
+  ([**@vhf**](https://github.com/vhf))
+  \<victor\@draft.li>
+
+{/* <!--humans end--> */}
+
+### remark 团队
+
+**remark 团队**是负责[**@remakjs**](https://github.com/remarkjs)的 _[组织][organization]_ 团队.
+
+{/* <!--humans start team=remark shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- John Otander
+  ([**@johno**](https://github.com/johno))
+  \<johnotander\@gmail.com>
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+  (**lead**)
+
+- Remco Haszing
+  ([**@remcohaszing**](https://github.com/remcohaszing))
+  \<remcohaszing\@gmail.com>
+
+##### 合并
+
+- Christian Murphy
+  ([**@ChristianMurphy**](https://github.com/ChristianMurphy))
+  \<christian.murphy.42\@gmail.com>
+
+- Jonathan Haines
+  ([**@BarryThePenguin**](https://github.com/BarryThePenguin))
+  \<jonno.haines\@gmail.com>
+
+- Joun Qin
+  ([**@JounQin**](https://github.com/JounQin))
+  \<admin\@1stg.me>
+
+- Junyoung Choi
+  ([**@Rokt33r**](https://github.com/Rokt33r))
+  \<fluke8259\@gmail.com>
+
+- Keith McKnight
+  ([**@kmck**](https://github.com/kmck))
+  \<keith\@mcknig.ht>
+
+- Marouane Fazouane
+  ([**@fazouane-marouane**](https://github.com/fazouane-marouane))
+  \<fazouanem3\@gmail.com>
+
+- Merlijn Vos
+  ([**@Murderlon**](https://github.com/Murderlon))
+  \<merlijn\@soverin.net>
+
+- Victor Felder
+  ([**@vhf**](https://github.com/vhf))
+  \<victor\@draft.li>
+
+- Zeke Sikelianos
+  ([**@zeke**](https://github.com/zeke))
+  \<zeke\@sikelianos.com>
+
+#### 贡献者
+
+- Mudit Ameta
+  ([**@zeusdeux**](https://github.com/zeusdeux))
+  \<zeusdeux\@gmail.com>
+
+- Nikita Sobolev
+  ([**@sobolevn**](https://github.com/sobolevn))
+  \<mail\@sobolevn.me>
+
+{/* <!--humans end--> */}
+
+### rehype 团队
+
+**rehype 团队**是负责[**@rehypejs**](https://github.com/rehypejs)的*[组织][organization]*团队.
+
+{/* <!--humans start team=rehype shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- Keith McKnight
+  ([**@kmck**](https://github.com/kmck))
+  \<keith\@mcknig.ht>
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+  (**lead**)
+
+- Remco Haszing
+  ([**@remcohaszing**](https://github.com/remcohaszing))
+  \<remcohaszing\@gmail.com>
+
+##### 合并
+
+- Christian Murphy
+  ([**@ChristianMurphy**](https://github.com/ChristianMurphy))
+  \<christian.murphy.42\@gmail.com>
+
+- John Otander
+  ([**@johno**](https://github.com/johno))
+  \<johnotander\@gmail.com>
+
+- Joun Qin
+  ([**@JounQin**](https://github.com/JounQin))
+  \<admin\@1stg.me>
+
+- Merlijn Vos
+  ([**@Murderlon**](https://github.com/Murderlon))
+  \<merlijn\@soverin.net>
+
+#### 贡献者
+
+- Victor Felder
+  ([**@vhf**](https://github.com/vhf))
+  \<victor\@draft.li>
+
+{/* <!--humans end--> */}
+
+### retext 团队
+
+The **retext team** is an _[organization][]_ team responsible for
+[**@retextjs**](https://github.com/retextjs).
+
+{/* <!--humans start team=retext shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+  (**lead**)
+
+##### 合并
+
+- Merlijn Vos
+  ([**@Murderlon**](https://github.com/Murderlon))
+  \<merlijn\@soverin.net>
+
+#### 贡献者
+
+- Richard Littauer
+  ([**@RichardLitt**](https://github.com/RichardLitt))
+  \<richard\@maintainer.io>
+
+{/* <!--humans end--> */}
+
+### redot 团队
+
+The **redot team** is an _[organization][]_ team responsible for
+[**@redotjs**](https://github.com/redotjs).
+
+{/* <!--humans start team=redot shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- Christian Murphy
+  ([**@ChristianMurphy**](https://github.com/ChristianMurphy))
+  \<christian.murphy.42\@gmail.com>
+  (**lead**)
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+
+##### 合并
+
+None.
+
+{/* <!--humans end--> */}
+
+### mdx 团队
+
+The **mdx team** is an _[organization][]_ team responsible for
+[**@mdx-js**](https://github.com/mdx-js).
+
+{/* <!--humans start team=mdx shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- John Otander
+  ([**@johno**](https://github.com/johno))
+  \<johnotander\@gmail.com>
+  (**lead**)
+
+- Remco Haszing
+  ([**@remcohaszing**](https://github.com/remcohaszing))
+  \<remcohaszing\@gmail.com>
+
+- Tim Neutkens
+  ([**@timneutkens**](https://github.com/timneutkens))
+  \<tim\@vercel.com>
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+
+##### 合并
+
+- Christopher Biscardi
+  ([**@ChristopherBiscardi**](https://github.com/ChristopherBiscardi))
+  \<chris\@christopherbiscardi.com>
+
+- Joun Qin
+  ([**@JounQin**](https://github.com/JounQin))
+  \<admin\@1stg.me>
+
+- Laurie Barth
+  ([**@laurieontech**](https://github.com/laurieontech))
+
+- Sidhartha Chatterjee
+  ([**@sidharthachatterjee**](https://github.com/sidharthachatterjee))
+  \<me\@sidharthachatterjee.com>
+
+#### 贡献者
+
+- Adam Morse
+  ([**@mrmrs**](https://github.com/mrmrs))
+  \<hi\@mrmrs.cc>
+
+- Ahmad Awais
+  ([**@ahmadawais**](https://github.com/ahmadawais))
+  \<me\@AhmadAwais.com>
+
+- Brent Jackson
+  ([**@jxnblk**](https://github.com/jxnblk))
+  \<jxnblk\@gmail.com>
+
+- Guillermo Rauch
+  ([**@rauchg**](https://github.com/rauchg))
+  \<rauchg\@gmail.com>
+
+- Jessica Stokes
+  ([**@ticky**](https://github.com/ticky))
+  \<hello\@jessicastokes.net>
+
+- Stephan Schneider
+  ([**@zcei**](https://github.com/zcei))
+  \<stephanschndr\@gmail.com>
+
+{/* <!--humans end--> */}
+
+### micromark 团队
+
+The **micromark team** is an _[organization][]_ team responsible for
+[**@micromark**](https://github.com/micromark).
+
+{/* <!--humans start team=micromark shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+  (**lead**)
+
+##### 合并
+
+- John Otander
+  ([**@johno**](https://github.com/johno))
+  \<johnotander\@gmail.com>
+
+- Joun Qin
+  ([**@JounQin**](https://github.com/JounQin))
+  \<admin\@1stg.me>
+
+- Marouane Fazouane
+  ([**@fazouane-marouane**](https://github.com/fazouane-marouane))
+  \<fazouanem3\@gmail.com>
+
+- Merlijn Vos
+  ([**@Murderlon**](https://github.com/Murderlon))
+  \<merlijn\@soverin.net>
+
+- Remco Haszing
+  ([**@remcohaszing**](https://github.com/remcohaszing))
+  \<remcohaszing\@gmail.com>
+
+#### 贡献者
+
+- Mudit Ameta
+  ([**@zeusdeux**](https://github.com/zeusdeux))
+  \<zeusdeux\@gmail.com>
+
+- Stephan Schneider
+  ([**@zcei**](https://github.com/zcei))
+  \<stephanschndr\@gmail.com>
+
+- Victor Felder
+  ([**@vhf**](https://github.com/vhf))
+  \<victor\@draft.li>
+
+{/* <!--humans end--> */}
+
+### 语法树团队
+
+The **syntax tree team** is an _[organization][]_ team responsible for
+[**@syntax-tree**](https://github.com/syntax-tree).
+
+{/* <!--humans start team="syntax tree" shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- Keith McKnight
+  ([**@kmck**](https://github.com/kmck))
+  \<keith\@mcknig.ht>
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+  (**lead**)
+
+##### 合并
+
+- Christian Murphy
+  ([**@ChristianMurphy**](https://github.com/ChristianMurphy))
+  \<christian.murphy.42\@gmail.com>
+
+- Jonathan Haines
+  ([**@BarryThePenguin**](https://github.com/BarryThePenguin))
+  \<jonno.haines\@gmail.com>
+
+- Joun Qin
+  ([**@JounQin**](https://github.com/JounQin))
+  \<admin\@1stg.me>
+
+- Merlijn Vos
+  ([**@Murderlon**](https://github.com/Murderlon))
+  \<merlijn\@soverin.net>
+
+- Remco Haszing
+  ([**@remcohaszing**](https://github.com/remcohaszing))
+  \<remcohaszing\@gmail.com>
+
+{/* <!--humans end--> */}
+
+### vfile 团队
+
+The **vfile team** is an _[organization][]_ team responsible for
+[**@vfile**](https://github.com/vfile).
+
+{/* <!--humans start team=vfile shift=3--> */}
+
+#### 成员
+
+##### 释放器
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+  (**lead**)
+
+##### 合并
+
+- Christian Murphy
+  ([**@ChristianMurphy**](https://github.com/ChristianMurphy))
+  \<christian.murphy.42\@gmail.com>
+
+- Joun Qin
+  ([**@JounQin**](https://github.com/JounQin))
+  \<admin\@1stg.me>
+
+- Junyoung Choi
+  ([**@Rokt33r**](https://github.com/Rokt33r))
+  \<fluke8259\@gmail.com>
+
+- Remco Haszing
+  ([**@remcohaszing**](https://github.com/remcohaszing))
+  \<remcohaszing\@gmail.com>
+
+#### 贡献者
+
+- Olivia Hugger
+  ([**@komaeda**](https://github.com/komaeda))
+  \<mokou\@posteo.de>
+
+{/* <!--humans end--> */}
+
+## 集体团队
+
+**Collective teams** are scoped to the whole collective and govern the
+organizations under it.
+
+They have the same responsibilities as [all teams][all], and additionally:
+
+- **De-escalate initiatives to organization teams**
+- **Focus on overarching concerns**:
+  they are specifically designed to take a _global_ view of the collective, to
+  make sure the pieces are fitting together in a coherent way
+
+### 核心团队
+
+The **core team** is a _[collective][]_ team responsible for governing all
+other teams.
+This team does not have a lead and, to limit conflicts of interest, **should**
+not include **[moderation team][moderation]** members.
+
+They:
+
+- **Set the direction and vision for the collective across organizations**:
+  setting the core values that are used when making decisions about tradeoffs,
+  steering the collective toward specific directions, and leading the
+  discussion for **major** initiatives
+- **Spin up or shut down teams**:
+  creating teams around new (temporary) areas and dissolving teams when their
+  area is complete
+- **Accept or reject motions**:
+  deciding on initiatives involving people and destructive actions on projects
+- **Follow playbooks**:
+  following certain steps to enact accepted motions
+
+{/* <!--humans start team=core shift=3--> */}
+
+#### 成员
+
+- Christian Murphy
+  ([**@ChristianMurphy**](https://github.com/ChristianMurphy))
+  \<christian.murphy.42\@gmail.com>
+
+- John Otander
+  ([**@johno**](https://github.com/johno))
+  \<johnotander\@gmail.com>
+
+- Merlijn Vos
+  ([**@Murderlon**](https://github.com/Murderlon))
+  \<merlijn\@soverin.net>
+
+- Titus Wormer
+  ([**@wooorm**](https://github.com/wooorm))
+  \<tituswormer\@gmail.com>
+
+#### 贡献者
+
+- Richard Littauer
+  ([**@RichardLitt**](https://github.com/RichardLitt))
+  \<richard\@maintainer.io>
+
+- Stephan Schneider
+  ([**@zcei**](https://github.com/zcei))
+  \<stephanschndr\@gmail.com>
+
+{/* <!--humans end--> */}
+
+### 审核小组
+
+The **moderation team** is a _[collective][]_ team responsible for enforcing the
+code of conduct.
+This team does not have a lead and, to limit conflicts of interest, **should**
+not include **[core team][core]** members.
+
+{/* <!--humans start team=moderation shift=3--> */}
+
+#### 成员
+
+- Olivia Hugger
+  ([**@komaeda**](https://github.com/komaeda))
+  \<mokou\@posteo.de>
+
+- Richard Littauer
+  ([**@RichardLitt**](https://github.com/RichardLitt))
+  \<richard\@maintainer.io>
+
+{/* <!--humans end--> */}
+
+## 术语汇编
+
+###### 集体的
+
+集体作为一个整体，与其下的[组织][dfn-organization]和其下的[项目][dfn-project]相统一。
+
+###### 组织
+
+组织是围绕一个共享区域的[项目][dfn-project]的集合，通常托管在 GitHub 组织中。
+
+###### 项目
+
+一个项目是由一个团队管理的 GitHub 上的单个存储库。
+
+###### 倡议
+
+倡议是（提议的）改变。
+
+## 行为准则
+
+我们遵守贡献者公约[行为准则][coc].
+请阅读它，因为您同意通过与集体空间（包括任何在线或离线场所，如电子邮件、GitHub、npm 或 Twitter）互动来遵守它。
+
+## 鸣谢
+
+该项目的灵感来源于[Rust 治理提案][rust]、[Node 治理文档][node]、[Node-admin 项目][node-admin]、[Electron 治理文档][electron]和[Django 解散核心][django]。
+
+## 许可证
+
+本作品根据[知识共享署名 4.0 国际许可证][license]获得许可.
+
+{/* <!-- definitions --> */}
+
+[all]: #teams
+[collective]: #collective-teams
+[organization]: #organization-teams
+[core]: #core-team
+[moderation]: #moderation-team
+[dfn-organization]: #organization
+[dfn-project]: #project
+[decisions-policy]: decisions.md
+[members-policy]: members.md
+[moderation-policy]: moderation.md
+[organizations-policy]: organizations.md
+[permissions-policy]: permissions.md
+[coc]: code-of-conduct.md
+[rust]: https://github.com/rust-lang/rfcs/blob/HEAD/text/1068-rust-governance.md
+[node]: https://github.com/nodejs/node/blob/HEAD/GOVERNANCE.md
+[node-admin]: https://github.com/nodejs/admin
+[electron]: https://github.com/electron/governance
+[django]: https://github.com/django/deps/blob/HEAD/accepted/0010-new-governance.rst
+[license]: https://creativecommons.org/licenses/by/4.0/

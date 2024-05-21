@@ -30,9 +30,9 @@ function SubMenu({ menu }: any) {
 }
 
 export function Sidebar() {
-  const segment = useSelectedLayoutSegment();
-  const segments = useSelectedLayoutSegments();
-  console.log({ segment, segments });
+  // const segment = useSelectedLayoutSegment();
+  // const segments = useSelectedLayoutSegments();
+  // console.log({ segment, segments });
   const pathname = usePathname();
   const routerRoot: any = pathname.split("/")[1] || "docs";
 

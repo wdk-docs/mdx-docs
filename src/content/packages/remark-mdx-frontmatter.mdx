@@ -1,0 +1,71 @@
+---
+title: remark-mdx-frontmatter
+---
+
+用于将前台元数据转换为 MDX 导出的[remark](https://remark.js.org)插件
+
+## 安装
+
+此包取决于[remark frontmatter](https://github.com/remarkjs/remark-frontmatter)的 AST 输出
+
+```sh
+npm install remark-frontmatter remark-mdx-frontmatter
+```
+
+## 用法
+
+这个 remark 插件获取前台内容，并将其输出为 JavaScript 导出。
+同时支持 YAML 和 TOML 前台数据。
+
+例如，给定一个名为`example.mdx`的文件，其中包含以下内容：
+
+```mdx
+---
+hello: frontmatter
+---
+
+Rest of document
+```
+
+以下脚本：
+
+```js
+import { readFile } from "node:fs/promises";
+
+import { compile } from "@mdx-js/mdx";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+
+const { value } = await compile(await readFile("example.mdx"), {
+  jsx: true,
+  remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+});
+console.log(value);
+```
+
+大致收益率：
+
+```jsx
+export const frontmatter = {
+  hello: "frontmatter",
+};
+
+export default function MDXContent() {
+  return <p>Rest of document</p>;
+}
+```
+
+## API
+
+默认导出为[remark](https://remark.js.org)插件。
+
+### 选项
+
+- `name`: 将 frontmatter 数据分配给的变量的标识符名称。 (默认:`frontmatter`).
+- `parsers`: 映射节点类型到解析器的映射。每个键表示一个 frontmatter 节点类型。
+  该值是一个函数，它将 frontmatter 数据作为字符串接受，并返回解析后的数据。
+  默认情况下，`yaml`节点将使用[`yaml`](https://github.com/eemeli/yaml)，`toml`节点使用[`toml`](https://github.com/BinaryMuse/toml-node)进行解析.
+
+## 兼容性
+
+此项目与 Node.js 16 或更高版本兼容。

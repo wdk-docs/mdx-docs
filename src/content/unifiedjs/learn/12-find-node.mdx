@@ -1,0 +1,75 @@
+---
+group: recipe
+index: 4
+title: 查找节点
+description: 如何在任何unist语法树中查找节点
+tags:
+  - node
+  - tree
+  - traverse
+  - walk
+  - find
+author: Merlijn Vos
+authorTwitter: Murderlon
+authorGithub: Murderlon
+published: 2020-01-10
+modified: 2020-06-14
+---
+
+## 如何查找节点
+
+### 什么是节点
+
+节点是[语法树][syntax-tree]中的一个特定于语言的单元.
+例如：markdown 中的标题，或 HTML 中的锚点元素。
+在 unified 中，节点遵循[unist][]规范。
+
+### 查找节点
+
+查找节点的概念涉及[语法树][tree-traversal]的[树遍历][syntax-tree]。
+
+应该使用 unified 的兼容实用程序来查找节点。
+实用程序是使用节点的函数。
+所有扩展[unist][]的规范都可以使用[unist 公用事业][unist-utils]，但它们也可以为更特定的节点拥有自己的实用程序。
+
+要开始为输入查找节点，您需要：
+
+- 处理器 (例如 [`remark`][remark]).
+- 选择的效用。
+
+对于这个例子，我们使用 [`remark`][remark] 和 [`unist-util-find`][unist-util-find].
+我们想在 Markdown 中找到第一个强调的地方。
+
+```js
+import { remark } from "remark";
+import find from "unist-util-find";
+
+remark()
+  .use(() => (tree) => {
+    const node = find(tree, { type: "emphasis" });
+    console.log(node);
+  })
+  .processSync("Some _emphasis_, **strongness**, _more emphasis_, and `code`.");
+```
+
+输出
+
+```js
+{
+  type: 'emphasis',
+  children: [ { type: 'text', value: 'emphasis', position: [Object] } ],
+  position: {
+    start: { line: 1, column: 6, offset: 5 },
+    end: { line: 1, column: 16, offset: 15 }
+  }
+}
+```
+
+在其自述中阅读有关[`unist-util-find`][unist-util-find]的更多信息。
+
+[tree-traversal]: /learn/recipe/tree-traversal/
+[syntax-tree]: /learn/guide/introduction-to-syntax-trees/
+[unist]: https://github.com/syntax-tree/unist
+[unist-utils]: https://github.com/syntax-tree/unist#list-of-utilities
+[remark]: https://github.com/remarkjs/remark
+[unist-util-find]: https://github.com/blahah/unist-util-find

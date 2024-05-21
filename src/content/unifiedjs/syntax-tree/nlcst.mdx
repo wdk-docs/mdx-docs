@@ -1,0 +1,299 @@
+---
+title: nlcst(自然语言具体语法树)
+---
+
+**N**atural **L**anguage **C**oncrete **S**yntax **T**ree format.
+
+> https://github.com/syntax-tree/nlcst
+
+---
+
+**nlcst**是用于在[语法树][syntax-tree]中表示自然语言的规范。
+它实现了 **[unist][]** 规范。
+
+此文档可能不会发布。
+有关已发布的文档，请参见[发布][releases]。
+最新发布的版本是[`1.0.2`][latest]。
+
+## 介绍
+
+本文档定义了将自然语言表示为[具体语法树][syntax-tree]的格式。
+nlcst 的开发始于 2014 年 5 月，在[unist][]存在之前，[retext][]的[textom][]项目现已被弃用。
+这个规范是用类似[Web IDL][webidl]的语法编写的。
+
+### 本规范适用的地方
+
+nlcst 扩展了语法树格式 unist][]，以受益于其[实用程序生态系统][utilities]。
+
+nlcst 与[JavaScript][]相关，因为它有一个[实用程序生态系统][list-of-utilities]，用于处理 JavaScript 中的兼容语法树。
+然而，nlcst 并不局限于 JavaScript，也可以用于其他编程语言。
+
+nlcst 与[unified][]和[retext][]项目有关，因为 nlcst 语法树在其整个生态系统中使用。
+
+## Types
+
+如果您使用的是 TypeScript，您可以通过将 nlcst 类型与 npm 一起安装来使用它们：
+
+```sh
+npm install @types/nlcst
+```
+
+## Nodes (abstract)
+
+### `Literal`
+
+```idl
+interface Literal <: UnistLiteral {
+  value: string
+}
+```
+
+**Literal** ([**UnistLiteral**][dfn-unist-literal]) 表示 nlcst 中包含值的节点。
+
+其`value`字段是一个`string`。
+
+### `Parent`
+
+```idl
+interface Parent <: UnistParent {
+  children: [Paragraph | Punctuation | Sentence | Source | Symbol | Text | WhiteSpace | Word]
+}
+```
+
+**Parent** ([**UnistParent**][dfn-unist-parent])表示 nlcst 中包含其他节点的节点 (据说是 [_children_][term-child]).
+
+其内容仅限于其他 nlcst 内容。
+
+## Nodes
+
+### `Paragraph`
+
+```idl
+interface Paragraph <: Parent {
+  type: 'ParagraphNode'
+  children: [Sentence | Source | WhiteSpace]
+}
+```
+
+**Paragraph** ([**Parent**][dfn-parent])代表处理特定观点或想法的话语单元。
+
+**Paragraph**可以在[**root**][dfn-root]节点中使用。
+它可以包含[**sentence**][dfn-sentence], [**whitespace**][dfn-whitespace],和 [**source**][dfn-source]节点。
+
+### `Punctuation`
+
+```idl
+interface Punctuation <: Literal {
+  type: 'PunctuationNode'
+}
+```
+
+**Punctuation** ([**Literal**][dfn-literal])代表有助于理解和正确阅读其他语法单元的印刷设备。
+
+**Punctuation**可用于[**sentence**][dfn-sentence] 或 [**word**][dfn-word]节点。
+
+### `Root`
+
+```idl
+interface Root <: Parent {
+  type: 'RootNode'
+}
+```
+
+**Root** ([**Parent**][dfn-parent])表示文档。
+
+**根**可以用作[_tree_][term-tree]的[_root_][term-root]，而不能用作[_child_][term-child]。
+它的内容模型不受限制，它可以包含任何 nlcst 内容，但有一个限制，即所有内容都必须属于同一类别。
+
+### `Sentence`
+
+```idl
+interface Sentence <: Parent {
+  type: 'SentenceNode'
+  children: [Punctuation | Source | Symbol | WhiteSpace | Word]
+}
+```
+
+**Sentence** ([**Parent**][dfn-parent]) 表示语法上相连的单词的分组，原则上告诉一个完整的想法，尽管脱离上下文孤立可能没有什么意义。
+
+**Sentence**可以在[**paragraph**][dfn-paragraph]节点中使用。
+它可以包含 [**word**][dfn-word], [**symbol**][dfn-symbol],[**punctuation**][dfn-punctuation], [**whitespace**][dfn-whitespace], and [**source**][dfn-source] 节点.
+
+### `Source`
+
+```idl
+interface Source <: Literal {
+  type: 'SourceNode'
+}
+```
+
+**Source** ([**Literal**][dfn-literal])表示嵌入语法单元的外部（非语法）值：超链接、代码等等。
+
+**Source** 可用于[**root**][dfn-root], [**paragraph**][dfn-paragraph],[**sentence**][dfn-sentence], 或 [**word**][dfn-word]节点。
+
+### `Symbol`
+
+```idl
+interface Symbol <: Literal {
+  type: 'SymbolNode'
+}
+```
+
+**Symbol** ([**Literal**][dfn-literal]) 表示与表示声音（如字母和数字）、空白或标点符号的字符不同的印刷设备。
+
+**Symbol**可用于[**sentence**][dfn-sentence] 或 [**word**][dfn-word]节点。
+
+### `Text`
+
+```idl
+interface Text <: Literal {
+  type: 'TextNode'
+}
+```
+
+**Text** ([**Literal**][dfn-literal]) 表示 nlcst 文档中的实际内容：一个或多个字符。
+
+**Text** 可以在[**word**][dfn-word]节点中使用。
+
+### `WhiteSpace`
+
+```idl
+interface WhiteSpace <: Literal {
+  type: 'WhiteSpaceNode'
+}
+```
+
+**WhiteSpace** ([**Literal**][dfn-literal])表示没有内容的印刷设备，分隔其他单元。
+
+**WhiteSpace**可用于[**root**][dfn-root],[**paragraph**][dfn-paragraph], 或 [**sentence**][dfn-sentence]节点。
+
+### `Word`
+
+```idl
+interface Word <: Parent {
+  type: 'WordNode'
+  children: [Punctuation | Source | Symbol | Text]
+}
+```
+
+**Word** ([**Parent**][dfn-parent]) 表示可以与语义或语用内容隔离地说出的最小元素。
+
+**Word** 可以在[**sentence**][dfn-sentence]节点中使用。
+它可以包含[**text**][dfn-text], [**symbol**][dfn-symbol],[**punctuation**][dfn-punctuation], and [**source**][dfn-source]节点.
+
+## 术语汇编
+
+请参阅[unist 词汇表][词汇表]。
+
+## 公用设施清单
+
+有关更多实用程序，请参阅[实用程序的 unist 列表][utilities]。
+
+- [`nlcst-affix-emoticon-modifier`](https://github.com/syntax-tree/nlcst-affix-emoticon-modifier)
+  — 将词缀表情符号合并到前一句中
+- [`nlcst-emoji-modifier`](https://github.com/syntax-tree/nlcst-emoji-modifier)
+  — 支持表情符号
+- [`nlcst-emoticon-modifier`](https://github.com/syntax-tree/nlcst-emoticon-modifier)
+  — 支持表情符号
+- [`nlcst-is-literal`](https://github.com/syntax-tree/nlcst-is-literal)
+  — 检查节点是否是字面意思
+- [`nlcst-normalize`](https://github.com/syntax-tree/nlcst-normalize)
+  — 规范化一个单词以便于比较
+- [`nlcst-search`](https://github.com/syntax-tree/nlcst-search)
+  — 搜索图案
+- [`nlcst-to-string`](https://github.com/syntax-tree/nlcst-to-string)
+  — 序列化节点
+- [`nlcst-test`](https://github.com/syntax-tree/nlcst-test)
+  — 验证节点
+- [`mdast-util-to-nlcst`](https://github.com/syntax-tree/mdast-util-to-nlcst)
+  — 将 mdast 转换为 nlcst
+- [`hast-util-to-nlcst`](https://github.com/syntax-tree/hast-util-to-nlcst)
+  — 将 hast 转换为 nlcst
+
+## 相关的
+
+- [mdast](https://github.com/syntax-tree/mdast)
+  — Markdown 抽象语法树格式
+- [hast](https://github.com/syntax-tree/hast)
+  — 超文本抽象语法树格式
+- [xast](https://github.com/syntax-tree/xast)
+  — 可扩展抽象语法树
+
+## 工具书类
+
+- **unist**:
+  [通用语法树][unist].
+  T. Wormer; et al.
+- **JavaScript**:
+  [ECMAScript 语言规范][javascript].
+  Ecma International.
+- **Web IDL**:
+  [Web IDL][webidl],
+  C. McCormack.
+  W3C.
+
+## 贡献
+
+See [`contributing.md`][contributing] in [`syntax-tree/.github`][health] for ways to get started.
+See [`support.md`][support] for ways to get help.
+Ideas for new utilities and tools can be posted in [`syntax-tree/ideas`][ideas].
+
+A curated list of awesome syntax-tree, unist, mdast, hast, xast, and nlcst
+resources can be found in [awesome syntax-tree][awesome].
+
+This project has a [code of conduct][coc].
+By interacting with this repository, organization, or community you agree to
+abide by its terms.
+
+## 鸣谢
+
+该项目的初始版本由[**@wooorm**](https://github.com/wooorm)撰写.
+
+幸亏
+[**@nwtn**](https://github.com/nwtn),
+[**@tmcw**](https://github.com/tmcw),
+[**@muraken720**](https://github.com/muraken720), 和
+[**@dozoisch**](https://github.com/dozoisch)
+为 nlcst 和相关项目做出贡献！
+
+## 许可证
+
+[CC-BY-4.0][license] © [Titus Wormer][author]
+
+[license]: https://creativecommons.org/licenses/by/4.0/
+[author]: https://wooorm.com
+[logo]: https://raw.githubusercontent.com/syntax-tree/nlcst/a89561d/logo.svg?sanitize=true
+[health]: https://github.com/syntax-tree/.github
+[contributing]: https://github.com/syntax-tree/.github/blob/HEAD/contributing.md
+[support]: https://github.com/syntax-tree/.github/blob/HEAD/support.md
+[coc]: https://github.com/syntax-tree/.github/blob/HEAD/code-of-conduct.md
+[awesome]: https://github.com/syntax-tree/awesome-syntax-tree
+[ideas]: https://github.com/syntax-tree/ideas
+[releases]: https://github.com/syntax-tree/nlcst/releases
+[latest]: https://github.com/syntax-tree/nlcst/releases/tag/1.0.2
+[list-of-utilities]: #list-of-utilities
+[dfn-unist-parent]: https://github.com/syntax-tree/unist#parent
+[dfn-unist-literal]: https://github.com/syntax-tree/unist#literal
+[dfn-parent]: #parent
+[dfn-literal]: #literal
+[dfn-root]: #root
+[dfn-paragraph]: #paragraph
+[dfn-sentence]: #sentence
+[dfn-word]: #word
+[dfn-symbol]: #symbol
+[dfn-punctuation]: #punctuation
+[dfn-whitespace]: #whitespace
+[dfn-text]: #text
+[dfn-source]: #source
+[term-tree]: https://github.com/syntax-tree/unist#tree
+[term-child]: https://github.com/syntax-tree/unist#child
+[term-root]: https://github.com/syntax-tree/unist#root
+[unist]: https://github.com/syntax-tree/unist
+[syntax-tree]: https://github.com/syntax-tree/unist#syntax-tree
+[javascript]: https://www.ecma-international.org/ecma-262/9.0/index.html
+[webidl]: https://heycam.github.io/webidl/
+[glossary]: https://github.com/syntax-tree/unist#glossary
+[utilities]: https://github.com/syntax-tree/unist#list-of-utilities
+[unified]: https://github.com/unifiedjs/unified
+[retext]: https://github.com/retextjs/retext
+[textom]: https://github.com/wooorm/textom

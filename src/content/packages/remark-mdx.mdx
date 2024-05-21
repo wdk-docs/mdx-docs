@@ -2,53 +2,43 @@
 title: "remark-mdx"
 ---
 
-remark plugin to support the MDX syntax (JSX, export/import, expressions).
+remark 插件，支持 MDX 语法 (JSX, export/import, expressions).
 
-## What is this?
+## 这是什么？
 
-This package is a [unified][] ([remark][]) plugin to enable the extensions to
-markdown that MDX adds: JSX (`<x/>`), export/import (`export x from 'y'`), and
-expression {`{1 + 1}`}.
-You can use this plugin to add support for parsing and serializing them.
+此包是一个[unified][] ([remark][])插件，用于使 MDX 添加的扩展能够 markdown: JSX (`<x/>`), export/import (`export x from 'y'`), 和表达式 {`{1 + 1}`}.
+您可以使用此插件来添加对解析和序列化它们的支持。
 
-This plugin does not handle how MDX is compiled to JavaScript or evaluated and
-rendered to HTML.
-That’s done by [`@mdx-js/mdx`][mdx].
+此插件不处理如何将 MDX 编译为 JavaScript 或评估并呈现为 HTML。
+这是由[`@mdx-js/mdx`][mdx]完成的.
 
-## When should I use this?
+## 我什么时候该用这个？
 
-This plugin is useful if you’re dealing with the MDX syntax and integrating
-with remark, rehype, and the rest of unified.
-Some example use cases are when you want to lint the syntax or compile it to
-something other that JavaScript.
+如果您正在处理 MDX 语法并与 remark、rehype 和其他 unified 插件集成，则此插件非常有用。
+一些示例用例是当您想要整理语法或将其编译为 JavaScript 以外的东西时。
 
-If you don’t use plugins and want to access the syntax tree, you can use
-[`mdast-util-from-markdown`][mdast-util-from-markdown] with
-[`mdast-util-mdx`][mdast-util-mdx].
+如果您不使用插件并且希望访问语法树，则可以将[`mdast-util-from-markdown`][mdast-util-from-markdown]与[`mdast-util-mdx`][mdast-util-mdx]一起使用.
 
-Typically though, you’d want to move a layer up: `@mdx-js/mdx`.
-That package is the core compiler for turning MDX into JavaScript which
-gives you the most control.
-Or even higher: if you’re using a bundler (Rollup, esbuild, webpack), or a site
-builder (Next.js) or build system (Vite) which comes with a bundler, you’re
-better off using an integration: see [§ Integrations][integrations].
+不过，通常情况下，您会希望向上移动一层: `@mdx-js/mdx`.
+该软件包是将 MDX 转换为 JavaScript 的核心编译器，它为您提供了最大的控制权。
+或者更高：如果你使用捆绑器（Rollup、esbuild、webpack），或者捆绑器附带的网站构建器（Next.js）或构建系统（Vite），你最好使用集成：请参阅[§集成][integrations].
 
-## Install
+## 安装
 
-This package is [ESM only][esm].
-In Node.js (version 16+), install with [npm][]:
+此程序包[仅限 ESM][esm].
+在 Node.js（16+版本）中，使用[npm][]安装:
 
 ```sh
 npm install remark-mdx
 ```
 
-In Deno with [`esm.sh`][esmsh]:
+在 Deno 中使用[`esm.sh`][esmsh]:
 
 ```tsx
 import remarkMdx from "https://esm.sh/remark-mdx@3";
 ```
 
-In browsers with [`esm.sh`][esmsh]:
+在带有[`esm.sh`][esmsh]的浏览器中:
 
 ```html
 <script type="module">
@@ -56,7 +46,7 @@ In browsers with [`esm.sh`][esmsh]:
 </script>
 ```
 
-## Use
+## 使用
 
 ```tsx
 import { remark } from "remark";
@@ -77,22 +67,21 @@ a <b/> c {1 + 1} d
 
 ## API
 
-This package exports no identifiers.
-The default export is [`remarkMdx`][api-remark-mdx].
+此包不导出标识符。
+默认导出为[`remakMdx`][api-remark-mdx].
 
 ### `unified().use(remarkMdx[, options])`
 
-Add support for MDX (JSX: `<Video id={123} />`, export/imports: `export {x}
-from 'y'`; and expressions: `{1 + 1}`).
+添加对 MDX 的支持 (JSX: `<Video id={123} />`, export/imports: `export {x} from 'y'`; 和表达式: `{1 + 1}`).
 
-###### Parameters
+###### 参数
 
 - `options` ([`Options`][api-options], optional)
   — configuration
 
-###### Returns
+###### 返回
 
-Nothing (`undefined`).
+没有什么 (`undefined`).
 
 ### `Options`
 
@@ -104,7 +93,7 @@ Configuration (TypeScript type).
   `{ecmaVersion: 2024, locations: true, sourceType: 'module'}`)
   — configuration for acorn; all fields except `locations` can be set
 - `printWidth` (`number`, default: `Infinity`)
-  — try and wrap syntax at this width;
+  — 尝试按此宽度换行语法;
   when set to a finite number (say, `80`), the formatter will print
   attributes on separate lines when a tag doesn’t fit on one line;
   the normal behavior is to print attributes with spaces between them instead
@@ -119,9 +108,9 @@ Configuration (TypeScript type).
 
 {/* <!-- Note: `acorn`, `addResult`, `allowEmpty`, and `spread` are intentionally not documented. --> */}
 
-## Authoring
+## 创作
 
-For recommendations on how to author MDX, see each corresponding readme:
+有关如何编写 MDX 的建议，请参阅每个相应的自述文件：
 
 - [ESM](https://github.com/micromark/micromark-extension-mdxjs-esm#authoring)
 - [JSX](https://github.com/micromark/micromark-extension-mdx-jsx#authoring)
@@ -130,46 +119,43 @@ For recommendations on how to author MDX, see each corresponding readme:
 
 ## HTML
 
-MDX has no representation in HTML.
-Though, when you are dealing with MDX, you will likely go _through_ hast.
-You can enable passing MDX through to hast by configuring
-[`remark-rehype`][remark-rehype] with `passThrough: ['mdxjsEsm',
-'mdxFlowExpression', 'mdxJsxFlowElement', 'mdxJsxTextElement', 'mdxTextExpression']`.
+MDX 在 HTML 中没有表示形式。
+不过，当你在处理 MDX 时，你很可能会经历 hast。
+通过使用`passThrough ['mdxjsEsm','mdxFlowExpression', 'mdxJsxFlowElement', 'mdxJsxTextElement', 'mdxTextExpression']`配置[`remark-rehype`][remark-rehype]，可以启用将 MDX 传递到 hast: .
 
-## Syntax
+## 语法
 
-For info on the syntax of these features, see each corresponding readme:
+有关这些功能的语法信息，请参阅每个相应的自述文件：
 
 - [ESM](https://github.com/micromark/micromark-extension-mdxjs-esm#syntax)
 - [JSX](https://github.com/micromark/micromark-extension-mdx-jsx#syntax)
-- [expressions](https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression#syntax)
-- CommonMark features not in MDX: n/a
+- [表达](https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression#syntax)
+- CommonMark 功能不在 MDX 中: n/a
 
-## Syntax tree
+## 语法树
 
-For info on the syntax tree of these features, see each corresponding readme:
+有关这些功能的语法树的信息，请参阅每个相应的自述文件:
 
 - [ESM](https://github.com/syntax-tree/mdast-util-mdxjs-esm#syntax-tree)
 - [JSX](https://github.com/syntax-tree/mdast-util-mdx-jsx#syntax-tree)
 - [expressions](https://github.com/syntax-tree/mdast-util-mdx-expression#syntax-tree)
-- CommonMark features not in MDX: n/a
+- CommonMark 功能不在 MDX 中: n/a
 
-## Errors
+## 错误
 
-For info on what errors are thrown, see each corresponding readme:
+有关抛出的错误的信息，请参阅每个相应的自述文件:
 
 - [ESM](https://github.com/micromark/micromark-extension-mdxjs-esm#errors)
 - [JSX](https://github.com/micromark/micromark-extension-mdx-jsx#errors)
 - [expressions](https://github.com/micromark/micromark-extension-mdx-expression/tree/main/packages/micromark-extension-mdx-expression#errors)
-- CommonMark features not in MDX: n/a
+- CommonMark 功能不在 MDX 中: n/a
 
-## Types
+## 类型
 
-This package is fully typed with [TypeScript][].
-It exports the additional type [`Options`][api-options].
+此包是使用[TypeScript][]完全键入的.
+它导出附加类型[`Options`][api-options].
 
-If you’re working with the syntax tree, you can register the new node types
-with `@types/mdast` by adding a reference:
+如果您使用的是语法树，则可以通过添加引用来使用`@types/mdast`注册新的节点类型：
 
 ```tsx
 // Register MDX nodes in mdast:
@@ -192,32 +178,12 @@ function myRemarkPlugin() {
 }
 ```
 
-## Compatibility
+## 兼容性
 
-Projects maintained by the unified collective are compatible with maintained
-versions of Node.js.
+unified 集体维护的项目与 Node.js 的维护版本兼容。
 
-When we cut a new major release, we drop support for unmaintained versions of
-Node.
-This means we try to keep the current release line, `remark-mdx@^3`, compatible
-with Node.js 16.
-
-## Security
-
-See [§ Security][security] on our website for information.
-
-## Contribute
-
-See [§ Contribute][contribute] on our website for ways to get started.
-See [§ Support][support] for ways to get help.
-
-This project has a [code of conduct][coc].
-By interacting with this repository, organization, or community you agree to
-abide by its terms.
-
-## License
-
-[MIT][] © [Titus Wormer][author]
+当我们剪切一个新的主要版本时，我们会放弃对 Node 的未维护版本的支持。
+这意味着我们试图保持当前发布行`remark-mdx@^3`与 Node.js 16 兼容。
 
 [build-badge]: https://github.com/mdx-js/mdx/workflows/main/badge.svg
 [build]: https://github.com/mdx-js/mdx/actions

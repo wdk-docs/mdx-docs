@@ -2,19 +2,19 @@
 title: 开始
 ---
 
-本文介绍了如何将MDX集成到您的项目中。
-它展示了如何将MDX与您选择的bundler和JSX运行时一起使用。 {/* more */}
-要了解MDX格式是如何工作的，我们建议您从[§什么是MDX][what]开始。
-当您已经设置好并准备好使用MDX时，请参阅[§使用MDX][use]。
+本文介绍了如何将 MDX 集成到您的项目中。
+它展示了如何将 MDX 与您选择的 bundler 和 JSX 运行时一起使用。 {/* more */}
+要了解 MDX 格式是如何工作的，我们建议您从[§什么是 MDX][what]开始。
+当您已经设置好并准备好使用 MDX 时，请参阅[§使用 MDX][use]。
 
 ## 先决条件
 
-MDX依赖于JSX，因此要求您的项目也支持JSX。
-任何JSX运行时（React、Preact、Vue等）都可以。
-请注意，我们确实会为您将JSX编译为JavaScript，因此您不必进行设置。
+MDX 依赖于 JSX，因此要求您的项目也支持 JSX。
+任何 JSX 运行时（React、Preact、Vue 等）都可以。
+请注意，我们确实会为您将 JSX 编译为 JavaScript，因此您不必进行设置。
 
-所有`@mdx-js/*`包都是用现代JavaScript编写的。
-需要16.0或更高版本的[Node.js][node-js]才能使用它们。
+所有`@mdx-js/*`包都是用现代 JavaScript 编写的。
+需要 16.0 或更高版本的[Node.js][node-js]才能使用它们。
 我们的软件包也是[ESM only][github-gist-esm]，因此它们必须是`import`ed，而不是`require`d。
 
 <Note type="info">使用Rust而不是Node.js？尝试 [`mdxjs-rs`][mdxjs-rs]!</Note>
@@ -23,19 +23,19 @@ MDX依赖于JSX，因此要求您的项目也支持JSX。
 
 ### Bundler
 
-MDX是一种编译成JavaScript的语言。
-(我们还将常规markdown编译为JavaScript。)
-最简单的入门方法是为bundler使用集成（如果您有集成的话）:
+MDX 是一种编译成 JavaScript 的语言。
+(我们还将常规 markdown 编译为 JavaScript。)
+最简单的入门方法是为 bundler 使用集成（如果您有集成的话）:
 
 - 如果使用**esbuild**，请安装并配置[`@mdx-js/esbuild`][mdx-esbuild]
-- 如果您使用**Rollup**（或Vite）,安装和配置 [`@mdx-js/rollup`][mdx-rollup]
+- 如果您使用**Rollup**（或 Vite）,安装和配置 [`@mdx-js/rollup`][mdx-rollup]
 - 如果您使用**webpack** (或 Next.js), 安装和配置 [`@mdx-js/loader`][mdx-loader]
 
-您也可以使用不带捆扎器的MDX:
+您也可以使用不带捆扎器的 MDX:
 
-- 可以使用[`@mdx-js/node-loader`][mdx-node-loader]在**Node.js**中导入MDX文件
-- 您可以使用我们的核心编译器[`@mdx-js/mdx`][mdx-mdx]来编译mdx文件
-- 您可以使用我们的核心编译器[`@mdx-js/mdx`][mdx-mdx]来[估计][api-evaluate]（编译并运行）mdx文件
+- 可以使用[`@mdx-js/node-loader`][mdx-node-loader]在**Node.js**中导入 MDX 文件
+- 您可以使用我们的核心编译器[`@mdx-js/mdx`][mdx-mdx]来编译 mdx 文件
+- 您可以使用我们的核心编译器[`@mdx-js/mdx`][mdx-mdx]来[估计][api-evaluate]（编译并运行）mdx 文件
 
 有关这些工具的更多信息，请参阅它们的专用部分:
 [¶ Next.js][site-generator-next],
@@ -47,11 +47,11 @@ MDX是一种编译成JavaScript的语言。
 
 ### JSX
 
-现在您已经设置了集成或`@mdx-js/mdx`本身，是时候配置您的JSX运行时了。
+现在您已经设置了集成或`@mdx-js/mdx`本身，是时候配置您的 JSX 运行时了。
 
 - 如果使用**React**，则为默认值;
   可选地安装和配置[`@mdx-js/react`][mdx-react]
-- 如果您使用**Preact**,将[`ProcessorOptions`中的`jsxImportSource`][api-processor-options]设置为`response'`;
+- 如果您使用**Preact**,将[`ProcessorOptions`中的`jsxImportSource`][api-processor-options]设置为`'response'`;
   可选地安装和配置[`@mdx-js/preact`][mdx-preact]
 - 如果您使用**Svelte**,安装 [`svelte-jsx`][svelte-jsx],并将[`ProcessorOptions`中的`jsxImportSource`][api-processor-options]设置为`'svelte-jsx'`
 - 如果使用**Vue**，请将[`ProcessorOptions`中的`jsxImportSource`][api-processor-options]设置为`Vue`；
@@ -64,7 +64,7 @@ MDX是一种编译成JavaScript的语言。
   install and configure [`@mdx-js/react`][mdx-react],
   then wrap your MDX content in a `<ThemeProvider />`
 
-在[`ProcessorOptions`中设置`jsxImportSource`][api-processor-options]可支持其他JSX运行时.
+在[`ProcessorOptions`中设置`jsxImportSource`][api-processor-options]可支持其他 JSX 运行时.
 
 有关这些工具的更多信息，请参阅它们的专用部分：
 [¶ Emotion][jsx-runtime-emotion],
@@ -77,14 +77,14 @@ MDX是一种编译成JavaScript的语言。
 
 ### 编辑
 
-您可以通过在编辑器中添加对MDX的支持来增强使用MDX的体验：
+您可以通过在编辑器中添加对 MDX 的支持来增强使用 MDX 的体验：
 
-- 如果使用**VS代码**，请尝试 [`mdx-js/vscode-mdx`][vscode-mdx]
+- 如果使用**VS 代码**，请尝试 [`mdx-js/vscode-mdx`][vscode-mdx]
 - 如果您使用**Vim**，请尝试 [`jxnblk/vim-mdx-js`][vim-mdx-js]
 - 如果您使用**Sublime Text**，请尝试 [`jonsuh/mdx-sublime`][mdx-sublime]
 - 如果您使用**JetBrains IntelliJ/WebStorm**，请尝试[`JetBrains/mdx-intellij-plugin`][mdx-intellij-plugin]
 
-为我们的VS代码扩展提供动力并用于在GitHub上突出显示代码块的语法突出显示保持在[`wooorm/markdown-tm-language`][markdown-tm-language].
+为我们的 VS 代码扩展提供动力并用于在 GitHub 上突出显示代码块的语法突出显示保持在[`wooorm/markdown-tm-language`][markdown-tm-language].
 
 ### 类型
 
@@ -97,7 +97,7 @@ MDX是一种编译成JavaScript的语言。
 npm install @types/mdx
 ```
 
-…TypeScript应自动拾取:
+…TypeScript 应自动拾取:
 
 ```tsx path="example.js"
 import Post from "./post.mdx"; // `Post` is now typed.
@@ -110,7 +110,7 @@ import Post from "./post.mdx"; // `Post` is now typed.
 这是通过安装和使用框架的类型来完成的，例如[`@types/react`][definitely-typed-react].
 
 要为导入的`.mdx`、`.md`等启用类型，请安装并使用[`@types/mdx`][definitely-typed-mdx].
-此包还导出几个有用的类型，例如表示`components`道具的`MDXComponents`。
+此包还导出几个有用的类型，例如表示`components`属性的`MDXComponents`。
 你可以这样导入它们:
 
 ```tsx path="example.ts"
@@ -119,14 +119,14 @@ import type { MDXComponents } from "mdx/types.js";
 
 ### 安全
 
-MDX是一种编程语言。
+MDX 是一种编程语言。
 如果你信任你的作者，那没关系。
 如果你不这样做，那就不安全了。
 
-不要让互联网上随意的人写MDX。
-如果你这样做了，你可能想研究将`<iframe>`与`sandbox`一起使用，但安全性很难，而且似乎不是100%。
-对于Node.js，[vm2][]听起来很有趣。
-但你可能也应该使用Docker或类似软件对整个操作系统进行沙盒处理，执行速率限制，并确保进程在耗时过长时会被杀死。
+不要让互联网上随意的人写 MDX。
+如果你这样做了，你可能想研究将`<iframe>`与`sandbox`一起使用，但安全性很难，而且似乎不是 100%。
+对于 Node.js，[vm2][]听起来很有趣。
+但你可能也应该使用 Docker 或类似软件对整个操作系统进行沙盒处理，执行速率限制，并确保进程在耗时过长时会被杀死。
 
 ## 集成
 
@@ -156,10 +156,10 @@ await esbuild.build({
 </details>
 
 我们支持[esbuild][]。
-安装并配置esbuild插件[`@mdx-js/esbuild`][mdx-esbuild].
-[配置您的JSX运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue等）。
+安装并配置 esbuild 插件[`@mdx-js/esbuild`][mdx-esbuild].
+[配置您的 JSX 运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue 等）。
 
-要使用比用户支持的更现代的JavaScript功能，请[配置esbuild的`target`][esbuild-target].
+要使用比用户支持的更现代的 JavaScript 功能，请[配置 esbuild 的`target`][esbuild-target].
 
 #### Rollup
 
@@ -191,12 +191,12 @@ export default config
 </details>
 
 我们支持[Rollup][].
-安装并配置Rollup插件[`@mdx-js/Rollup`][mdx-rollup].
-[配置您的JSX运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue等）。
+安装并配置 Rollup 插件[`@mdx-js/Rollup`][mdx-rollup].
+[配置您的 JSX 运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue 等）。
 
-使用比用户支持的更现代的JavaScript功能,[安装和配置 `@rollup/plugin-babel`][mdx-rollup-babel].
+使用比用户支持的更现代的 JavaScript 功能,[安装和配置 `@rollup/plugin-babel`][mdx-rollup-babel].
 
-另请参阅[¶Vite][构建系统邀请]，如果您通过它使用Rollup，了解更多信息。
+另请参阅[¶Vite][构建系统邀请]，如果您通过它使用 Rollup，了解更多信息。
 
 #### Webpack
 
@@ -234,12 +234,12 @@ export default webpackConfig;
 </details>
 
 我们支持[webpack][].
-安装并配置webpack加载程序[`@mdx-js/loader`][mdx-loader]。
-[配置您的JSX运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue等）。
+安装并配置 webpack 加载程序[`@mdx-js/loader`][mdx-loader]。
+[配置您的 JSX 运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue 等）。
 
-使用比用户支持的更现代的JavaScript功能,[安装和配置 `babel-loader`][mdx-loader-babel].
+使用比用户支持的更现代的 JavaScript 功能,[安装和配置 `babel-loader`][mdx-loader-babel].
 
-另请参阅[¶ Next.js][site-generator-next]，如果您通过它使用webpack，了解更多信息。
+另请参阅[¶ Next.js][site-generator-next]，如果您通过它使用 webpack，了解更多信息。
 
 ### 构建系统
 
@@ -262,10 +262,10 @@ export default viteConfig;
 </details>
 
 我们支持[Vite][].
-安装和配置Rollup插件 [`@mdx-js/rollup`][mdx-rollup].
-[配置您的JSX运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue等）。
+安装和配置 Rollup 插件 [`@mdx-js/rollup`][mdx-rollup].
+[配置您的 JSX 运行时][jsx]取决于您使用的是哪一个（React、Preact、Vue 等）。
 
-使用比用户支持的更现代的JavaScript功能,[配置 Vite’s `build.target`][vite-build-target].
+使用比用户支持的更现代的 JavaScript 功能,[配置 Vite’s `build.target`][vite-build-target].
 
 <Note type="info">
   如果您还使用`vitejs/vite-plugin-react`，则必须强制`@mdx-js/rollup`在其之前的`pre`阶段运行：
@@ -273,10 +273,12 @@ export default viteConfig;
 ```tsx path="vite.config.js"
 // …
 const viteConfig = defineConfig({
-  plugins: [{ 
-    enforce: "pre", 
-    ...mdx(/* jsxImportSource: …, otherOptions… */) }, 
-    react()
+  plugins: [
+    {
+      enforce: "pre",
+      ...mdx(/* jsxImportSource: …, otherOptions… */),
+    },
+    react(),
   ],
 });
 // …
@@ -284,7 +286,7 @@ const viteConfig = defineConfig({
 
 </Note>
 
-另请参阅Vite中使用的[¶ Rollup][bundler-rollup]，如果您正在使用它，请参阅[¶ Vue][jsx-runtime-vue]，以了解更多信息。
+另请参阅 Vite 中使用的[¶ Rollup][bundler-rollup]，如果您正在使用它，请参阅[¶ Vue][jsx-runtime-vue]，以了解更多信息。
 
 ### 编译器
 
@@ -330,7 +332,7 @@ function recmaBabel() {
 }
 ```
 
-…可以像这样与Babel API一起使用:
+…可以像这样与 Babel API 一起使用:
 
 ```tsx path="example.js"
 import babel from "@babel/core";
@@ -342,10 +344,10 @@ await babel.transformAsync(file, { filename: "example.mdx", plugins: [babelPlugi
 
 </details>
 
-您可能应该直接使用Rollup或webpack而不是Babel，因为这样可以提供最好的界面。
-在Babel中使用`@mdx-js/mdx`是可能的，而且速度更快，因为如果使用Babel，它会跳过`@mdxjs/mdx`序列化和Babel解析。
+您可能应该直接使用 Rollup 或 webpack 而不是 Babel，因为这样可以提供最好的界面。
+在 Babel 中使用`@mdx-js/mdx`是可能的，而且速度更快，因为如果使用 Babel，它会跳过`@mdxjs/mdx`序列化和 Babel 解析。
 
-Babel不支持语法扩展到其解析器（它有`语法`插件，但这些插件只打开或关闭内部标志）。
+Babel 不支持语法扩展到其解析器（它有`语法`插件，但这些插件只打开或关闭内部标志）。
 它确实支持设置不同的解析器。
 这反过来又让我们可以选择是使用`@mdx-js/mdx`还是`@babel/parser`。
 
@@ -353,23 +355,23 @@ Babel不支持语法扩展到其解析器（它有`语法`插件，但这些插�
 
 #### Astro
 
-[Astro][]有自己的MDX集成。
-您可以添加与Astro CLI的集成: `npx astro add mdx`.
+[Astro][]有自己的 MDX 集成。
+您可以添加与 Astro CLI 的集成: `npx astro add mdx`.
 
-此基本设置允许您将markdown、Astro组件和MDX文件作为组件导入。
-有关如何在MDX文件中使用框架中的组件的信息，请参阅Astro的[框架组件指南][astro-framework-components]。
+此基本设置允许您将 markdown、Astro 组件和 MDX 文件作为组件导入。
+有关如何在 MDX 文件中使用框架中的组件的信息，请参阅 Astro 的[框架组件指南][astro-framework-components]。
 
-有关如何组合Astro和MDX的更多信息，请参阅[Astro的MDX集成文档][astro-mdx].
+有关如何组合 Astro 和 MDX 的更多信息，请参阅[Astro 的 MDX 集成文档][astro-mdx].
 
 #### Docusaurus
 
-[Docusaurus][]默认支持MDX。
-有关如何将MDX与Docusaurus一起使用的信息，请参阅[Docusaurus的MDX和React指南][docusaurus-markdown-react]。
+[Docusaurus][]默认支持 MDX。
+有关如何将 MDX 与 Docusaurus 一起使用的信息，请参阅[Docusaurus 的 MDX 和 React 指南][docusaurus-markdown-react]。
 
 #### Gatsby
 
-[Gatsby][] 有自己的插件来支持MDX。
-请参阅[`gatsby-plugin-mdx`][gatsby-plugin-mdx]了解如何将mdx与gatsby一起使用。
+[Gatsby][] 有自己的插件来支持 MDX。
+请参阅[`gatsby-plugin-mdx`][gatsby-plugin-mdx]了解如何将 mdx 与 gatsby 一起使用。
 
 #### Next.js
 
@@ -397,19 +399,19 @@ export default nextConfig;
 
 </details>
 
-[Next.js][next]具有自己的MDX集成。
+[Next.js][next]具有自己的 MDX 集成。
 安装和配置 [`@next/mdx`][next-mdx].
 
-不要与Next一起使用`providerImportSource`和`@mdx-js/react`来注入组件。
+不要与 Next 一起使用`providerImportSource`和`@mdx-js/react`来注入组件。
 改为添加`mdx-components.tsx`（在`src/`或`/`中）文件。
-有关更多信息，请参阅[在`nextjs.org`][next-configuring-mdx]上配置MDX。
+有关更多信息，请参阅[在`nextjs.org`][next-configuring-mdx]上配置 MDX。
 
 #### Parcel
 
-[Parcel][] 有自己的插件来支持MDX。
-有关如何将mdx与parcel一起使用的信息，请参见[`@parcel/transformer-mdx`][parcel-mdx] 。
+[Parcel][] 有自己的插件来支持 MDX。
+有关如何将 mdx 与 parcel 一起使用的信息，请参见[`@parcel/transformer-mdx`][parcel-mdx] 。
 
-### JSX运行时
+### JSX 运行时
 
 #### Emotion
 
@@ -502,12 +504,12 @@ for more info.
 
 #### React
 
-默认情况下支持React。
+默认情况下支持 React。
 您可以选择安装和配置[`@mdx-js/react`][mdx-react]，以支持基于上下文的组件传递。
 
 有关更多信息，请参阅您可能正在使用的[¶ Rollup][bundler-rollup], [¶ esbuild][bundler-esbuild], 和 [¶ webpack][bundler-webpack]。
 
-#### 主题UI
+#### 主题 UI
 
 <details>
   <summary>Expand example</summary>
@@ -619,13 +621,13 @@ for more info.
 
 #### Node.js
 
-可以使用[`@mdx-js/node-loader`][mdx-node-loader]在Node中导入MDX文件.
+可以使用[`@mdx-js/node-loader`][mdx-node-loader]在 Node 中导入 MDX 文件.
 有关如何配置它，请参阅其自述文件。
 
 ## 进一步阅读
 
-- 如果您想在项目中使用MDX内容，请参阅[§使用MDX][use]
-- 如果您在集成MDX时遇到错误，请参阅[§MDX疑难解答][trouble]或[§支持][support]
+- 如果您想在项目中使用 MDX 内容，请参阅[§使用 MDX][use]
+- 如果您在集成 MDX 时遇到错误，请参阅[§MDX 疑难解答][trouble]或[§支持][support]
 
 [astro]: https://astro.build/
 [astro-framework-components]: https://docs.astro.build/en/core-concepts/framework-components/

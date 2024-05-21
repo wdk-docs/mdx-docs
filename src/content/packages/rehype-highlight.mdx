@@ -8,7 +8,7 @@ title: "rehype-highlight"
 
 这个包是一个[unified][] ([rehype][])插件，用于执行语法高亮显示。
 它使用`highlight.js`到`lowlight`，这非常快，相对较小，而且非常好。
-默认情况下，此软件包捆绑了 37 种[通用语言][lowlight-common]你可以注册更多(190 with [`all`][lowlight-all]).
+默认情况下，此软件包捆绑了 37 种[通用语言][lowlight-common]你可以注册更多(190 与[`all`][lowlight-all]).
 
 它查找`<code>`元素（当直接在`<pre>`元素中时）并更改它们。
 您可以用`language-*`或`lang-*`类指定代码语言（如 Python），其中`*`可以是例如`js`（所以`language-js`）、`md`、`css`等。
@@ -312,16 +312,16 @@ console.log(String(file));
 
 ## 兼容性
 
-统一集体维护的项目与 Node.js 的维护版本兼容。
+unified 集体维护的项目与 Node.js 的维护版本兼容。
 
 当我们剪切一个新的主要版本时，我们会放弃对 Node 的未维护版本的支持。
 这意味着我们试图保持当前发布行`rehype-highlight@^7`与 Node.js 16 兼容。
 
-此插件适用于`rehype-parse` version 1+, `rehype-stringify` version 1+, `rehype` version 1+, and `unified` version 4+.
+此插件适用于`rehype-parse` 版本 1+, `rehype-stringify` 版本 1+, `rehype` 版本 1+, 和 `unified` 版本 4+.
 
 ## 安全
 
-Use of `rehype-highlight` _should_ be safe to use as `highlight.js` and `lowlight` _should_ be safe to use.
+使用`rehype-highlight`应该可以安全地用作`highlight.js`，使用`lowlight`应该安全。
 如有疑问，请使用[`rehype-sanitize`][rehype-sanitize].
 
 ## 相关的

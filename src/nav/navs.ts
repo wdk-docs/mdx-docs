@@ -27,4 +27,8 @@ export const navs = {
     label: "博客",
     href: "/blog",
   },
+  unifiedjs: {
+    label: "unifiedjs",
+    href: "/unifiedjs",
+  },
 };

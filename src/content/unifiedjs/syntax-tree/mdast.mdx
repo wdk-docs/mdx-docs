@@ -1,0 +1,1439 @@
+---
+title: mdast(Markdown抽象语法树)
+---
+
+**M**ark**d**own **A**bstract **S**yntax **T**ree.
+
+> https://github.com/syntax-tree/mdast
+
+---
+
+**mdast**是一个用于在[语法树][syntax-tree]中表示 markdown 的规范。
+它实现了 **[unist][]**。
+它可以表示[markdown][]的几种口味，如[CommonMark][]和[GitHub Flavored markdown][gfm]。
+
+此文档可能不会发布。
+有关已发布的文档，请参见[releases][]。
+最新发布的版本是[`5.0.0`][latest]。
+
+## 介绍
+
+本文档定义了将[markdown][]表示为[抽象语法树][syntax-tree]的格式。
+mdast 的开发始于 2014 年 7 月，在[unist][]存在之前的 **[remark][]**。
+这个规范是用类似[Web IDL][webidl]的语法编写的。
+
+### 本规范适用的地方
+
+mdast 扩展了语法树格式[unist][]，以受益于其[实用程序生态系统][utilities]。
+
+mdast 与[JavaScript][]相关，因为它有一个丰富的[实用程序生态系统][实用程序列表]，用于处理 JavaScript 中的兼容语法树。
+然而，mdast 并不局限于 JavaScript，也可以用于其他编程语言。
+
+mdast 与[unified][]和[remark][]项目有关，因为 mdast 语法树在其整个生态系统中使用。
+
+## Types
+
+如果您使用的是 TypeScript，您可以通过与 npm 一起安装来使用 unist 类型：
+
+```sh
+npm install @types/mdast
+```
+
+## Nodes (摘要)
+
+### `Literal`
+
+```idl
+interface Literal <: UnistLiteral {
+  value: string
+}
+```
+
+**Literal**([**UnistLiteral**][dfn-unist-literal])表示 mdast 中包含值的抽象接口。
+
+其`value`字段是一个`string`。
+
+### `Parent`
+
+```idl
+interface Parent <: UnistParent {
+  children: [MdastContent]
+}
+```
+
+**Parent**([**UnistParent**][dfn-unist-parent])表示 mdast 中包含其他节点的抽象接口 (据说是[_children_][term-child]).
+
+其内容仅限于其他 [**mdast content**][dfn-mdast-content].
+
+## Nodes
+
+### `Blockquote`
+
+```idl
+interface Blockquote <: Parent {
+  type: 'blockquote'
+  children: [FlowContent]
+}
+```
+
+**Blockquote** ([**Parent**][dfn-parent]) 表示从其他地方引用的部分。
+
+**Blockquote**可用于需要[**flow**][dfn-flow-content]内容的地方。
+其内容模型也是[**flow**][dfn-flow-content]内容。
+
+例如，以下标记：
+
+```markdown
+> Alpha bravo charlie.
+```
+
+输出:
+
+```js
+{
+  type: 'blockquote',
+  children: [{
+    type: 'paragraph',
+    children: [{type: 'text', value: 'Alpha bravo charlie.'}]
+  }]
+}
+```
+
+### `Break`
+
+```idl
+interface Break <: Node {
+  type: 'break'
+}
+```
+
+**Break** ([**Node**][dfn-node]) 表示换行符，例如在诗歌或演讲中。
+
+**Break**可用于需要[**phrasing**][dfn-phrasing-content]内容的地方。
+它没有内容模型。
+
+例如，以下 markdown：
+
+```markdown
+foo··
+bar
+```
+
+输出:
+
+```js
+{
+  type: 'paragraph',
+  children: [
+    {type: 'text', value: 'foo'},
+    {type: 'break'},
+    {type: 'text', value: 'bar'}
+  ]
+}
+```
+
+### `Code`
+
+```idl
+interface Code <: Literal {
+  type: 'code'
+  lang: string?
+  meta: string?
+}
+```
+
+**Code** ([**Literal**][dfn-literal]) 表示预先格式化的文本块，例如 ASCII 艺术或计算机代码。
+
+**Code**可用于需要[**flow**][dfn-flow-content]内容的地方。
+其内容由其`value`字段表示。
+
+该节点涉及[**phrasing**][dfn-phrasing-content]内容概念[**InlineCode**][dfn-inline-code]。
+
+可以存在`lang`字段。
+它代表被标记的计算机代码的语言。
+
+如果存在`lang`字段，则可以存在`meta`字段。
+它表示与节点相关的自定义信息。
+
+例如，以下 markdown：
+
+```markdown
+    foo()
+```
+
+输出:
+
+```js
+{
+  type: 'code',
+  lang: null,
+  meta: null,
+  value: 'foo()'
+}
+```
+
+以及以下内容 markdown:
+
+````markdown
+```js highlight-line="2"
+foo();
+bar();
+baz();
+```
+````
+
+输出:
+
+```js
+{
+  type: 'code',
+  lang: 'javascript',
+  meta: 'highlight-line="2"',
+  value: 'foo()\nbar()\nbaz()'
+}
+```
+
+### `Definition`
+
+```idl
+interface Definition <: Node {
+  type: 'definition'
+}
+
+Definition includes Association
+Definition includes Resource
+```
+
+**Definition** ([**Node**][dfn-node]) 表示资源.
+
+**Definition** 可以在需要[**content**][dfn-content]的情况下使用。
+它没有内容模型。
+
+**Definition**包括混合项[**Association**][dfn-mxn-association]和[**Resource**][dfn-mxn-resource]。
+
+**Definition**应与[**LinkReferences**][dfn-link-reference] 和 [**ImageReferences**][dfn-image-reference]相关联。
+
+例如，以下 markdown:
+
+```markdown
+[Alpha]: https://example.com
+```
+
+输出:
+
+```js
+{
+  type: 'definition',
+  identifier: 'alpha',
+  label: 'Alpha',
+  url: 'https://example.com',
+  title: null
+}
+```
+
+### `Emphasis`
+
+```idl
+interface Emphasis <: Parent {
+  type: 'emphasis'
+  children: [PhrasingContent]
+}
+```
+
+**Emphasis** ([**Parent**][dfn-parent])代表了对其内容的强调。
+
+**Emphasis** 可以在需要[**phrasing**][dfn-phrasing-content]内容的情况下使用。
+其内容模型为[**phrasing**][dfn-phrasing-content]内容。
+
+例如，以下 markdown:
+
+```markdown
+_alpha_ _bravo_
+```
+
+输出:
+
+```js
+{
+  type: 'paragraph',
+  children: [
+    {
+      type: 'emphasis',
+      children: [{type: 'text', value: 'alpha'}]
+    },
+    {type: 'text', value: ' '},
+    {
+      type: 'emphasis',
+      children: [{type: 'text', value: 'bravo'}]
+    }
+  ]
+}
+```
+
+### `Heading`
+
+```idl
+interface Heading <: Parent {
+  type: 'heading'
+  depth: 1 <= number <= 6
+  children: [PhrasingContent]
+}
+```
+
+**Heading** ([**Parent**][dfn-parent]) 表示节的标题。
+
+**Heading** 可以在预期[**flow**][dfn-flow-content]内容的情况下使用。
+其内容模型为[**phrasing**][dfn-phrasing-content]内容。
+
+必须存在`depth`字段。
+值`1`被认为是最高等级，而`6`则是最低等级。
+
+例如，以下 markdown:
+
+```markdown
+# Alpha
+```
+
+输出:
+
+```js
+{
+  type: 'heading',
+  depth: 1,
+  children: [{type: 'text', value: 'Alpha'}]
+}
+```
+
+### `Html`
+
+```idl
+interface Html <: Literal {
+  type: 'html'
+}
+```
+
+**Html** ([**Literal**][dfn-literal]) 表示原始[HTML][]的片段.
+
+**Html**可以在需要[**flow**][dfn-flow-content] 或 [**phrasing**][dfn-phrasing-content]内容的地方使用。
+其内容由其`value`字段表示。
+
+**Html**节点不受有效或完整 HTML([\[HTML\]][html])构造的限制。
+
+例如，以下 markdown:
+
+```markdown
+<div>
+```
+
+输出:
+
+```js
+{type: 'html', value: '<div>'}
+```
+
+### `Image`
+
+```idl
+interface Image <: Node {
+  type: 'image'
+}
+
+Image includes Resource
+Image includes Alternative
+```
+
+**Image** ([**Node**][dfn-node]) 表示图像。
+
+**Image**可用于需要[**phrasing**][dfn-phrasing-content]内容的地方。
+它没有内容模型，但由其`alt`字段描述。
+
+**Image**包括混合项[**Resource**][dfn-mxn-resource]和[**Alternative**][dfn-mxn-alternative]。
+
+例如，以下 markdown::
+
+```markdown
+![alpha](https://example.com/favicon.ico "bravo")
+```
+
+输出:
+
+```js
+{
+  type: 'image',
+  url: 'https://example.com/favicon.ico',
+  title: 'bravo',
+  alt: 'alpha'
+}
+```
+
+### `ImageReference`
+
+```idl
+interface ImageReference <: Node {
+  type: 'imageReference'
+}
+
+ImageReference 包括 Reference
+ImageReference 包括 Alternative
+```
+
+**ImageReference** ([**Node**][dfn-node])通过关联表示图像，如果没有关联，则表示图像的原始来源。
+
+**ImageReference** 可以在需要[**phrasing**][dfn-phrasing-content]内容的情况下使用。
+它没有内容模型，但由其`alt`字段描述。
+
+**ImageReference**包括混合项[**Reference**][dfn-mxn-reference]和[**Alternative**][dfn-mxn-alternative]。
+
+**ImageReference**应与[**Definition**][dfn-definition]相关联。
+
+例如，以下 markdown::
+
+```markdown
+![alpha][bravo]
+```
+
+输出:
+
+```js
+{
+  type: 'imageReference',
+  identifier: 'bravo',
+  label: 'bravo',
+  referenceType: 'full',
+  alt: 'alpha'
+}
+```
+
+### `InlineCode`
+
+```idl
+interface InlineCode <: Literal {
+  type: 'inlineCode'
+}
+```
+
+**InlineCode** ([**Literal**][dfn-literal])表示计算机代码的片段，如文件名、计算机程序或计算机可以解析的任何内容。
+
+**InlineCode**可用于需要[**phrasing**][dfn-phrasing-content]内容的地方。
+其内容由其`value`字段表示。
+
+该节点涉及[**flow**][dfn-flow-content]内容概念[**Code**][dfn-code]。
+
+例如，以下 markdown::
+
+```markdown
+`foo()`
+```
+
+输出:
+
+```js
+{type: 'inlineCode', value: 'foo()'}
+```
+
+### `Link`
+
+```idl
+interface Link <: Parent {
+  type: 'link'
+  children: [PhrasingContent]
+}
+
+Link includes Resource
+```
+
+**Link** ([**Parent**][dfn-parent]) 表示超链接。
+
+**Link**可用于需要[**phrasing**][dfn-phrasing-content]内容的地方。
+其内容模型也是[**phrasing**][dfn-phrasing-content]内容。
+
+**Link**包括 mixin[**Resource**][dfn-mxn-resource]。
+
+例如，以下 markdown::
+
+```markdown
+[alpha](https://example.com "bravo")
+```
+
+输出:
+
+```js
+{
+  type: 'link',
+  url: 'https://example.com',
+  title: 'bravo',
+  children: [{type: 'text', value: 'alpha'}]
+}
+```
+
+### `LinkReference`
+
+```idl
+interface LinkReference <: Parent {
+  type: 'linkReference'
+  children: [PhrasingContent]
+}
+
+LinkReference includes Reference
+```
+
+**LinkReference** ([**Parent**][dfn-parent]) 通过关联表示超链接，如果没有关联则表示其原始源。
+
+**LinkReference** 可以在需要[**phrasing**][dfn-phrasing-content]内容的情况下使用。
+其内容模型也是[**phrasing**][dfn-phrasing-content]内容。
+
+**LinkReference** 包括 mixin[**Reference**][dfn-mxn-reference]。
+
+**LinkReferences** 应与[**Definition**][dfn-definition]相关联。
+
+例如，以下 markdown::
+
+```markdown
+[alpha][Bravo]
+```
+
+输出:
+
+```js
+{
+  type: 'linkReference',
+  identifier: 'bravo',
+  label: 'Bravo',
+  referenceType: 'full',
+  children: [{type: 'text', value: 'alpha'}]
+}
+```
+
+### `List`
+
+```idl
+interface List <: Parent {
+  type: 'list'
+  ordered: boolean?
+  start: number?
+  spread: boolean?
+  children: [ListContent]
+}
+```
+
+**List** ([**Parent**][dfn-parent]) 表示项目列表。
+
+**List** 可以在预期[**flow**][dfn-flow-content]内容的情况下使用。
+其内容模型为[**list**][dfn-list-content]内容。
+
+可以存在`ordered`字段。
+它表示物品是故意订购的（当`true`时），或者物品的顺序不重要（当`false`或不存在时）。
+
+可以存在`start`字段。
+当`ordered`字段为`true`时，它表示列表的起始编号。
+
+可以存在`spread`字段。
+它表示它的一个或多个孩子与它的[siblings][term-sibling] （当`true`时）或不（当`false`或不存在时）用空行分隔。
+
+例如，以下 markdown::
+
+```markdown
+1. foo
+```
+
+输出:
+
+```js
+{
+  type: 'list',
+  ordered: true,
+  start: 1,
+  spread: false,
+  children: [{
+    type: 'listItem',
+    spread: false,
+    children: [{
+      type: 'paragraph',
+      children: [{type: 'text', value: 'foo'}]
+    }]
+  }]
+}
+```
+
+### `ListItem`
+
+```idl
+interface ListItem <: Parent {
+  type: 'listItem'
+  spread: boolean?
+  children: [FlowContent]
+}
+```
+
+**ListItem** ([**Parent**][dfn-parent])表示[**List**][dfn-list]中的项。
+
+**ListItem**可用于需要[**list**][dfn-list-content]内容的地方。
+其内容模型为[**flow**][dfn-flow-content]内容。
+
+可以存在`spread`字段。
+它表示该项包含两个或多个由空行分隔的[_children_][term-child]（当`true`时）或不包含（当`false`或不存在时）。
+
+例如，以下 markdown::
+
+```markdown
+- bar
+```
+
+输出:
+
+```js
+{
+  type: 'listItem',
+  spread: false,
+  children: [{
+    type: 'paragraph',
+    children: [{type: 'text', value: 'bar'}]
+  }]
+}
+```
+
+### `Paragraph`
+
+```idl
+interface Paragraph <: Parent {
+  type: 'paragraph'
+  children: [PhrasingContent]
+}
+```
+
+**Paragraph** ([**Parent**][dfn-parent])代表处理特定观点或想法的话语单元。
+
+**Paragraph**可以在需要[**content**][dfn-content]的情况下使用。
+其内容模型为[**phrasing**][dfn-phrasing-content]内容。
+
+例如，以下 markdown::
+
+```markdown
+Alpha bravo charlie.
+```
+
+输出:
+
+```js
+{
+  type: 'paragraph',
+  children: [{type: 'text', value: 'Alpha bravo charlie.'}]
+}
+```
+
+### `Root`
+
+```idl
+interface Root <: Parent {
+  type: 'root'
+}
+```
+
+**Root** ([**Parent**][dfn-parent]) 表示文档。
+
+**Root**可以用作[_tree_][term-tree]的[_root_][term-root]，而不能用作[_child_][term-child]。
+其内容模型**不**限于[**flow**][dfn-flow-content]内容，而是可以包含任何[**mdast content**][dfn-mdast-content]，但所有内容必须属于同一类别。
+
+### `Strong`
+
+```idl
+interface Strong <: Parent {
+  type: 'strong'
+  children: [PhrasingContent]
+}
+```
+
+**Strong** ([**Parent**][dfn-parent])代表其内容的强烈重要性、严肃性或紧迫性。
+
+**Strong**可用于需要[**phrasing**][dfn-phrasing-content]内容的地方。
+其内容模型为[**phrasing**][dfn-phrasing-content]内容。
+
+例如，以下 markdown::
+
+```markdown
+**alpha** **bravo**
+```
+
+输出:
+
+```js
+{
+  type: 'paragraph',
+  children: [
+    {
+      type: 'strong',
+      children: [{type: 'text', value: 'alpha'}]
+    },
+    {type: 'text', value: ' '},
+    {
+      type: 'strong',
+      children: [{type: 'text', value: 'bravo'}]
+    }
+  ]
+}
+```
+
+### `Text`
+
+```idl
+interface Text <: Literal {
+  type: 'text'
+}
+```
+
+**Text**（[**Literal**][dfn-literal]）表示所有只是文本的东西。
+
+**Text**可用于需要[**phrasing**][dfn-phrasing-content]内容的地方。
+其内容由其`value`字段表示。
+
+例如，以下 markdown::
+
+```markdown
+Alpha bravo charlie.
+```
+
+输出:
+
+```js
+{type: 'text', value: 'Alpha bravo charlie.'}
+```
+
+### `ThematicBreak`
+
+```idl
+interface ThematicBreak <: Node {
+  type: 'thematicBreak'
+}
+```
+
+**ThematicBreak** ([**Node**][dfn-node])表示主题中断，例如故事中的场景变化、到另一个主题的转换或新文档。
+
+**ThematicBreak**可以在预期[**flow**][dfn-flow-content]内容的情况下使用。
+它没有内容模型。
+
+例如，以下 markdown::
+
+```markdown
+---
+```
+
+输出:
+
+```js
+{
+  type: "thematicBreak";
+}
+```
+
+## Mixin
+
+### `Alternative`
+
+```idl
+interface mixin Alternative {
+  alt: string?
+}
+```
+
+**Alternative** 表示具有回退的节点
+
+应存在`alt`字段。
+它表示无法按预期表示节点的环境的等效内容。
+
+### `Association`
+
+```idl
+interface mixin Association {
+  identifier: string
+  label: string?
+}
+```
+
+**Association** 表示从一个节点到另一个节点的内部关系。
+
+必须存在`identifier`字段。
+它可以匹配另一个节点。
+`identifier`是一个源值：字符转义和字符引用*未*解析。
+其值必须规范化。
+
+可以存在`label`字段。
+`label`是一个字符串值：它的作用就像链接上的 `title` 或代码上的 `lang` 一样：解析字符转义和字符引用。
+
+要规范化值，请将标记下的空白折叠为空格(`[\t\n\r ]+`)，修剪可选的初始和/或最终空格，然后执行大小写折叠。
+
+`identifier`（或者如果没有`identifier`，则归一化的`label`）的值是否被期望为唯一标识符取决于包括**Association**的节点的类型。
+例如，它们在[**Definition**][dfn-definition]上应该是唯一的，而多个[**LinkReference**][dfn-link-reference]可以是非唯一的，以便与一个定义关联。
+
+### `Reference`
+
+```idl
+interface mixin Reference {
+  referenceType: string
+}
+
+Reference includes Association
+```
+
+**Reference**表示与另一个节点[**associated**][dfn-mxn-association]的标记。
+
+`referenceType`字段必须存在。
+其值必须是[**referenceType**][dfn-enum-reference-type].
+它代表了引用的明确性。
+
+### `Resource`
+
+```idl
+interface mixin Resource {
+  url: string
+  title: string?
+}
+```
+
+**Resource**表示对资源的引用。
+
+`url`字段必须存在。
+它表示引用资源的 URL。
+
+可以存在`title`字段。
+它表示资源的咨询信息，例如适用于工具提示的信息。
+
+## Enumeration
+
+### `referenceType`
+
+```idl
+enum referenceType {
+  'shortcut' | 'collapsed' | 'full'
+}
+```
+
+**referenceType** 表示引用的明确性。
+
+- **shortcut**: 引用是隐式的，其标识符是从其内容中推断出来的
+- **collapsed**: 引用是显式的，其标识符是从其内容中推断出来的
+- **full**: 引用是显式的，其标识符是显式设置的
+
+## Content model
+
+```idl
+type MdastContent = FlowContent | ListContent | PhrasingContent
+```
+
+mdast 中的每个节点都属于**Content**的一个或多个类别，这些类别将具有相似特征的节点分组在一起。
+
+### `Content`
+
+```idl
+type Content = Definition | Paragraph
+```
+
+**Content**表示形成定义和段落的文本序列。
+
+### `FlowContent`
+
+```idl
+type FlowContent =
+  Blockquote | Code | Heading | Html | List | ThematicBreak | Content
+```
+
+**Flow**内容表示文档的各个部分。
+
+### `ListContent`
+
+```idl
+type ListContent = ListItem
+```
+
+**List**内容表示列表中的项目。
+
+### `PhrasingContent`
+
+```idl
+type PhrasingContent = Break | Emphasis | Html | Image | ImageReference
+  | InlineCode | Link | LinkReference | Strong | Text
+```
+
+**Phrasing**内容表示文档中的文本及其标记。
+
+## Extensions
+
+Markdown 语法经常被扩展。
+列出所有可能的扩展并不是本规范的目标。
+但是，下面显示了一个常用扩展的简短列表。
+
+### GFM
+
+在[GitHub Flavored Markdown][gfm]中可以找到以下接口。
+
+#### `Delete`
+
+```idl
+interface Delete <: Parent {
+  type: 'delete'
+  children: [PhrasingContent]
+}
+```
+
+**Delete** ([**Parent**][dfn-parent])表示不再准确或不再相关的内容。
+
+**Delete**可用于需要[**phrasing**][dfn-phrasing-content]内容的地方。
+其内容模型为[**phrasing**][dfn-phrasing-content]内容。
+
+例如，以下 markdown::
+
+```markdown
+~~alpha~~
+```
+
+输出:
+
+```js
+{
+  type: 'delete',
+  children: [{type: 'text', value: 'alpha'}]
+}
+```
+
+#### `ListItem` (GFM)
+
+```idl
+interface ListItemGfm <: ListItem {
+  checked: boolean?
+}
+```
+
+在 GFM 中，可以存在`checked`字段。
+它表示该项目是完成的（当`true`时）、未完成的（在`false`时），还是不确定的或不适用的（当`null`或不存在时）。
+
+#### `FootnoteDefinition`
+
+```idl
+interface FootnoteDefinition <: Parent {
+  type: 'footnoteDefinition'
+  children: [FlowContent]
+}
+
+FootnoteDefinition includes Association
+```
+
+**FootnoteDefinition** ([**Parent**][dfn-parent])表示与文档流之外的文档相关的内容。
+
+**FootnoteDefinition**可以在预期[**flow**][dfn-flow-content]内容的情况下使用。
+其内容模型也是[**flow**][dfn-flow-content]内容。
+
+**FootnoteDefinition**包括 mixin[**Association**][dfn-mxn-association]。
+
+**FootnoteDefinition**应与[**FootnoteReferences**][dfn-footnote-reference]关联。
+
+例如，以下 markdown::
+
+```markdown
+[^alpha]: bravo and charlie.
+```
+
+输出:
+
+```js
+{
+  type: 'footnoteDefinition',
+  identifier: 'alpha',
+  label: 'alpha',
+  children: [{
+    type: 'paragraph',
+    children: [{type: 'text', value: 'bravo and charlie.'}]
+  }]
+}
+```
+
+#### `FootnoteReference`
+
+```idl
+interface FootnoteReference <: Node {
+  type: 'footnoteReference'
+}
+
+FootnoteReference includes Association
+```
+
+**FootnoteReference** ([**Node**][dfn-node]) 通过关联表示标记。
+
+**FootnoteReference**可以在需要[**phrasing**][dfn-phrasing-content]内容的情况下使用。
+它没有内容模型。
+
+**FootnoteReference**包括 mixin[**Association**][dfn-mxn-association]。
+
+**FootnoteReference**应与[**FootnoteDefinition**][dfn-footnote-definition]关联.
+
+例如，以下 markdown::
+
+```markdown
+[^alpha]
+```
+
+输出:
+
+```js
+{
+  type: 'footnoteReference',
+  identifier: 'alpha',
+  label: 'alpha'
+}
+```
+
+#### `Table`
+
+```idl
+interface Table <: Parent {
+  type: 'table'
+  align: [alignType]?
+  children: [TableContent]
+}
+```
+
+**Table** ([**Parent**][dfn-parent])表示二维数据。
+
+**Table** 可以在预期[**flow**][dfn-flow-content]内容的情况下使用。
+其内容模型为[**table**][dfn-table-content]内容。
+
+节点的[_head_][term-head]表示列的标签。
+
+可以存在`align`字段。
+如果存在，则必须是[**alignType**s][dfn-enum-align-type]的列表.
+它表示列中的单元格是如何对齐的。
+
+例如，以下 markdown::
+
+```markdown
+| foo | bar |
+| :-- | :-: |
+| baz | qux |
+```
+
+输出:
+
+```js
+{
+  type: 'table',
+  align: ['left', 'center'],
+  children: [
+    {
+      type: 'tableRow',
+      children: [
+        {
+          type: 'tableCell',
+          children: [{type: 'text', value: 'foo'}]
+        },
+        {
+          type: 'tableCell',
+          children: [{type: 'text', value: 'bar'}]
+        }
+      ]
+    },
+    {
+      type: 'tableRow',
+      children: [
+        {
+          type: 'tableCell',
+          children: [{type: 'text', value: 'baz'}]
+        },
+        {
+          type: 'tableCell',
+          children: [{type: 'text', value: 'qux'}]
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### `TableCell`
+
+```idl
+interface TableCell <: Parent {
+  type: 'tableCell'
+  children: [PhrasingContent]
+}
+```
+
+**TableCell**([**Parent**][dfn-parent])表示[**Table**][dfn-table]中的表头单元格（如果其父单元格是[_head_][term-head]），否则表示数据单元格。
+
+**TableCell**可用于需要[**row**][dfn-row-content]内容的地方。
+其内容模型为[**phrasing**][dfn-phrasing-content]内容，不包括[**Break**][dfn-break]节点。
+
+有关示例，请参见[**Table**][dfn-table]。
+
+#### `TableRow`
+
+```idl
+interface TableRow <: Parent {
+  type: 'tableRow'
+  children: [RowContent]
+}
+```
+
+**TableRow** ([**Parent**][dfn-parent])表示表中的一行单元格。
+
+**TableRow**可用于需要[**table**][dfn-table-content]内容的地方。
+其内容模型为[**row**][dfn-row-content]内容。
+
+如果节点是[_head_][term-head]，则它表示其父节点[**Table**][dfn-table]的列的标签。
+
+有关示例，请参见[**Table**][dfn-table]。
+
+#### `alignType`
+
+```idl
+enum alignType {
+  'left' | 'right' | 'center' | null
+}
+```
+
+**alignType**表示短语内容的对齐方式 ([\[CSSTEXT\]][css-text]).
+
+- **`'left'`**: 请参阅`text-align`css 属性的[`left`][css-left]值
+- **`'right'`**: 查看`text-align`css 属性的[`right`][css-right]值
+- **`'center'`**: 请参阅`text-align`css 属性的[`center`][css-center]值
+- **`null`**: 措辞内容按照主机环境的定义进行调整
+
+#### `FlowContent` (GFM)
+
+```idl
+type FlowContentGfm = FootnoteDefinition | Table | FlowContent
+```
+
+#### `ListContent` (GFM)
+
+```idl
+type ListContentGfm = ListItemGfm
+```
+
+#### `PhrasingContent` (GFM)
+
+```idl
+type PhrasingContentGfm = FootnoteReference | Delete | PhrasingContent
+```
+
+#### `RowContent`
+
+```idl
+type RowContent = TableCell
+```
+
+**Row**内容表示一行中的单元格。
+
+#### `TableContent`
+
+```idl
+type TableContent = TableRow
+```
+
+**Table**内容表示表中的行。
+
+### Frontmatter
+
+YAML 有以下接口。
+
+#### `Yaml`
+
+```idl
+interface Yaml <: Literal {
+  type: 'yaml'
+}
+```
+
+**Yaml**（[**Literal**][dfn-Literal]）表示 Yaml([\[YAML\]][yaml])数据序列化语言中文档的元数据集合。
+
+**Yaml**可用于需要[**frontmatter**][dfn-frontmatter-content]内容的地方。
+其内容由其`value`字段表示。
+
+例如，以下 markdown::
+
+```markdown
+---
+foo: bar
+---
+```
+
+输出:
+
+```js
+{type: 'yaml', value: 'foo: bar'}
+```
+
+#### `FrontmatterContent`
+
+```idl
+type FrontmatterContent = Yaml
+```
+
+**Frontmatter**内容表示有关文档的带外信息。
+
+如果存在 frontmatter，则它必须限于[_tree_][term-tree]中的一个节点，并且只能作为[_head_][term-head]存在。
+
+#### `FlowContent` (frontmatter)
+
+```idl
+type FlowContentFrontmatter = FrontmatterContent | FlowContent
+```
+
+### MDX
+
+See [`remark-mdx`](https://mdxjs.com/packages/remark-mdx/#syntax-tree).
+
+## Glossary
+
+请参阅[unist 词汇表][glossary].
+
+## 公用设施清单
+
+有关更多实用程序，请参阅[unist 公用设施列表][utilities]。
+
+- [`mdast-add-list-metadata`](https://gitlab.com/staltz/mdast-add-list-metadata)
+  — 增强`list`和`listItem`节点的元数据
+- [`mdast-util-assert`](https://github.com/syntax-tree/mdast-util-assert)
+  — 断言节点
+- [`mdast-builder`](https://github.com/mike-north/mdast-builder)
+  — 使用可组合函数构建 mdast 结构
+- [`mdast-comment-marker`](https://github.com/syntax-tree/mdast-comment-marker)
+  — 解析注释标记
+- [`mdast-util-compact`](https://github.com/syntax-tree/mdast-util-compact)
+  — 使树紧凑
+- [`mdast-util-definitions`](https://github.com/syntax-tree/mdast-util-definitions)
+  — 查找定义节点
+- [`mdast-util-directive`](https://github.com/syntax-tree/mdast-util-directive)
+  — 解析和序列化指令
+- [`mdast-util-find-and-replace`](https://github.com/syntax-tree/mdast-util-find-and-replace)
+  — 查找和替换文本
+- [`mdast-flatten-image-paragraphs`](https://gitlab.com/staltz/mdast-flatten-image-paragraphs)
+  — flatten `paragraph` and `image` into one `image` node
+- [`mdast-flatten-listitem-paragraphs`](https://gitlab.com/staltz/mdast-flatten-listitem-paragraphs)
+  — 将`listItem`和（嵌套的）段落展开为一个 listItem 节点
+- [`mdast-flatten-nested-lists`](https://gitlab.com/staltz/mdast-flatten-nested-lists)
+  — 转换树以避免列表中的列表
+- [`mdast-util-from-adf`](https://github.com/bitcrowd/mdast-util-from-adf)
+  — 从 Atlassian 文档格式（ADF）构建 mdast 语法树
+- [`mdast-util-from-markdown`](https://github.com/syntax-tree/mdast-util-from-markdown)
+  — 解析 markdown
+- [`mdast-util-frontmatter`](https://github.com/syntax-tree/mdast-util-frontmatter)
+  — 解析并序列化 frontmatter
+- [`mdast-util-gfm`](https://github.com/syntax-tree/mdast-util-gfm)
+  — 解析并序列化 GFM
+- [`mdast-util-gfm-autolink-literal`](https://github.com/syntax-tree/mdast-util-gfm-autolink-literal)
+  — 解析和序列化 GFM 自动链接文字
+- [`mdast-util-gfm-footnote`](https://github.com/syntax-tree/mdast-util-gfm-footnote)
+  — 解析并序列化 GFM 脚注
+- [`mdast-util-gfm-strikethrough`](https://github.com/syntax-tree/mdast-util-gfm-strikethrough)
+  — 解析并序列化 GFM 删除线
+- [`mdast-util-gfm-table`](https://github.com/syntax-tree/mdast-util-gfm-table)
+  — 解析和序列化 GFM 表
+- [`mdast-util-gfm-task-list-item`](https://github.com/syntax-tree/mdast-util-gfm-task-list-item)
+  — 解析并序列化 GFM 任务列表项
+- [`mdast-util-gridtables`](https://github.com/syntax-tree/mdast-util-gridtables)
+  — 解析和序列化网格表
+- [`mdast-util-heading-range`](https://github.com/syntax-tree/mdast-util-heading-range)
+  — 将标题标记为范围
+- [`mdast-util-heading-style`](https://github.com/syntax-tree/mdast-util-heading-style)
+  — 获取标题节点的样式
+- [`mdast-util-hidden`](https://github.com/Xunnamius/unified-utils/tree/main/packages/mdast-util-hidden)
+  — 防止变压器看到节点。
+- [`mdast-util-math`](https://github.com/syntax-tree/mdast-util-math)
+  — 解析和序列化数学
+- [`mdast-util-mdx`](https://github.com/syntax-tree/mdast-util-mdx)
+  — 解析并序列化 MDX
+- [`mdast-util-mdx-expression`](https://github.com/syntax-tree/mdast-util-mdx-expression)
+  — 解析和序列化 MDX 表达式
+- [`mdast-util-mdx-jsx`](https://github.com/syntax-tree/mdast-util-mdx-jsx)
+  — 解析并序列化 MDX JSX
+- [`mdast-util-mdxjs-esm`](https://github.com/syntax-tree/mdast-util-mdxjs-esm)
+  — 解析并序列化 MDX ESM
+- [`mdast-move-images-to-root`](https://gitlab.com/staltz/mdast-move-images-to-root)
+  — 将图像节点向上移动到树上，直到它们成为根的直接子节点
+- [`mdast-normalize-headings`](https://github.com/syntax-tree/mdast-normalize-headings)
+  — 确保文档中最多有一个顶级标题
+- [`mdast-util-phrasing`](https://github.com/syntax-tree/mdast-util-phrasing)
+  — 检查节点是否正在对内容进行措辞
+- [`mdast-squeeze-paragraphs`](https://github.com/syntax-tree/mdast-squeeze-paragraphs)
+  — 删除空段落
+- [`mdast-util-toc`](https://github.com/syntax-tree/mdast-util-toc)
+  — 从树生成目录
+- [`mdast-util-to-hast`](https://github.com/syntax-tree/mdast-util-to-hast)
+  — 转换为 hast
+- [`mdast-util-to-markdown`](https://github.com/syntax-tree/mdast-util-to-markdown)
+  — 序列化 markdown
+- [`mdast-util-to-nlcst`](https://github.com/syntax-tree/mdast-util-to-nlcst)
+  — 转换为 nlcst
+- [`mdast-util-to-string`](https://github.com/syntax-tree/mdast-util-to-string)
+  — 获取节点的纯文本内容
+- [`mdast-zone`](https://github.com/syntax-tree/mdast-zone)
+  — 作为范围或标记的 HTML 注释
+
+## 工具书类
+
+- **unist**:
+  [通用语法树][unist].
+  T. Wormer; et al.
+- **Markdown**:
+  [Markdown][].
+  J. Gruber.
+- **CommonMark**:
+  [CommonMark][].
+  J. MacFarlane; et al.
+- **GFM**:
+  [GitHub Flavored Markdown][gfm].
+  GitHub.
+- **HTML**:
+  [HTML Standard][html],
+  A. van Kesteren; et al.
+  WHATWG.
+- **CSSTEXT**:
+  [CSS Text][css-text],
+  CSS Text, E. Etemad, K. Ishii.
+  W3C.
+- **JavaScript**:
+  [ECMAScript Language Specification][javascript].
+  Ecma International.
+- **YAML**:
+  [YAML Ain’t Markup Language][yaml],
+  O. Ben-Kiki, C. Evans, I. döt Net.
+- **Web IDL**:
+  [Web IDL][webidl],
+  C. McCormack.
+  W3C.
+
+## 安全
+
+由于 mdast 可以包含 HTML 并用于表示 HTML，而不正确使用 HTML 可能会导致[跨站点脚本（XSS）][XSS]攻击，因此不正确使用 mdast 也是不安全的。
+当转换为 HTML 时（通常通过[**hast**][hast]），请始终小心用户输入，并使用[`hast-util-santize`][sanitize]确保 hast 树的安全。
+
+## 相关的
+
+- [hast](https://github.com/syntax-tree/hast)
+  — 超文本抽象语法树格式
+- [nlcst](https://github.com/syntax-tree/nlcst)
+  — 自然语言具体语法树格式
+- [xast](https://github.com/syntax-tree/xast)
+  — 可扩展抽象语法树
+
+## Contribute
+
+有关入门方法，请参阅[`syntax-tree/.github`][health]中的[`contributing.md`][contributing]。
+有关获得帮助的方法，请参阅[`support.md`][support]。
+有关新实用程序和工具的想法可以发布在[`syntax-tree/ideas`][ideas]中。
+
+在[真棒语法树][awesome]中可以找到一个精心策划的真棒语法树、unist、mdast、hast、xast 和 nlcst 资源列表。
+
+这个项目有[行为准则][coc].
+通过与此存储库、组织或社区交互，您同意遵守其条款。
+
+## 鸣谢
+
+该项目的初始版本由[**@wooorm**](https://github.com/wooorm)撰写.
+
+特别感谢[**@eush77**](https://github.com/eush77)感谢他们的工作、想法和极其宝贵的反馈！
+
+感谢
+[**@anandthakker**](https://github.com/anandthakker),
+[**@arobase-che**](https://github.com/arobase-che),
+[**@BarryThePenguin**](https://github.com/BarryThePenguin),
+[**@chinesedfan**](https://github.com/chinesedfan),
+[**@ChristianMurphy**](https://github.com/ChristianMurphy),
+[**@craftzdog**](https://github.com/craftzdog),
+[**@d4rekanguok**](https://github.com/d4rekanguok),
+[**@detj**](https://github.com/detj),
+[**@dominictarr**](https://github.com/dominictarr),
+[**@gkatsev**](https://github.com/gkatsev),
+[**@Hamms**](https://github.com/Hamms),
+[**@Hypercubed**](https://github.com/Hypercubed),
+[**@ikatyang**](https://github.com/ikatyang),
+[**@izumin5210**](https://github.com/izumin5210),
+[**@jasonLaster**](https://github.com/jasonLaster),
+[**@Justineo**](https://github.com/Justineo),
+[**@justjake**](https://github.com/justjake),
+[**@KyleAMathews**](https://github.com/KyleAMathews),
+[**@laysent**](https://github.com/laysent),
+[**@macklinu**](https://github.com/macklinu),
+[**@mike-north**](https://github.com/mike-north),
+[**@Murderlon**](https://github.com/Murderlon),
+[**@nevik**](https://github.com/nevik),
+[**@Rokt33r**](https://github.com/Rokt33r),
+[**@rhysd**](https://github.com/rhysd),
+[**@rubys**](https://github.com/rubys),
+[**@Sarah-Seo**](https://github.com/Sarah-Seo),
+[**@sethvincent**](https://github.com/sethvincent),
+[**@silvenon**](https://github.com/silvenon),
+[**@simov**](https://github.com/simov),
+[**@staltz**](https://github.com/staltz),
+[**@stefanprobst**](https://github.com/stefanprobst),
+[**@tmcw**](https://github.com/tmcw),
+和 [**@vhf**](https://github.com/vhf) 为 mdast 和相关项目做出贡献！
+
+## 许可证
+
+[CC-BY-4.0][license] © [Titus Wormer][author]
+
+[health]: https://github.com/syntax-tree/.github
+[contributing]: https://github.com/syntax-tree/.github/blob/HEAD/contributing.md
+[support]: https://github.com/syntax-tree/.github/blob/HEAD/support.md
+[coc]: https://github.com/syntax-tree/.github/blob/HEAD/code-of-conduct.md
+[awesome]: https://github.com/syntax-tree/awesome-syntax-tree
+[ideas]: https://github.com/syntax-tree/ideas
+[license]: https://creativecommons.org/licenses/by/4.0/
+[author]: https://wooorm.com
+[logo]: https://raw.githubusercontent.com/syntax-tree/mdast/e6b43aa/logo.svg?sanitize=true
+[releases]: https://github.com/syntax-tree/mdast/releases
+[latest]: https://github.com/syntax-tree/mdast/releases/tag/5.0.0
+[dfn-node]: https://github.com/syntax-tree/unist#node
+[dfn-unist-parent]: https://github.com/syntax-tree/unist#parent
+[dfn-unist-literal]: https://github.com/syntax-tree/unist#literal
+[dfn-parent]: #parent
+[dfn-literal]: #literal
+[dfn-code]: #code
+[dfn-inline-code]: #inlinecode
+[dfn-list]: #list
+[dfn-table]: #table
+[dfn-break]: #break
+[dfn-link-reference]: #linkreference
+[dfn-image-reference]: #imagereference
+[dfn-footnote-reference]: #footnotereference
+[dfn-definition]: #definition
+[dfn-footnote-definition]: #footnotedefinition
+[term-tree]: https://github.com/syntax-tree/unist#tree
+[term-child]: https://github.com/syntax-tree/unist#child
+[term-sibling]: https://github.com/syntax-tree/unist#sibling
+[term-root]: https://github.com/syntax-tree/unist#root
+[term-head]: https://github.com/syntax-tree/unist#head
+[dfn-mxn-resource]: #resource
+[dfn-mxn-association]: #association
+[dfn-mxn-reference]: #reference
+[dfn-mxn-alternative]: #alternative
+[dfn-enum-align-type]: #aligntype
+[dfn-enum-reference-type]: #referencetype
+[dfn-mdast-content]: #content-model
+[dfn-flow-content]: #flowcontent
+[dfn-frontmatter-content]: #frontmattercontent
+[dfn-content]: #content
+[dfn-list-content]: #listcontent
+[dfn-table-content]: #tablecontent
+[dfn-row-content]: #rowcontent
+[dfn-phrasing-content]: #phrasingcontent
+[list-of-utilities]: #list-of-utilities
+[unist]: https://github.com/syntax-tree/unist
+[syntax-tree]: https://github.com/syntax-tree/unist#syntax-tree
+[yaml]: https://yaml.org
+[html]: https://html.spec.whatwg.org/multipage/
+[css-text]: https://drafts.csswg.org/css-text/
+[css-left]: https://drafts.csswg.org/css-text/#valdef-text-align-left
+[css-right]: https://drafts.csswg.org/css-text/#valdef-text-align-right
+[css-center]: https://drafts.csswg.org/css-text/#valdef-text-align-center
+[javascript]: https://www.ecma-international.org/ecma-262/9.0/index.html
+[webidl]: https://heycam.github.io/webidl/
+[markdown]: https://daringfireball.net/projects/markdown/
+[commonmark]: https://commonmark.org
+[gfm]: https://github.github.com/gfm/
+[glossary]: https://github.com/syntax-tree/unist#glossary
+[utilities]: https://github.com/syntax-tree/unist#list-of-utilities
+[unified]: https://github.com/unifiedjs/unified
+[remark]: https://github.com/remarkjs/remark
+[xss]: https://en.wikipedia.org/wiki/Cross-site_scripting
+[hast]: https://github.com/syntax-tree/hast
+[sanitize]: https://github.com/syntax-tree/hast-util-sanitize

@@ -1,0 +1,267 @@
+---
+group: guide
+title: TypeScript中的语法树
+description: 说明如何使用类型处理语法树的指南
+author: Christian Murphy
+authorGithub: ChristianMurphy
+tags:
+  - typescript
+  - unist
+  - node
+  - mdast
+  - hast
+  - xast
+published: 2020-06-09
+modified: 2020-06-15
+---
+
+## 如何在 TypeScript 中使用语法树
+
+本指南将向您介绍如何使用 unist 和 unified 的 TypeScript。
+
+### 基础
+
+所有 unified 的语法树都基于 [unist (**uni**versal **s**yntax **t**ree)][unist].
+核心类型在仅限类型的包中可用:[`@types/unist`][ts-unist].
+主要类型为`Node`。
+其他一切都延伸了它。
+`Literal` 和 `Parent`是更具体的类型，它们也扩展了 Node。
+
+unist 提供的类型是抽象接口。
+通常，您会使用更实用的界面，这取决于您使用的语言。
+unified 支持的每种语言，如 markdown、HTML 和 XML，都有自己的语法树标准，该标准扩展了`unist`。
+
+让我们看看这些。
+
+### unist
+
+#### `Node`
+
+`Node`是语法树的语法单元。
+每个节点扩展`Node`（有时通过`Literal`或`Parent`），并将`type`设置为[字符串文字][ts-literal]。
+类型字段告诉我们节点是什么类型的内容。
+此字段唯一标识一种内容。
+在 TypeScript 中称为[区分的并集][ts-discriminated-union].
+例如，在 markdown（mdast）中，`Node`将被扩展为诸如`Heading`或`Link`之类的东西，它们分别使用`heading`和`link`的`类型`字段。
+
+节点可以选择性地在`Data`字段处包括`data`接口。
+这是一个存储额外元数据的对象（字典），这些元数据不是节点的标准，而是由生态系统（实用程序和插件）定义的。
+
+从文件解析语法树时，它包括位置信息:
+`Position`字段处的`position`界面。
+这描述了节点在源文件中出现的位置。
+
+```ts
+/**
+ * Syntactic units in unist syntax trees are called nodes.
+ */
+interface Node {
+  /**
+   * The variant of a node.
+   */
+  type: string;
+
+  /**
+   * Information from the ecosystem.
+   */
+  data?: Data | undefined;
+
+  /**
+   * Location of a node in a source document.
+   * Must not be present if a node is generated.
+   */
+  position?: Position | undefined;
+}
+
+/**
+ * Information associated by the ecosystem with the node.
+ * Space is guaranteed to never be specified by unist or specifications
+ * implementing unist.
+ */
+export interface Data {
+  [key: string]: unknown;
+}
+
+/**
+ * Location of a node in a source file.
+ */
+export interface Position {
+  /**
+   * Place of the first character of the parsed source region.
+   */
+  start: Point;
+
+  /**
+   * Place of the first character after the parsed source region.
+   */
+  end: Point;
+
+  /**
+   * Start column at each index (plus start line) in the source region,
+   * for elements that span multiple lines.
+   */
+  indent?: number[] | undefined;
+}
+```
+
+#### `Literal`
+
+`Literal`扩展`Node`并添加一个`value`属性。
+例如，标记`Code`节点扩展`Literal`并将`value`设置为`string`。
+
+```ts
+/**
+ * Nodes containing a value.
+ */
+export interface Literal extends Node {
+  value: unknown;
+}
+```
+
+#### `Parent`
+
+`Parent`扩展`Node`并添加`children`。
+子级表示此节点内部或其一部分的其他内容。
+
+```ts
+/**
+ * Nodes containing other nodes.
+ */
+export interface Parent extends Node {
+  /**
+   * List representing the children of a node.
+   */
+  children: Node[];
+}
+```
+
+#### 将 unist 引入项目
+
+安装:
+
+```bash
+npm install --save-dev @types/unist
+```
+
+要将类型导入 TypeScript 文件，请使用：
+
+```ts
+import type { Node, Literal, Parent } from "unist";
+```
+
+要导入[JSDoc TypeScript][ts-jsdoc]中的类型，请使用：
+
+```js
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Literal} Literal
+ * @typedef {import('unist').Parent} Parent
+ */
+```
+
+### mdast (markdown)
+
+[mdast (**m**arkdown **a**bstract **s**yntax **t**ree)][mdast] 使用特定于标记的类型扩展 unist，如`Heading`、`Code`、`Link`等。
+该规范包括一个完整的节点列表。
+类型在仅限类型的包中可用: [`@types/mdast`][ts-mdast].
+
+安装:
+
+```bash
+npm install --save-dev @types/mdast
+```
+
+要将类型导入 TypeScript 文件，请使用：
+
+```ts
+import type { Heading, Code, Link } from "mdast";
+```
+
+要导入[JSDoc TypeScript][ts-jsdoc]中的类型，请使用：
+
+```js
+/**
+ * @typedef {import('mdast').Heading} Heading
+ * @typedef {import('mdast').Code} Code
+ * @typedef {import('mdast').Link} Link
+ */
+```
+
+### hast (HTML)
+
+[hast (**h**ypertext **a**bstract **s**yntax **t**ree)][hast]使用特定于 HTML 的类型（如`Element`、`Comment`、`DocType`等）扩展了 unist。
+该规范包括一个完整的节点列表。
+类型在仅限类型的包中可用: [`@types/hast`][ts-hast].
+
+安装:
+
+```bash
+npm install --save-dev @types/hast
+```
+
+要将类型导入 TypeScript 文件，请使用：
+
+```ts
+import type { Element, Comment, DocType } from "hast";
+```
+
+要导入[JSDoc TypeScript][ts-jsdoc]中的类型，请使用：
+
+```js
+/**
+ * @typedef {import('hast').Element} Element
+ * @typedef {import('hast').Comment} Comment
+ * @typedef {import('hast').DocType} DocType
+ */
+```
+
+### xast (XML)
+
+[xast (e**x**tensible **a**bstract **s**yntax **t**ree)][xast] 使用特定于 XML 的类型（如`Element`、`CData`、`Instruction`等）扩展 unist。
+该规范包括一个完整的节点列表。
+类型在仅限类型的包中可用: [`@types/xast`][ts-xast].
+
+安装:
+
+```bash
+npm install --save-dev @types/xast
+```
+
+要将类型导入 TypeScript 文件，请使用：
+
+```ts
+import type { Element, CData, Instruction } from "xast";
+```
+
+要导入[JSDoc TypeScript][ts-jsdoc]中的类型，请使用：
+
+```js
+/**
+ * @typedef {import('xast').Element} Element
+ * @typedef {import('xast').CData} CData
+ * @typedef {import('xast').Instruction} Instruction
+ */
+```
+
+### 总结
+
+- unified 为每种语言的语法树提供了类型
+- 这些类型可以导入到 TypeScript 项目和 JSDoc 项目中
+
+### 接下来的步骤
+
+- [学习使用 TypeScript 遍历语法树](/learn/recipe/tree-traversal-typescript/)
+- [学会缩小 `Node`s](/learn/recipe/narrow-node-typescript/)
+- [学习构建语法树](/learn/recipe/build-a-syntax-tree/)
+
+[unist]: https://github.com/syntax-tree/unist
+[mdast]: https://github.com/syntax-tree/mdast
+[hast]: https://github.com/syntax-tree/hast
+[xast]: https://github.com/syntax-tree/xast#readme
+[ts-unist]: https://www.npmjs.com/package/@types/unist
+[ts-mdast]: https://www.npmjs.com/package/@types/mdast
+[ts-hast]: https://www.npmjs.com/package/@types/hast
+[ts-xast]: https://www.npmjs.com/package/@types/xast
+[ts-jsdoc]: https://www.typescriptlang.org/docs/handbook/intro-to-js-ts.html
+[ts-discriminated-union]: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions
+[ts-literal]: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types

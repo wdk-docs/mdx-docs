@@ -1,0 +1,347 @@
+---
+group: guide
+index: 2
+title: 使用 unified
+description: 深入探讨将Markdown转换为HTML的指南
+author: Titus Wormer
+authorTwitter: wooorm
+authorGithub: wooorm
+tags:
+  - use
+  - transform
+  - remark
+  - rehype
+published: 2017-05-03
+modified: 2020-06-14
+---
+
+## 使用 unified
+
+本指南深入探讨了如何使用 unified 来将 Markdown 文件转换为 HTML。
+它还将展示如何生成一个目录，并避免检查散文。
+
+> 卡住了？
+> 有其他导游的想法吗？
+> 请参阅[`support.md`][support]。
+
+### 树转换
+
+对于本例，我们将从 Markdown 内容开始，然后转换为 HTML。
+我们需要一个 Markdown 解析器和一个 HTML 字符串生成器。
+相关项目分别为[`remark-parse`][parse]和[`rehype-stringify`][stringify]。
+要在这两种语法之间转换，我们将使用[`remark-rehype`][remark-rehype].
+最后，我们将使用 unified 本身将它们粘合在一起，并使用[`unified-stream`][unified-stream]进行流式传输。
+
+首先建立一个项目。
+创建一个文件夹`example`，输入该文件夹，然后初始化一个新项目：
+
+```sh
+mkdir example
+cd example
+npm init -y
+```
+
+然后，通过更改`package.json`，确保项目是一个模块，以便`import`和`export`工作：
+
+```diff
+--- a/package.json
++++ b/package.json
+@@ -2,6 +2,7 @@
+   "name": "example",
+   "version": "1.0.0",
+   "description": "",
++  "type": "module",
+   "main": "index.js",
+   "scripts": {
+     "test": "echo \"Error: no test specified\" && exit 1"
+```
+
+现在，让我们使用[npm][]安装所需的依赖项，该依赖项与[Node][]捆绑在一起。
+
+```sh
+npm install unified unified-stream remark-parse remark-rehype rehype-stringify
+```
+
+现在创建一个 Markdown 文件，`example.md`，我们将对其进行转换。
+
+```markdown
+# Hello World
+
+## Table of Content
+
+## Install
+
+A **example**.
+
+## Use
+
+More `text`.
+
+## License
+
+MIT
+```
+
+然后创建`index.js`。
+它将 Markdown 转换为 HTML。
+它被连接为从 stdin 读取和向 stdout 写入。
+
+```javascript
+import { stream } from "unified-stream";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+
+const processor = unified().use(remarkParse).use(remarkRehype).use(rehypeStringify);
+
+process.stdin.pipe(stream(processor)).pipe(process.stdout);
+```
+
+现在，使用[Node][]运行我们的脚本（这将使用 Shell 读取`example.md`并写入`example.html`）：
+
+```sh
+node index.js < example.md > example.html
+```
+
+…给了我们一个`example.html`文件，如下所示:
+
+```html
+<h1>Hello World</h1>
+<h2>Table of Content</h2>
+<h2>Install</h2>
+<p>A <strong>example</strong>.</p>
+<h2>Use</h2>
+<p>More <code>text</code>.</p>
+<h2>License</h2>
+<p>MIT</p>
+```
+
+> 请注意，[`remark-rehype`][remark-rehype]不处理 Markdown 中的 HTML。
+> 如果你打算这么做的话，你需要[`rehype-raw`][rehype-raw]。
+
+🎉
+Nifty!
+它还没有起到多大作用，但我们会到达那里的。
+在下一节中，我们将通过引入插件使其更加有用。
+
+### 插件
+
+我们仍然缺少一些东西，特别是目录和适当的 HTML 文档结构。
+
+对于前者我们可以使用[`remark-slug`][slug] 和 [`remark-toc`][toc] , 和[`rehype-document`][document] 完成后一项任务.
+
+```sh
+npm install remark-slug remark-toc rehype-document
+```
+
+现在让我们通过修改`index.js`文件来使用这两个：
+
+```diff
+--- a/index.js
++++ b/index.js
+@@ -1,12 +1,18 @@
+ import {stream} from 'unified-stream'
+ import {unified} from 'unified'
+ import remarkParse from 'remark-parse'
++import remarkSlug from 'remark-slug'
++import remarkToc from 'remark-toc'
+ import remarkRehype from 'remark-rehype'
++import rehypeDocument from 'rehype-document'
+ import rehypeStringify from 'rehype-stringify'
+
+ const processor = unified()
+   .use(remarkParse)
++  .use(remarkSlug)
++  .use(remarkToc)
+   .use(remarkRehype)
++  .use(rehypeDocument, {title: 'Contents'})
+   .use(rehypeStringify)
+
+ process.stdin.pipe(stream(processor)).pipe(process.stdout)
+```
+
+我们将选项传递给`rehype-document`。
+在这种情况下，我们使用它来确保按照 HTML 规范的要求，在`<head>`中获得正确的`<title>`元素。
+`rehype-document`接受更多选项，例如使用哪种语言标记。
+这些在其[`readme.md`][document]中有详细描述。
+许多其他插件也接受选项，所以一定要阅读它们的文档以了解更多信息。
+
+> 注意， remark 插件在 Markdown 树上工作，重新键入插件在 HTML 树上工作。
+> 把你的`.use`调用放在正确的位置是很重要的。
+
+现在，当像以前一样运行脚本时，我们会得到以下`example.html`文件：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Contents</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <h1 id="hello-world">Hello World</h1>
+    <h2 id="table-of-content">Table of Content</h2>
+    <ul>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#use">Use</a></li>
+      <li><a href="#license">License</a></li>
+    </ul>
+    <h2 id="install">Install</h2>
+    <p>A <strong>example</strong>.</p>
+    <h2 id="use">Use</h2>
+    <p>More <code>text</code>.</p>
+    <h2 id="license">License</h2>
+    <p>MIT</p>
+  </body>
+</html>
+```
+
+> 您可能会注意到该文档的格式不太好。
+> 不过有一个插件！
+> 请随意将[`rehype-format`][rehype-format]添加到插件中，位于`doc`下方！
+
+💯
+你成功了！
+这越来越有用了，对吧？
+
+在下一节中，我们将为创建报告奠定基础。
+
+### 报告
+
+在我们检查一些散文之前（是的，我们已经做到了），我们将首先切换`index.js`文件以打印一份漂亮的报告（我们将在下一节中填写它）。
+
+我们可以使用[`to-vfile`][to-vfile]从文件系统读取和写入虚拟文件，也可以使用[`vfile-reporter`][reporter]报告与这些文件相关的消息。
+让我们安装这些。
+
+```sh
+npm install to-vfile vfile-reporter
+```
+
+…现在从我们的示例中取消 stdin/stdout，改为使用文件系统，如下所示:
+
+```diff
+--- a/index.js
++++ b/index.js
+@@ -1,4 +1,5 @@
+-import {stream} from 'unified-stream'
++import {readSync, writeSync} from 'to-vfile'
++import {reporter} from 'vfile-reporter'
+ import {unified} from 'unified'
+ import remarkParse from 'remark-parse'
+ import remarkSlug from 'remark-slug'
+@@ -15,4 +16,15 @@ const processor = unified()
+   .use(rehypeDocument, {title: 'Contents'})
+   .use(rehypeStringify)
+
+-process.stdin.pipe(stream(processor)).pipe(process.stdout)
++processor
++  .process(readSync('example.md'))
++  .then(
++    (file) => {
++      console.error(reporter(file))
++      file.extname = '.html'
++      writeSync(file)
++    },
++    (error) => {
++      throw error
++    }
++  )
+```
+
+如果我们现在在没有 shell 重定向的情况下独自运行脚本，我们会得到一个显示一切正常的报告:
+
+```sh
+$ node index.js
+example.md: no issues found
+```
+
+但一切都不好，Markdown 中有一个拼写错误！
+下一节将展示如何通过添加 retext 来检测散文错误。
+
+### 检查散文
+
+我确实注意到其中有一个拼写错误，所以让我们检查一下一些散文，以防止将来发生这种情况。
+我们可以使用 retext 及其生态系统进行自然语言解析。
+当我们用英语写作时，我们专门使用[`retext-english`][english]来解析英语自然语言。
+我们的`example.md`文件中的问题是，它有`a example`而不是`an example`，这可以方便地通过[`retext-indefinite-article`][indefinite-article]进行检查。
+为了从标记过渡到散文，我们将使用[`remark-retext`][remark-retext].
+首先，让我们也安装这些依赖项。
+
+```sh
+npm install remark-retext retext-english retext-indefinite-article
+```
+
+…并像这样更改我们的`index.js`:
+
+```diff
+--- a/index.js
++++ b/index.js
+@@ -4,12 +4,16 @@ import {unified} from 'unified'
+ import remarkParse from 'remark-parse'
+ import remarkSlug from 'remark-slug'
+ import remarkToc from 'remark-toc'
++import remarkRetext from 'remark-retext'
++import retextEnglish from 'retext-english'
++import retextIndefiniteArticle from 'retext-indefinite-article'
+ import remarkRehype from 'remark-rehype'
+ import rehypeDocument from 'rehype-document'
+ import rehypeStringify from 'rehype-stringify'
+
+ const processor = unified()
+   .use(remarkParse)
++  .use(remarkRetext, unified().use(retextEnglish).use(retextIndefiniteArticle))
+   .use(remarkSlug)
+   .use(remarkToc)
+   .use(remarkRehype)
+```
+
+如代码所示，`remark-retext`接收另一个`unified`中间件管道。
+自然语言管道。
+该插件将使用给定管道的解析器转换原始语法（Markdown）。
+然后，它将在自然语言语法树上运行附加的插件。
+
+现在，当最后一次运行我们的脚本时：
+
+```sh
+$ node index.js
+example.md
+  7:1-7:2  warning  Use `An` before `example`, not `A`  retext-indefinite-article  retext-indefinite-article
+
+⚠ 1 warning
+```
+
+…我们会收到一条有用的信息。
+
+💃
+你已经建立了一个非常酷的系统，做得很好！
+这是一个总结，查看下一节的进一步练习和资源。
+
+### 进一步练习
+
+最后，查看[retext][retext-plugins],[remark][remark-plugins], 和 [rehype][rehype-plugins]的可用插件列表，并尝试其中一些。
+
+如果你还没有，请查看[学习部分][learn]中的其他文章！
+
+[support]: https://github.com/unifiedjs/.github/blob/main/support.md
+[parse]: https://github.com/remarkjs/remark/tree/HEAD/packages/remark-parse
+[stringify]: https://github.com/rehypejs/rehype/tree/HEAD/packages/rehype-stringify
+[remark-rehype]: https://github.com/remarkjs/remark-rehype
+[npm]: https://www.npmjs.com
+[node]: https://nodejs.org
+[slug]: https://github.com/remarkjs/remark-slug
+[toc]: https://github.com/remarkjs/remark-toc
+[document]: https://github.com/rehypejs/rehype-document
+[to-vfile]: https://github.com/vfile/to-vfile
+[reporter]: https://github.com/vfile/vfile-reporter
+[unified-stream]: https://github.com/unifiedjs/unified-stream
+[english]: https://github.com/retextjs/retext/tree/HEAD/packages/retext-english
+[indefinite-article]: https://github.com/retextjs/retext-indefinite-article
+[remark-retext]: https://github.com/remarkjs/remark-retext
+[retext-plugins]: https://github.com/retextjs/retext/blob/HEAD/doc/plugins.md
+[remark-plugins]: https://github.com/remarkjs/remark/blob/HEAD/doc/plugins.md
+[rehype-plugins]: https://github.com/rehypejs/rehype/blob/HEAD/doc/plugins.md
+[rehype-raw]: https://github.com/rehypejs/rehype-raw
+[rehype-format]: https://github.com/rehypejs/rehype-format
+[learn]: /learn/

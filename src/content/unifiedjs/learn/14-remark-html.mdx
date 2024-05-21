@@ -1,0 +1,148 @@
+---
+group: recipe
+index: 6
+title: HTML 和 remark
+description: 如何使用备注将markdown转换为HTML，并允许在markdown中嵌入HTML
+tags:
+  - remark
+  - html
+  - plugin
+  - markdown
+  - html
+  - parse
+author: Titus Wormer
+authorTwitter: wooorm
+authorGithub: wooorm
+published: 2021-03-09
+modified: 2021-03-09
+---
+
+## HTML 和 remark
+
+remark 是一个 markdown 编译器。
+它从两个方面与 HTML 有关：
+
+1.  markdown 经常被转换成 HTML
+2.  markdown 有时会嵌入 HTML
+
+在处理 HTML 和 markdown 时，我们将同时使用 remark 和 retype。
+本文展示了一些如何做到这一点的示例。
+
+### 如何将 markdown 转换为 HTML
+
+remark 处理 markdown：它可以解析和序列化它。
+但对于 HTML 来说，这**不是**。
+这就是 rehype 所做的，它的存在是为了解析和序列化 HTML。
+
+要将 markdown 转换为 HTML，我们需要 [`remark-parse`][remark-parse],[`remark-rehype`][remark-rehype], 和 [`rehype-stringify`][rehype-stringify]:
+
+```javascript
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+
+unified()
+  .use(remarkParse) // 将markdown内容解析为语法树
+  .use(remarkRehype) // 将markdown语法树转换为HTML语法树，忽略嵌入的HTML
+  .use(rehypeStringify) // 序列化HTML语法树
+  .process("*emphasis* and **strong**")
+  .then((file) => console.log(String(file)))
+  .catch((error) => {
+    throw error;
+  });
+```
+
+这将`*emphasis* and **strong**`转换为`<em>emphasis</em> and <strong>strong</strong>`，但它不支持嵌入在 markdown 中的 HTML（如`*emphasis* and <strong>strong</strong>`）。
+
+此解决方案**是安全的**：您不信任的内容不会导致 XSS 漏洞。
+
+### 如何将 HTML 转换为 markdown
+
+我们也可以做相反的事情。
+将 HTML 转换为标记, 我们需要[`rehype-parse`][rehype-parse],[`rehype-remark`][rehype-remark], 和 [`remark-stringify`][remark-stringify]:
+
+```javascript
+import { unified } from "unified";
+import rehypeParse from "rehype-parse";
+import rehypeRemark from "rehype-remark";
+import remarkStringify from "remark-stringify";
+
+unified()
+  .use(rehypeParse) // 将HTML解析为语法树
+  .use(rehypeRemark) // 将HTML语法树转换为标记语法树
+  .use(remarkStringify) // 序列化HTML语法树
+  .process("<em>emphasis</em> and <strong>strong</strong>")
+  .then((file) => console.log(String(file)))
+  .catch((error) => {
+    throw error;
+  });
+```
+
+这将`<em>emphasis</em> and <strong>strong</strong>`转换为`*emphasis* and **strong**`。
+
+### 如何允许在 markdown 中嵌入 HTML
+
+Markdown 是一种非常适合更基本内容的内容格式:写`*emphasis*`比写`<em>emphasis</em>`好。
+但是，它是有限的：它简洁的语法只支持几件事。
+幸运的是，对于更复杂的事情，markdown 允许在其中使用 HTML。
+一个常见的例子是包含一个`<details>`元素。
+
+通过配置从 markdown 转换为 HTML 时，可以允许在 markdown 中嵌入 HTML [`remark-rehype`][remark-rehype] 和 [`rehype-stringify`][rehype-stringify]:
+
+```javascript
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+
+unified()
+  .use(remarkParse)
+  .use(remarkRehype, { allowDangerousHtml: true }) // 通过传递原始HTML字符串。
+  .use(rehypeStringify, { allowDangerousHtml: true }) // 序列化原始HTML字符串
+  .process("*emphasis* and <strong>strong</strong>")
+  .then((file) => console.log(String(file)))
+  .catch((error) => {
+    throw error;
+  });
+```
+
+此解决方案**不安全**：您不信任的内容可能会导致 XSS 漏洞。
+
+### 如何在 markdown 中正确支持 HTML
+
+为了正确地支持 markdown 中嵌入的 HTML，我们需要另一个插件:[`rehype-raw`][rehype-raw].
+这个插件将获取 markdown 中嵌入的 HTML 字符串，并使用实际的 HTML 解析器进行解析。
+
+```javascript
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw";
+import rehypeStringify from "rehype-stringify";
+
+unified()
+  .use(remarkParse)
+  .use(remarkRehype, { allowDangerousHtml: true })
+  .use(rehypeRaw) // *解析*嵌入树中的原始HTML字符串
+  .use(rehypeStringify)
+  .process("*emphasis* and <strong>strong</strong>")
+  .then((file) => console.log(String(file)))
+  .catch((error) => {
+    throw error;
+  });
+```
+
+此解决方案**不安全**：您不信任的内容可能会导致 XSS 漏洞。
+
+但因为我们现在有了一个完整的 HTML 语法树，所以我们可以对该树进行清理。
+为了获得安全的解决方案，请在`rehype-stringify`之前添加[`rehype-sanitize`][rehype-sanitize]。
+
+[remark-parse]: https://github.com/remarkjs/remark/tree/main/packages/remark-parse
+[remark-stringify]: https://github.com/remarkjs/remark/tree/main/packages/remark-stringify
+[remark-rehype]: https://github.com/remarkjs/remark-rehype
+[rehype-parse]: https://github.com/rehypejs/rehype/tree/main/packages/rehype-parse
+[rehype-stringify]: https://github.com/rehypejs/rehype/tree/main/packages/rehype-stringify
+[rehype-remark]: https://github.com/rehypejs/rehype-remark
+[rehype-raw]: https://github.com/rehypejs/rehype-raw
+[rehype-sanitize]: https://github.com/rehypejs/rehype-sanitize

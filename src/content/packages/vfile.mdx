@@ -1,0 +1,547 @@
+---
+title: vfile
+---
+
+**vfile**是一种小型且浏览器友好的虚拟文件格式，用于跟踪文件的元数据 (比如它 `path` 和 `value`)和 lint[消息][api-vfile-messages].
+
+## unified
+
+**vfile**是 unified 集体的一部分。
+
+- 有关我们的更多信息，请参阅[`unifiedjs.com`][site]
+- 有关集体的治理方式，请参见[`unifiedjs/collective`][governance]
+- 有关更新，请参阅推特上的[@unifiedjs][twitter]
+
+## 这是什么？
+
+此包提供虚拟文件格式。
+它公开了一个 API 来访问文件值、路径、关于文件的元数据，并特别支持将 lint 消息和错误附加到这些文件中的某些位置。
+
+## 我什么时候该用这个？
+
+当在您可能无法访问文件系统的地方处理文件的概念时，虚拟文件格式非常有用。
+消息 API 在制作检查文件的东西（如 linting）时特别有用。
+
+vfile 是为[unified][]制作的，它检查文件。
+然而，vfile 可以用于其他处理解析、转换和序列化数据的项目，以构建 linter、编译器、静态站点生成器和其他构建工具。
+
+这与优秀的[`vinyl`][vinyl]的不同之处在于，vfile 的 API 更小，大小更小，并且专注于消息。
+
+## 安装
+
+此程序包[仅限 ESM][esm].
+在 Node.js（16+版本）中，使用[npm][]安装:
+
+```sh
+npm install vfile
+```
+
+在带有[`esm.sh`][esmsh]的 Deno 中：
+
+```js
+import { VFile } from "https://esm.sh/vfile@6";
+```
+
+在带有[`esm.sh`][esmsh]的浏览器中：
+
+```html
+<script type="module">
+  import { VFile } from "https://esm.sh/vfile@6?bundle";
+</script>
+```
+
+## 使用
+
+```js
+import { VFile } from "vfile";
+
+const file = new VFile({
+  path: "~/example.txt",
+  value: "Alpha *braavo* charlie.",
+});
+
+console.log(file.path); // => '~/example.txt'
+console.log(file.dirname); // => '~'
+
+file.extname = ".md";
+
+console.log(file.basename); // => 'example.md'
+
+file.basename = "index.text";
+
+console.log(file.history); // => ['~/example.txt', '~/example.md', '~/index.text']
+
+file.message("Unexpected unknown word `braavo`, did you mean `bravo`?", {
+  place: { line: 1, column: 8 },
+  source: "spell",
+  ruleId: "typo",
+});
+
+console.log(file.messages);
+```
+
+Yields:
+
+```txt
+[
+  [~/index.text:1:8: Unexpected unknown word `braavo`, did you mean `bravo`?] {
+    ancestors: undefined,
+    cause: undefined,
+    column: 8,
+    fatal: false,
+    line: 1,
+    place: { line: 1, column: 8 },
+    reason: 'Unexpected unknown word `braavo`, did you mean `bravo`?',
+    ruleId: 'typo',
+    source: 'spell',
+    file: '~/index.text'
+  }
+]
+```
+
+## API
+
+此包导出标识符[`VFile`][api-vfile].
+没有默认导出。
+
+### `VFile(options?)`
+
+创建一个新的虚拟文件。
+
+`options`被视为:
+
+- `string` 或 [`Uint8Array`][mdn-uint8-array] — `{value: options}`
+- `URL` — `{path: options}`
+- `VFile` — 浅层将其数据复制到新文件
+- `object` — 所有字段都被浅层复制到新文件中
+
+与路径相关的字段按以下顺序设置（从最不特定到最特定）: `history`, `path`, `basename`, `stem`, `extname`,
+`dirname`.
+
+在不设置`history`、`path`、`basename`或`stem`的情况下，无法设置`dirname`和`extname`。
+
+###### 参数
+
+- `options` ([`可共用的`][api-compatible], 可选)
+  — 文件值
+
+###### 返回
+
+新建实例 (`VFile`).
+
+###### 实例
+
+```js
+new VFile();
+new VFile('console.log("alpha");');
+new VFile(new Uint8Array([0x65, 0x78, 0x69, 0x74, 0x20, 0x31]));
+new VFile({ path: path.join("path", "to", "readme.md") });
+new VFile({ stem: "readme", extname: ".md", dirname: path.join("path", "to") });
+new VFile({ other: "properties", are: "copied", ov: { e: "r" } });
+```
+
+### `file.cwd`
+
+基于`path` (`string`, 默认: `process.cwd()` 或 `'/'` 在浏览器中).
+
+### `file.data`
+
+存储自定义信息的位置 (`Record<string, unknown>`, default: `{}`).
+
+可以将自定义数据直接存储在文件中，但建议将其移动到`data`中。
+
+### `file.history`
+
+文件在其中移动的文件路径列表 (`Array<string>`).
+
+第一个是原始路径，最后一个是当前路径。
+
+### `file.messages`
+
+与文件关联的消息列表 ([`Array<VFileMessage>`][api-vfile-message]).
+
+### `file.value`
+
+原始值 ([`Uint8Array`][mdn-uint8-array], `string`, `undefined`).
+
+### `file.basename`
+
+获取或设置 basename（包括 extname） (`string?`, 实例: `'index.min.js'`).
+
+不能包含路径分隔符 (在 unix、macOS 和浏览器上`'/'`, 在 windows 上`'\'` ).
+不能作废 (使用 `file.path = file.dirname` 替代).
+
+### `file.dirname`
+
+获取或设置父路径 (`string?`, example: `'~'`).
+
+如果还没有`path`，则无法设置。
+
+### `file.extname`
+
+获取或设置 extname（包括点） (`string?`, 实例: `'.js'`).
+
+不能包含路径分隔符 (`'/'` 在 unix、macOS 和浏览器上, `'\'` 在 windows 上).
+如果还没有`path`，则无法设置。
+
+### `file.path`
+
+获取或设置完整路径 (`string?`, 实例: `'~/index.min.js'`).
+
+不能作废。
+您可以设置一个文件 URL(带有`file:`协议的`URL`对象)，该 URL 将用[`URL.fileURLToPath`][file-url-to-path]转换为路径.
+
+### `file.stem`
+
+获取或设置词干（basename w/o extname） (`string?`, 实例: `'index.min'`).
+
+不能包含路径分隔符 (在 unix、macOS 和浏览器上为`'/'`，在 windows 上为`'\'`).
+不能作废。
+
+### `VFile#fail(reason[, options])`
+
+为与文件关联的`reason`创建致命消息。
+
+消息的`fatal`字段设置为`true`（错误；文件不可用），而`file`字段则设置为当前文件路径。
+消息被添加到`file`的`messages`字段中。
+
+> 🪦 **笔记**: 也有过时的签名。
+
+###### 参数
+
+- `reason` (`string`)
+  — 消息的原因，应使用 markdown
+- `options` ([`MessageOptions`][api-message-options], 可选)
+  — 配置
+
+###### 返回
+
+Nothing (`never`).
+
+###### 抛出
+
+消息 ([`VFileMessage`][vmessage]).
+
+### `VFile#info(reason[, options])`
+
+为与文件关联的`reason`创建一条信息消息。
+
+消息的`fatal`字段设置为`undefined`（信息；可能不需要更改），而`file`字段则设置为当前文件路径。
+消息被添加到`file`的`messages`字段中。
+
+> 🪦 **笔记**: 也有过时的签名。
+
+###### 参数
+
+- `reason` (`string`)
+  — 消息的原因，应使用 markdown
+- `options` ([`MessageOptions`][api-message-options], 可选)
+  — 配置
+
+###### 返回
+
+Message ([`VFileMessage`][vmessage]).
+
+### `VFile#message(reason[, options])`
+
+创建与文件相关联的`reason`消息。
+
+消息的`fatal`字段设置为`false`（警告；可能需要更改），而`file`字段则设置为当前文件路径。
+消息被添加到`file`的`messages`字段中。
+
+> 🪦 **笔记**: 也有过时的签名。
+
+###### 参数
+
+- `reason` (`string`)
+  — 消息的原因，应使用 markdown
+- `options` ([`MessageOptions`][api-message-options], 可选)
+  — 配置
+
+###### 返回
+
+Message ([`VFileMessage`][vmessage]).
+
+### `VFile#toString(encoding?)`
+
+序列化文件。
+
+> **注释**: 支持哪些编码取决于引擎。
+> 有关 Node.js 的信息，请参阅: https://nodejs.org/api/util.html#whatwg-supported-encodings.
+
+###### 参数
+
+- `encoding` (`string`, default: `'utf8'`)
+  — 字符编码以将`value`理解为[`Uint8Array`][mdn-uint8-array]
+
+###### 返回
+
+序列化文件 (`string`).
+
+### `Compatible`
+
+可以传递给构造函数（TypeScript 类型）的东西。
+
+###### 类型
+
+```ts
+type Compatible = Options | URL | VFile | Value;
+```
+
+### `Data`
+
+自定义信息（TypeScript 类型）。
+
+可以将已知属性添加到[`DataMap`][api-data-map].
+
+###### 类型
+
+```ts
+type Data = Record<string, unknown> & Partial<DataMap>;
+```
+
+### `DataMap`
+
+此映射注册`VFile`的`data`键的类型（TypeScript 类型）。
+
+可以扩展此类型以注册自定义的`data`类型。
+
+###### 类型
+
+```ts
+interface DataMap {}
+```
+
+###### 实例
+
+```ts
+declare module "vfile" {
+  interface DataMap {
+    // `file.data.name` is typed as `string`
+    name: string;
+  }
+}
+```
+
+### `Map`
+
+原始源映射（TypeScript 类型）。
+
+请参见[`source-map`][source-map].
+
+###### 字段
+
+- `version` (`number`)
+  — 此映射遵循的是源映射规范的哪个版本
+- `sources` (`Array<string>`)
+  — 原始源文件的 URL 数组
+- `names` (`Array<string>`)
+  — 可以由单个映射引用的标识符数组
+- `sourceRoot` (`string`, 可选)
+  — 所有源相对的 URL 根
+- `sourcesContent` (`Array<string>`, 可选)
+  — 原始源文件的内容数组
+- `mappings` (`string`)
+  — 包含实际映射的基于 64 个 VLQ 的字符串
+- `file` (`string`)
+  — 与此源映射关联的生成文件
+
+### `MessageOptions`
+
+创建消息的选项（TypeScript 类型）。
+
+参看 [在`vfile-message`里`Options`][vfile-message-options].
+
+### `Options`
+
+具有任意字段和以下已知字段的对象（TypeScript 类型）。
+
+###### 字段
+
+- `basename` (`string`, 可选)
+  — set `basename` (name)
+- `cwd` (`string`, 可选)
+  — set `cwd` (工作目录)
+- `data` ([`Data`][api-data], 可选)
+  — set `data` (关联信息)
+- `dirname` (`string`, 可选)
+  — set `dirname` (path w/o basename)
+- `extname` (`string`, 可选)
+  — set `extname` (带点的扩展)
+- `history` (`Array<string>`, 可选)
+  — set `history` (文件移动的路径)
+- `path` (`URL | string`, 可选)
+  — set `path` (当前路径)
+- `stem` (`string`, 可选)
+  — set `stem` (不带扩展名的名称)
+- `value` ([`Value`][api-value], 可选)
+  — set `value` (文件的内容)
+
+### `Reporter`
+
+Type for a reporter (TypeScript type).
+
+###### 类型
+
+```ts
+type Reporter<Settings = ReporterSettings> = (files: Array<VFile>, options: Settings) => string;
+```
+
+### `ReporterSettings`
+
+报告程序的配置（TypeScript 类型）。
+
+###### 类型
+
+```ts
+type ReporterSettings = Record<string, unknown>;
+```
+
+### `Value`
+
+文件内容 (TypeScript type).
+
+可以是文本，也可以是[`Uint8Array`][mdn-uint8-array]结构。
+
+###### 类型
+
+```ts
+type Value = Uint8Array | string;
+```
+
+### 众所周知的
+
+以下字段被视为`非标准`字段，但它们是允许的，并且一些实用程序使用它们：
+
+- `map` ([`Map`][api-map])
+  — 源地图；该类型等效于`source-map`模块中的`RawSourceMap`类型
+- `result` (`unknown`)
+  — 自定义，非字符串，编译，表示；unified 使用它来存储非字符串结果；一个例子是将 markdown 转换为 React 节点
+- `stored` (`boolean`)
+  — 文件是否保存到磁盘；这是 vfile 报告程序使用的
+
+消息上也有一些众所周知的字段，请[参见`vfile message`的类似部分中的它们](https://github.com/vfile/vfile-message#well-known).
+
+<a name="utilities"></a>
+
+## 公用设施清单
+
+- [`convert-vinyl-to-vfile`](https://github.com/dustinspecker/convert-vinyl-to-vfile)
+  — transform from [Vinyl][]
+- [`to-vfile`](https://github.com/vfile/to-vfile)
+  — 从文件路径创建文件，并对文件系统进行读写操作
+- [`vfile-find-down`](https://github.com/vfile/vfile-find-down)
+  — 通过向下搜索文件系统来查找文件
+- [`vfile-find-up`](https://github.com/vfile/vfile-find-up)
+  — 通过向上搜索文件系统来查找文件
+- [`vfile-glob`](https://github.com/shinnn/vfile-glob)
+  — 通过 glob 模式查找文件
+- [`vfile-is`](https://github.com/vfile/vfile-is)
+  — 检查文件是否通过测试
+- [`vfile-location`](https://github.com/vfile/vfile-location)
+  — 在位置和偏移位置之间转换
+- [`vfile-matter`](https://github.com/vfile/vfile-matter)
+  — 解析 YAML 前面的内容
+- [`vfile-message`](https://github.com/vfile/vfile-message)
+  — 创建文件消息
+- [`vfile-messages-to-vscode-diagnostics`](https://github.com/shinnn/vfile-messages-to-vscode-diagnostics)
+  — 将文件消息转换为 VS 代码诊断
+- [`vfile-mkdirp`](https://github.com/vfile/vfile-mkdirp)
+  — 确保文件系统中存在文件的目录
+- [`vfile-rename`](https://github.com/vfile/vfile-rename)
+  — 重命名文件的路径部分
+- [`vfile-sort`](https://github.com/vfile/vfile-sort)
+  — 按行/列对消息排序
+- [`vfile-statistics`](https://github.com/vfile/vfile-statistics)
+  — 按类别计数消息：失败、警告等
+- [`vfile-to-eslint`](https://github.com/vfile/vfile-to-eslint)
+  — 转换为与 ESLint 格式化程序兼容的输出
+
+> 👉 **注释**:有关使用节点的项目，请参见[unist][]。
+
+## 报告
+
+- [`vfile-reporter`][reporter]
+  — 创建报告
+- [`vfile-reporter-json`](https://github.com/vfile/vfile-reporter-json)
+  — 创建 JSON 报告
+- [`vfile-reporter-folder-json`](https://github.com/vfile/vfile-reporter-folder-json)
+  — 创建 vfiles 的 JSON 表示
+- [`vfile-reporter-pretty`](https://github.com/vfile/vfile-reporter-pretty)
+  — 创建一个漂亮的报告
+- [`vfile-reporter-junit`](https://github.com/kellyselden/vfile-reporter-junit)
+  — 创建一个 jUnit 报告
+- [`vfile-reporter-position`](https://github.com/Hocdoc/vfile-reporter-position)
+  — 创建包含内容摘录的报告
+
+> 👉 **注释**: 想成为自己的记者吗？
+> 报告程序*必须*接受`Array＜VFile＞`作为其第一个参数，并返回`string`。
+> 报告程序也可以接受其他值，在这种情况下，建议坚持使用`vfile-reporter`的界面。
+
+## 类型
+
+此包是使用[TypeScript][]完全 typed 的.
+它导出附加类型[`Compatible`][api-compatible],
+[`Data`][api-data],
+[`DataMap`][api-data-map],
+[`Map`][api-map],
+[`MessageOptions`][api-message-options],
+[`Options`][api-options],
+[`Reporter`][api-reporter],
+[`ReporterSettings`][api-reporter-settings], and
+[`Value`][api-value].
+
+## 兼容性
+
+unified 集体维护的项目与 Node.js 的维护版本兼容。
+
+当我们剪切一个新的主要版本时，我们会放弃对 Node 的未维护版本的支持。
+这意味着我们试图保持当前发布行`vfile@^6`与 Node.js 16 兼容。
+
+[build-badge]: https://github.com/vfile/vfile/workflows/main/badge.svg
+[build]: https://github.com/vfile/vfile/actions
+[coverage-badge]: https://img.shields.io/codecov/c/github/vfile/vfile.svg
+[coverage]: https://codecov.io/github/vfile/vfile
+[downloads-badge]: https://img.shields.io/npm/dm/vfile.svg
+[downloads]: https://www.npmjs.com/package/vfile
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=vfile
+[size]: https://bundlejs.com/?q=vfile
+[sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
+[backers-badge]: https://opencollective.com/unified/backers/badge.svg
+[collective]: https://opencollective.com/unified
+[chat-badge]: https://img.shields.io/badge/chat-discussions-success.svg
+[chat]: https://github.com/vfile/vfile/discussions
+[npm]: https://docs.npmjs.com/cli/install
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+[esmsh]: https://esm.sh
+[typescript]: https://www.typescriptlang.org
+[health]: https://github.com/vfile/.github
+[contributing]: https://github.com/vfile/.github/blob/main/contributing.md
+[support]: https://github.com/vfile/.github/blob/main/support.md
+[coc]: https://github.com/vfile/.github/blob/main/code-of-conduct.md
+[license]: license
+[author]: https://wooorm.com
+[unified]: https://github.com/unifiedjs/unified
+[vinyl]: https://github.com/gulpjs/vinyl
+[site]: https://unifiedjs.com
+[twitter]: https://twitter.com/unifiedjs
+[unist]: https://github.com/syntax-tree/unist#list-of-utilities
+[reporter]: https://github.com/vfile/vfile-reporter
+[vmessage]: https://github.com/vfile/vfile-message
+[vfile-message-options]: https://github.com/vfile/vfile-message#options
+[mdn-uint8-array]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[source-map]: https://github.com/mozilla/source-map/blob/58819f0/source-map.d.ts#L15-L23
+[file-url-to-path]: https://nodejs.org/api/url.html#url_url_fileurltopath_url
+[governance]: https://github.com/unifiedjs/collective
+[api-vfile-messages]: #filemessages
+[api-vfile-message]: #vfilemessagereason-options
+[api-vfile]: #vfileoptions
+[api-compatible]: #compatible
+[api-data]: #data
+[api-data-map]: #datamap
+[api-map]: #map
+[api-message-options]: #messageoptions
+[api-options]: #options
+[api-reporter]: #reporter
+[api-reporter-settings]: #reportersettings
+[api-value]: #value
